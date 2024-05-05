@@ -1121,7 +1121,7 @@ create_economic_controls_data <- function(lag_months=12) {
   print('rolling values by twelve months')
   df_economics <- cbind(df_economics, roll = rollmeanr(df_economics[,num_cols], 12, fill = NA))
   
-  write_csv(df_economics, '../Data/Economic/montly_economic_controls.csv')
+  write_csv(df_economics, '../Data/Economic/monthly_economic_controls.csv')
   rm(df_economics, df_existhomes, df_newhomes, df_starts,df_consconf, df_shortrates, df_longrates, df_crude, df_dies, df_gas, df_vix,df_gld, df_cpi, df_retsales,df_fixedmort,df_labor,df_lcoe)
 }
 
@@ -1160,7 +1160,7 @@ create_matching_dataset <- function(){
   rm(df_nameplate_capacity)
   
   #create economic controls
-  df_economics <- read_csv('../Data/Economic/montly_economic_controls.csv')
+  df_economics <- read_csv('../Data/Economic/monthly_economic_controls.csv')
   
   df_economics <- df_economics %>% select(date,p_labf, p_uner, cpi,mean_shortr,lcoe_wind_dollars_mw,lcoe_sun_dollars_mw) %>%
     mutate(year = year(date),

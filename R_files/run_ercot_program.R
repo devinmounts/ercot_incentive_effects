@@ -1,7 +1,7 @@
 #### ERCOT Energy Incentive
 ### necessary libraries
 if (!require("pacman")) install.packages("pacman")
-pacman::p_load('tidyverse', 'ggplot2', 'readxl', 'janitor', 'lubridate', 'geojsonio', 'broom', 'sp', 'zoo')
+pacman::p_load('tidyverse', 'ggplot2', 'readxl', 'janitor', 'lubridate', 'geojsonio', 'broom', 'sp', 'zoo', 'fastDummies', 'stargazer')
 
 ### necessary scripts
 source('ercot_preprocess_functions.R')
@@ -57,18 +57,18 @@ run_ercot_program <- function(RStataPath, RStataVersion){
   # gc()
   ################### Monthly Data ###############################
   ################################################################
-  create_monthly_ercot_summary(lag_months)
-  gc()
-  create_pnm_monthly_summary(lag_months)
-  gc()
-  create_ng_hh_monthly_summary(lag_months)
-  gc()
-  create_monthly_weather_data(lag_months)
-  gc()
-  create_economic_controls_data(lag_months)
-  gc()
-  create_monthly_gini_summary(lag_months)
-  gc()
+  # create_monthly_ercot_summary(lag_months)
+  # gc()
+  # create_pnm_monthly_summary(lag_months)
+  # gc()
+  # create_ng_hh_monthly_summary(lag_months)
+  # gc()
+  # create_monthly_weather_data(lag_months)
+  # gc()
+  # create_economic_controls_data(lag_months)
+  # gc()
+  # create_monthly_gini_summary(lag_months)
+  # gc()
   create_panel_totalquantity_specific_regressions_12mo_lag(lag_months)
   # gc()
   

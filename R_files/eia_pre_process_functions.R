@@ -1390,10 +1390,10 @@ create_panel_totalquantity_specific_regressions_12mo_lag <- function(lag_months=
   
   print('reading in other pertinent data sets for regression; monthly summaries of: 15min ercot data, peaker net margin, henry hub ng prices')
   df_monthly_gen_summary <- read_csv('../Data/ERCOT Compiled Data/ercot_gen_pa_price_monthly_stats.csv')
-  df_pnm_summary <- read_csv('../Data/Peaker Net Margin/pnm_monthly_summary.csv')
-  df_hh_ng_monthly_summary <- read_csv('../Data/Natural Gas Prices/ng_hh_price_monthly_summary.csv')
-  df_weather <- read_csv('../Data/Temperature/montly_summary_weather_data.csv')
-  df_economics <- read_csv('../Data/Economic/montly_economic_controls.csv')
+  df_pnm_summary <- read_csv('../Data/ERCOT Compiled Data/pnm_monthly_summary.csv')
+  df_hh_ng_monthly_summary <- read_csv('../Data/ERCOT Compiled Data/ng_hh_price_monthly_summary.csv')
+  df_weather <- read_csv('../Data/Weather/monthly_summary_weather_data.csv')
+  df_economics <- read_csv('../Data/Economic/monthly_economic_controls.csv')
   df_gini <- read_csv('../Data/EIA Compiled Data/gini_summary.csv') 
   
   
