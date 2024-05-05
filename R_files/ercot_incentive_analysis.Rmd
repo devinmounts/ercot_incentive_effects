@@ -1,0 +1,21 @@
+---
+title: "ERCOT Scarcity Incentive Analysis"
+author: "Devin Mounts"
+date: "5/5/2024"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(pryr)
+```
+
+```{r}
+source('./run_ercot_program.R')
+###### define stata options #########
+RStataPath <- '/Applications/Stata/StataBE.app/Contents/MacOS/StataBE'
+RStataVersion <- 17.0
+run_ercot_program(RStataPath, RStataVersion)
+gc()
+```
+
