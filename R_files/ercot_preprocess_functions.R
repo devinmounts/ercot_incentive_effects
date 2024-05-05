@@ -652,7 +652,7 @@ create_monthly_ercot_summary <- function(df_gen_cap, lag_months=12) {
            date_minus_lag = as.Date(date) %m+% months(lag_months),
            roll_mean_hb_busavg_ener_only = rollmean(mean_hb_busavg_energy_only, k=12, fill = NA, align='right'))
   
-  write_csv(df_monthly_ercot_summary, '../Data/ERCOT Complied Data/ercot_gen_pa_price_monthly_stats.csv')
+  write_csv(df_monthly_ercot_summary, '../Data/ERCOT Compiled Data/ercot_gen_pa_price_monthly_stats.csv')
   
   df_annual_ercot_summary <- df_monthly_ercot_summary %>%
     group_by(year) %>%
@@ -661,7 +661,7 @@ create_monthly_ercot_summary <- function(df_gen_cap, lag_months=12) {
               annual_mw_under_pa = sum(total_mw_under_pa, na.rm=T),
               total_pa_payments_bill = sum(total_pa_payments, na.rm=T)/100000000)
   
-  write_csv(df_annual_ercot_summary, '../Data/ERCOT Complied Data/ercot_pa_annaul_sum.csv')
+  write_csv(df_annual_ercot_summary, '../Data/ERCOT Compiled Data/ercot_pa_annaul_sum.csv')
   rm(df_gen_cap)
 }
 
