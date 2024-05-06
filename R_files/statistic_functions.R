@@ -112,7 +112,7 @@ create_operating_pool_stats_latex <- function() {
       arrange(match(statistic, c("n_generators", "share_generators", "mean_mw", 'total_mw','share_mw'))) %>%
       pivot_wider(id_cols = c(sequence_category:statistic), names_from = energy_source_code_group)
     
-    print(df_total_period_stats)
+    # print(df_total_period_stats)
     
     df_period_stats <- df_period_stats %>% left_join(df_total_period_stats, by=c('statistic', 'sequence_category'))
     
@@ -164,10 +164,10 @@ create_operating_pool_stats_latex <- function() {
             rownames = F, 
             notes = 'Values in parenthesis denote share of total',
             font.size = 'small',
-            out ='../Images/Figures/operating_generators_summary_statistics.tex')
+            out ='../Tables/Summary Stats/operating_generators_summary_statistics.tex')
   
-  stargazer(df_summary_operation, summary = F, title='Generator Summary Statistics', header = F, digits=2, rownames = F, notes = 'Values in parenthesis denote share of total', font.size = 'small',
-            out = '../Tables/Summary Stats/generators_entry_exit_summary_statistics.csv')
+  # stargazer(df_summary_operation, summary = F, title='Generator Summary Statistics', header = F, digits=2, rownames = F, notes = 'Values in parenthesis denote share of total', font.size = 'small',
+  #           out = '../Tables/Summary Stats/generators_entry_exit_summary_statistics.tex')
 }
 
 time_to_operation <- function() {
