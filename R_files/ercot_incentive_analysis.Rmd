@@ -13,8 +13,8 @@ library(pryr)
 ```{r}
 source('./run_ercot_program.R')
 ###### define stata options #########
-RStataPath <- '/Applications/Stata/StataBE.app/Contents/MacOS/StataBE'
-RStataVersion <- 17.0
+RStataPath <- '/Applications/Stata/StataSE.app/Contents/MacOS/stata-se'
+RStataVersion <- 18.5
 run_ercot_program(RStataPath, RStataVersion)
 gc()
 ```

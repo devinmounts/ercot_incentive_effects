@@ -1514,7 +1514,7 @@ create_panel_totalquantity_specific_regressions_12mo_lag <- function(lag_months=
     
     
     print(paste('writing data set to csv for total changes: ', market_segments[i]), sep='')
-    file_to_output <- paste('../Data/Regressions/pre_model_data/', market_segments[i], '_panel_totalquantity_12mo_lag.csv', sep='')
+    file_to_output <- paste('../Data/Regressions/Capacity Model/pre_model_data/', market_segments[i], '_panel_totalquantity_12mo_lag.csv', sep='')
     write_csv(df_ng_regression, file_to_output)
   }
   print('12mo lag data sets for total capacity complete')

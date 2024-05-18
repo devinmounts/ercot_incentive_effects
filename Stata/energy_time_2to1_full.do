@@ -247,12 +247,7 @@
 			** Run simple
 			reg price year##year month##month day##day hour##hour ///
 				int_tot_gen_gas_gw-weather_wnds active incentive 
-				
-			** That 1-at-a-time-question from defense
-			reg price year##year month##month day##day hour##hour ///
-				int_tot_gen_gas_gw-weather_wnds active 
-			reg price year##year month##month day##day hour##hour ///
-				int_tot_gen_gas_gw-weather_wnds incentive
+
 				
 			** Gen e
 			local e = 1
