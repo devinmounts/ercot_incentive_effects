@@ -2,6 +2,7 @@
 
 ## Dependencies
 * R 4.1.1
+* Stata SE or greater (for execution from console with RStata)
 
 ## To Run
 1. Clone repository
