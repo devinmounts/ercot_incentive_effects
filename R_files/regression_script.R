@@ -110,7 +110,6 @@ run_regressions <- function(covar_version_input, rolling_3_month_input, exclude_
   }
   
   dir.create(file.path(paste('../Tables/Regressions/Capacity Model/', covar_version, sep = '')))
-  dir.create(file.path(paste('../Tables/Regressions/Capacity Model/Latex/', covar_version, sep = '')))
   dir.create(file.path(paste('../Tables/Regressions/Capacity Model/Summary/', covar_version, sep = '')))
   dir.create(file.path(paste('../Tables/Regressions/Capacity Model/Summary/direct_and_total_effects/', covar_version, sep = '')))
   dir.create(file.path(paste('../Data/Regressions/Capacity Model/', covar_version, sep = '')))
@@ -167,7 +166,7 @@ run_regressions <- function(covar_version_input, rolling_3_month_input, exclude_
     
     
     output_file_path <- paste("../Tables/Regressions/Capacity Model/",folder, file_type, ".htm", sep = "")
-    output_file_path_latex <- paste("../Tables/Regressions/Capacity Model/Latex/", folder, file_type, ".tex", sep = "")
+    output_file_path_latex <- paste("../Tables/Regressions/Capacity Model/", folder, file_type, ".tex", sep = "")
     output_data_path <- paste('../Data/Regressions/Capacity Model/',folder, file_type, '_regression_set.csv', sep="")
     decorrelated_output_data_path <- paste('../Data/Regressions/Capacity Model/',folder, file_type, '_residuals.csv', sep="")
     
@@ -175,7 +174,7 @@ run_regressions <- function(covar_version_input, rolling_3_month_input, exclude_
     if (regressions[1] == TRUE) {
       print(paste('running regressions w/ data for: ', regressions_string[i], 'monthtly aggregate'))
       ## monthly observation regression
-      df_phase_1 <- read_csv('../Data/Regressions/pre_model_data/ng_panel_totalquantity_12mo_lag.csv')
+      df_phase_1 <- read_csv('../Data/Regressions/Capacity Model/pre_model_data/ng_panel_totalquantity_12mo_lag.csv')
 
       df_phase_1 <- df_phase_1 %>%
         mutate(log_pool_n_plant_gen_id_Renewables = 0,
@@ -201,7 +200,7 @@ run_regressions <- function(covar_version_input, rolling_3_month_input, exclude_
     if (regressions[2] == TRUE) {
       print(paste('running regressions w/ data for: ', regressions_string[i], 'monthtly aggregate'))
       ## monthly observation regression
-      df_phase_1 <- read_csv('../Data/Regressions/pre_model_data/renewable_panel_totalquantity_12mo_lag.csv')
+      df_phase_1 <- read_csv('../Data/Regressions/Capacity Model/pre_model_data/renewable_panel_totalquantity_12mo_lag.csv')
 
       df_phase_1 <- df_phase_1 %>%
         mutate(log_pool_n_plant_gen_id_Renewables = 0,
@@ -535,265 +534,6 @@ run_regressions <- function(covar_version_input, rolling_3_month_input, exclude_
     print(paste('number of models created: ', length(models), sep = ''))
     
     if (variable_lags_test == FALSE){ ### print final output for models if not running variable lags test
-      if (covar_version == 'year_fixed_effects') { ### non-polynomial year-fe covariate model starts here.
-        print('printing annual fe covariates table')
-        if (run_polynomial_weather) { ## polynomial full covariate model starts here.
-          stargazer(models[[1]],
-                    models[[2]],
-                    models[[3]],
-                    models[[4]],
-                    models[[5]],
-                    models[[6]],
-                    models[[7]],
-                    models[[8]],
-                    models[[9]],
-                    models[[10]],
-                    models[[11]],
-                    models[[12]],
-                    models[[13]],
-                    models[[14]],
-                    models[[15]],
-                    models[[16]],
-                    models[[17]],
-                    models[[18]],
-                    models[[19]],
-                    models[[20]],
-                    models[[21]],
-                    models[[22]],
-                    models[[23]],
-                    models[[24]],
-                    models[[25]],
-                    title=paste("Decorrelated", toupper(file_type), ' Regression', sep = ' '), align=TRUE,
-                    omit.stat=c("LL","ser","f"), no.space=TRUE, header = F, report = 'vc*', float.env = 'sidewaystable', font.size = 'footnotesize' , type = 'html', out = output_file_path,
-                    star.cutoffs = c(0.05, 0.01, 0.001), column.sep.width = "1pt"#, covariate.labels = final_covariate_names_poly_weather
-                    )
-        } ## end poly-weather year FE model print
-        else {
-          stargazer(models[[1]],
-                    models[[2]],
-                    models[[3]],
-                    models[[4]],
-                    models[[5]],
-                    models[[6]],
-                    models[[7]],
-                    models[[8]],
-                    models[[9]],
-                    models[[10]],
-                    models[[11]],
-                    models[[12]],
-                    models[[13]],
-                    models[[14]],
-                    models[[15]],
-                    models[[16]],
-                    models[[17]],
-                    models[[18]],
-                    models[[19]],
-                    models[[20]],
-                    models[[21]],
-                    models[[22]],
-                    models[[23]],
-                    models[[24]],
-                    title=paste("Decorrelated", toupper(file_type), ' Regression', sep = ' '), align=TRUE,
-                    omit.stat=c("LL","ser","f"), no.space=TRUE, header = F, report = 'vc*', float.env = 'sidewaystable', font.size = 'footnotesize' , type = 'html', out = output_file_path,
-                    star.cutoffs = c(0.05, 0.01, 0.001), column.sep.width = "1pt"#, covariate.labels = final_covariate_names
-                    )
-        } ## end FE print statements
-      } else if (covar_version == 'renewable_breakout') {
-        print('printing renewable breakout covariates table')
-        stargazer(models[[1]],
-                  models[[2]],
-                  models[[3]],
-                  models[[4]],
-                  models[[5]],
-                  models[[6]],
-                  models[[7]],
-                  models[[8]],
-                  models[[9]],
-                  models[[10]],
-                  models[[11]],
-                  models[[12]],
-                  models[[13]],
-                  models[[14]],
-                  models[[15]],
-                  models[[16]],
-                  models[[17]],
-                  models[[18]],
-                  models[[19]],
-                  models[[20]],
-                  # models[[23]],
-                  # models[[23]],
-                  title=paste("Decorrelated", toupper(file_type), ' Regression', sep = ' '), align=TRUE,
-                  omit.stat=c("LL","ser","f"), no.space=TRUE, header = F, report = 'vc*', float.env = 'sidewaystable', font.size = 'footnotesize' , type = 'html', out = output_file_path,
-                  star.cutoffs = c(0.05, 0.01, 0.001), column.sep.width = "1pt")
-      } else if (covar_version == 'full_controls') {
-        print('printing fe and breakout covariates table')
-        if (run_polynomial_weather) { ## polynomial full covariate model starts here.
-          stargazer(models[[1]],
-                    models[[2]],
-                    models[[3]],
-                    models[[4]],
-                    models[[5]],
-                    models[[6]],
-                    models[[7]],
-                    models[[8]],
-                    models[[9]],
-                    models[[10]],
-                    models[[11]],
-                    models[[12]],
-                    models[[13]],
-                    models[[14]],
-                    models[[15]],
-                    models[[16]],
-                    models[[17]],
-                    models[[18]],
-                    models[[19]],
-                    models[[20]],
-                    models[[21]],
-                    models[[22]],
-                    models[[23]],
-                    models[[24]],
-                    models[[25]],
-                    models[[26]],
-                    models[[27]],
-                    models[[28]],
-                    models[[29]],
-                    models[[30]],
-                    models[[31]],
-                    models[[32]],
-                    models[[33]],
-                    models[[34]],
-                    models[[35]],
-                    models[[36]],
-                    title=paste("Decorrelated", toupper(file_type), ' Regression', sep = ' '), align=TRUE,
-                    omit.stat=c("LL","ser","f"), no.space=TRUE, header = F, report = 'vc*', float.env = 'sidewaystable', font.size = 'footnotesize' , type = 'html', out = output_file_path,
-                    star.cutoffs = c(0.05, 0.01, 0.001), column.sep.width = "1pt"#, covariate.labels = final_covariate_names_poly_weather
-          )
-        } else { ## non-polynomial full covariate model starts here.
-          stargazer(models[[1]],
-                    models[[2]],
-                    models[[3]],
-                    models[[4]],
-                    models[[5]],
-                    models[[6]],
-                    models[[7]],
-                    models[[8]],
-                    models[[9]],
-                    models[[10]],
-                    models[[11]],
-                    models[[12]],
-                    models[[13]],
-                    models[[14]],
-                    models[[15]],
-                    models[[16]],
-                    models[[17]],
-                    models[[18]],
-                    models[[19]],
-                    models[[20]],
-                    models[[21]],
-                    models[[22]],
-                    models[[23]],
-                    models[[24]],
-                    models[[25]],
-                    models[[26]],
-                    models[[27]],
-                    models[[28]],
-                    models[[29]],
-                    models[[30]],
-                    models[[31]],
-                    models[[32]],
-                    models[[33]],
-                    models[[34]],
-                    models[[35]],
-                    title=paste("Decorrelated", toupper(file_type), ' Regression', sep = ' '), align=TRUE,
-                    omit.stat=c("LL","ser","f"), no.space=TRUE, header = F, report = 'vc*', float.env = 'sidewaystable', font.size = 'footnotesize' , type = 'html', out = output_file_path,
-                    star.cutoffs = c(0.05, 0.01, 0.001), column.sep.width = "1pt"#, covariate.labels = final_covariate_names
-          )
-        }
-      } else { ##  default covariate model starts here.
-        if (run_polynomial_weather) { ## polynomial version
-          print('printing base covariates table - polynomial')
-          stargazer(models[[1]],
-                    models[[2]],
-                    models[[3]],
-                    models[[4]],
-                    models[[5]],
-                    models[[6]],
-                    models[[7]],
-                    models[[8]],
-                    models[[9]],
-                    models[[10]],
-                    models[[11]],
-                    models[[12]],
-                    models[[13]],
-                    models[[14]],
-                    models[[15]],
-                    models[[16]],
-                    models[[17]],
-                    models[[18]],
-                    models[[19]],
-                    models[[20]],
-                    models[[21]],
-                    models[[22]],
-                    models[[23]],
-                    title=paste("Decorrelated", toupper(file_type), ' Regression', sep = ' '), align=TRUE,
-                    omit.stat=c("LL","ser","f"), no.space=TRUE, header = F, report = 'vc*', float.env = 'sidewaystable', font.size = 'footnotesize' , type = 'html', out = output_file_path,
-                    star.cutoffs = c(0.05, 0.01, 0.001), column.sep.width = "1pt"
-                    # covariate.labels = final_covariate_names_poly_weather
-                    )
-        }
-        else {
-          print('printing base covariates table')
-          stargazer(models[[1]],
-                    models[[2]],
-                    models[[3]],
-                    models[[4]],
-                    models[[5]],
-                    models[[6]],
-                    models[[7]],
-                    models[[8]],
-                    models[[9]],
-                    models[[10]],
-                    models[[11]],
-                    models[[12]],
-                    models[[13]],
-                    models[[14]],
-                    models[[15]],
-                    models[[16]],
-                    models[[17]],
-                    models[[18]],
-                    models[[19]],
-                    models[[20]],
-                    models[[21]],
-                    models[[22]],
-                    models[[23]],
-                    title=paste("Decorrelated", toupper(file_type), ' Regression', sep = ' '), align=TRUE,
-                    omit.stat=c("LL","ser","f"), no.space=TRUE, header = F, report = 'vc*', float.env = 'sidewaystable', font.size = 'footnotesize' , type = 'html', out = output_file_path,
-                    star.cutoffs = c(0.05, 0.01, 0.001), column.sep.width = "1pt"#, covariate.labels = final_covariate_names
-                    )
-        }
-      }
-      
-      stargazer(models[[length(models)-1]],
-                models[[length(models)]],
-                title=paste("Decorrelated", toupper(file_type), ' Regression', sep = ' '), align=TRUE,
-                omit.stat=c("LL","ser","f"), no.space=TRUE, header = F, report = 'vc*', float.env = 'sidewaystable', font.size = 'footnotesize' , type = 'latex', out = output_file_path_latex,
-                star.cutoffs = c(0.05, 0.01, 0.001), column.sep.width = "1pt",
-                covariate.labels = final_covariate_names)
-      
-      df_covars_of_interest[nrow(df_covars_of_interest) + 1,] = list(paste(file_type, str_sub(folder,1,-2), sep='_'),
-                                                                     summary(models[[length(models)-1]])$coefficients[c('mean_total_pa'),1],
-                                                                     summary(models[[length(models)-1]])$coefficients[c('mean_total_pa'),4],
-                                                                     summary(models[[length(models)-1]])$coefficients[c('mean_delta_pnm'),1],
-                                                                     summary(models[[length(models)-1]])$coefficients[c('mean_delta_pnm'),4],
-                                                                     summary(models[[length(models)-1]])$r.squared,
-                                                                     summary(models[[length(models)-1]])$adj.r.squared,
-                                                                     nobs(models[[length(models)-1]]))
-      
-      
-      
-      
-      
-      
       #save rls and ols models of ng and renewable 12mo lag 3mo roll
       print('preparing to save direct and total effects models')
       if(((grepl('ng_monthly_totalquantity_12mo_lag_3mo_roll', output_file_path) & !(grepl('no_uri', output_file_path)) & !(grepl('poly_weather', output_file_path)))) | ((grepl('renewable_monthly_totalquantity_12mo_lag_3mo_roll', output_file_path) & !(grepl('no_uri', output_file_path)) & !(grepl('poly_weather', output_file_path))))) {
@@ -834,8 +574,8 @@ run_regressions <- function(covar_version_input, rolling_3_month_input, exclude_
         
         print(paste(length(select_total_model_comparisons), 'selected models now saved', sep = ' '))
         if (length(select_total_model_comparisons) == 4) {
-          comparison_file_tex = paste('../Tables/Regressions/Capacity Model/Summary/direct_and_total_effects/',covar_version,'/ng_renew_total_quantity_comparison.tex', sep = '')
-          comparison_file_html = paste('../Tables/Regressions/Capacity Model/Summary/direct_and_total_effects/',covar_version,'/ng_renew_total_quantity_comparison.html', sep = '')
+          comparison_file_tex = paste('../Tables/Regressions/Capacity Model/Summary/',covar_version,'/ng_renew_total_quantity_comparison.tex', sep = '')
+          comparison_file_html = paste('../Tables/Regressions/Capacity Model/Summary/',covar_version,'/ng_renew_total_quantity_comparison.html', sep = '')
           
           
           stargazer(select_total_model_comparisons[[2]], #OLS NG
@@ -872,8 +612,8 @@ run_regressions <- function(covar_version_input, rolling_3_month_input, exclude_
         print(paste(length(select_struct_model_comparisons), 'selected models now saved', sep = ' '))
         if (length(select_struct_model_comparisons) == 4) {
           
-          comparison_file_tex = paste('../Tables/Regressions/Capacity Model/Summary/direct_and_total_effects/',covar_version,'/ng_renew_struct_quantity_comparison.tex', sep = '')
-          comparison_file_html = paste('../Tables/Regressions/Capacity Model/Summary/direct_and_total_effects/',covar_version,'/ng_renew_struct_quantity_comparison.html', sep = '')
+          comparison_file_tex = paste('../Tables/Regressions/Capacity Model/Summary/',covar_version,'/ng_renew_struct_quantity_comparison.tex', sep = '')
+          comparison_file_html = paste('../Tables/Regressions/Capacity Model/Summary/',covar_version,'/ng_renew_struct_quantity_comparison.html', sep = '')
           
           stargazer(select_struct_model_comparisons[[1]],
                     select_struct_model_comparisons[[2]],
@@ -945,8 +685,8 @@ run_regressions <- function(covar_version_input, rolling_3_month_input, exclude_
         
         print(paste(length(select_poly_total_model_comparisons), 'selected models now saved', sep = ' '))
         if (length(select_poly_total_model_comparisons) == 4) {
-          comparison_file_tex = paste('../Tables/Regressions/Capacity Model/Summary/direct_and_total_effects/',covar_version,'/poly_ng_renew_total_quantity_comparison.tex', sep = '')
-          comparison_file_html = paste('../Tables/Regressions/Capacity Model/Summary/direct_and_total_effects/',covar_version,'/poly_ng_renew_total_quantity_comparison.tex', sep = '')
+          comparison_file_tex = paste('../Tables/Regressions/Capacity Model/Summary/',covar_version,'/poly_ng_renew_total_quantity_comparison.tex', sep = '')
+          comparison_file_html = paste('../Tables/Regressions/Capacity Model/Summary/',covar_version,'/poly_ng_renew_applicant_pool_comparison.tex', sep = '')
           
           stargazer(select_poly_total_model_comparisons[[2]],
                     select_poly_total_model_comparisons[[1]],
@@ -981,8 +721,8 @@ run_regressions <- function(covar_version_input, rolling_3_month_input, exclude_
         
         print(paste(length(select_poly_struct_model_comparisons), 'selected models now saved', sep = ' '))
         if (length(select_poly_struct_model_comparisons) == 4) {
-          comparison_file_tex = paste('../Tables/Regressions/Capacity Model/Summary/direct_and_total_effects/',covar_version,'/poly_ng_renew_total_quantity_comparison.tex', sep = '')
-          comparison_file_html = paste('../Tables/Regressions/Capacity Model/Summary/direct_and_total_effects/',covar_version,'/poly_ng_renew_total_quantity_comparison.tex', sep = '')
+          comparison_file_tex = paste('../Tables/Regressions/Capacity Model/Summary/',covar_version,'/poly_ng_renew_total_quantity_comparison.tex', sep = '')
+          comparison_file_html = paste('../Tables/Regressions/Capacity Model/Summary/',covar_version,'/poly_ng_renew_applicant_pool_comparison.tex', sep = '')
           
           stargazer(select_poly_struct_model_comparisons[[1]],
                     select_poly_struct_model_comparisons[[2]],
@@ -1492,7 +1232,7 @@ run_rls_treatment_model <- function(run_polynomial_weather=TRUE){
 run_rls_timeseries_underbidding_model <- function(run_polynomial_weather=TRUE){
   
   covar_version = 'base_covars'
-  df_timeseries_data <- read_csv( '../Data/Generation/underbidding_data_w_lags.csv')
+  df_timeseries_data <- read_csv( '../Data/ERCOT Compiled Data/underbidding_data_w_lags.csv')
   
   df_timeseries_data <- df_timeseries_data %>%
     dummy_cols(select_columns = c('year', 'month', 'day', 'hour', 'minute'))
@@ -1553,10 +1293,7 @@ run_rls_timeseries_underbidding_model <- function(run_polynomial_weather=TRUE){
                                   'Midpoint Temp. ', 'Midpoint Temp. Sq.',  'Wind speed km/hr', 'Natural Gas Price - $/MMBtu',
                                   'Supply Nat. Gas - GW', 'Supply Renewables - GW', 'Supply Other - GW',
                                   'Reserve Capacity - GW', 'Capacity Utilization - %',
-                                  'Incentive Active - Y/N','Incentive Payment - $/MW'#,
-                                  #'15min_lag', '30min_lag','45min_lag', '60min_lag', '75min_lag'
-                                  #'24hr_lag', '48hr_lag','72hr_lag','96hr_lag','120hr_lag'#,
-                                  # 'Constant'
+                                  'Incentive Active - Y/N','Incentive Payment - $/MW'
                                   )
     }
     print('Post Polynomial Weather Covars')
@@ -1778,15 +1515,11 @@ run_rls_timeseries_underbidding_model <- function(run_polynomial_weather=TRUE){
     # )
     # print('after full')
     
-    stargazer(models[[82]],
-              title=paste("RLS Active Treament", sep = ' '), align=TRUE,
-              omit.stat=c("LL","ser","f"), no.space=TRUE, header = F, report = 'vc*', float.env = 'sidewaystable', font.size = 'footnotesize' , type = 'html', out = '../Images/Regressions/matching/rls_ts_poly_weather.html',
-              star.cutoffs = c(0.05, 0.01, 0.001), column.sep.width = "1pt",covariate.labels = final_covariate_names,
-              digits = 2
-    )
+    
     stargazer(models[[83]],
+              models[[82]],
               title=paste("RLS Active Treament", sep = ' '), align=TRUE,
-              omit.stat=c("LL","ser","f"), no.space=TRUE, header = F, report = 'vc*', float.env = 'sidewaystable', font.size = 'footnotesize' , type = 'html', out = '../Images/Regressions/matching/ols_ts_poly_weather.html',
+              omit.stat=c("LL","ser","f"), no.space=TRUE, header = F, report = 'vc*', float.env = 'sidewaystable', font.size = 'footnotesize' , type = 'latex', out = '../Tables/Regressions/underbidding/gsls_ols_ts_matching_poly_weather.tex',
               star.cutoffs = c(0.05, 0.01, 0.001), column.sep.width = "1pt",covariate.labels = final_covariate_names,
               digits = 2
     )
@@ -1794,15 +1527,7 @@ run_rls_timeseries_underbidding_model <- function(run_polynomial_weather=TRUE){
     stargazer(models[[83]],
               models[[82]],
               title=paste("RLS Active Treament", sep = ' '), align=TRUE,
-              omit.stat=c("LL","ser","f"), no.space=TRUE, header = F, report = 'vc*', float.env = 'sidewaystable', font.size = 'footnotesize' , type = 'latex', out = '../Images/Regressions/matching/rls_ols_ts_matching_poly_weather.tex',
-              star.cutoffs = c(0.05, 0.01, 0.001), column.sep.width = "1pt",covariate.labels = final_covariate_names,
-              digits = 2
-    )
-    
-    stargazer(models[[83]],
-              models[[82]],
-              title=paste("RLS Active Treament", sep = ' '), align=TRUE,
-              omit.stat=c("LL","ser","f"), no.space=TRUE, header = F, report = 'vc*', float.env = 'sidewaystable', font.size = 'footnotesize' , type = 'html', out = '../Images/Regressions/matching/rls_ols_compare_ts_poly_weather.html',
+              omit.stat=c("LL","ser","f"), no.space=TRUE, header = F, report = 'vc*', float.env = 'sidewaystable', font.size = 'footnotesize' , type = 'html', out = '../Tables/Regressions/underbidding/gsls_ols_compare_ts_poly_weather.html',
               star.cutoffs = c(0.05, 0.01, 0.001), column.sep.width = "1pt",covariate.labels = final_covariate_names,
               digits = 2
     )
@@ -1872,7 +1597,7 @@ run_rls_timeseries_underbidding_model <- function(run_polynomial_weather=TRUE){
               models[[61]],
               models[[62]],
               title=paste("RLS Active Treament", sep = ' '), align=TRUE,
-              omit.stat=c("LL","ser","f"), no.space=TRUE, header = F, report = 'vc*', float.env = 'sidewaystable', font.size = 'footnotesize' , type = 'html', out = '../Images/Regressions/matching/rls_matching.html',
+              omit.stat=c("LL","ser","f"), no.space=TRUE, header = F, report = 'vc*', float.env = 'sidewaystable', font.size = 'footnotesize' , type = 'html', out = '../Tables/Regressions/underbidding/underbidding_direct_and_total_effects.html',
               star.cutoffs = c(0.05, 0.01, 0.001), column.sep.width = "1pt", covariate.labels = final_covariate_names, digits = 2
     )
   } ### end no poly print statements

@@ -24,7 +24,7 @@ create_necessary_file_folders <- function(){
   dir.create(file.path('../Tables/Regressions'))
   dir.create(file.path('../Tables/Regressions/Capacity Model'))
   dir.create(file.path('../Tables/Regressions/Capacity Model/Summary'))
-  dir.create(file.path('../Tables/Regressions/Capacity Model/Latex/'))
+  dir.create(file.path('../Tables/Regressions/Capacity Model/Latex'))
   dir.create(file.path('../Tables/Regressions/underbidding'))
   dir.create(file.path('../Tables/Summary Stats'))
   
@@ -103,16 +103,17 @@ run_ercot_program <- function(RStataPath, RStataVersion){
   ###### Table 2 ##### (also process data to create autoregressive covariates)
   ###############################################################3
 
-  options("RStata.StataPath" = RStataPath)
-  options("RStata.StataVersion" = RStataVersion)
-  stata('../Stata/underbidding_data_summary.do')
+  # options("RStata.StataPath" = RStataPath)
+  # options("RStata.StataVersion" = RStataVersion)
+  # stata('../Stata/underbidding_data_summary.do')
 
 
   ################################### Results Section ############################
   ###############################################################################
-
-  ####### Tables 3 & 4 ###########################
-  ##########################################
+  
+  ####### Capacity Models #######################
+  ####### Tables 3 & 4 ########################### 
+  ###############################################
   # covar_versions <- c('full_controls')
   # # scenarios: rolling_3_month, exclude_winter_storm_uri, run_polynomial_weather
   # scenarios <- list(c(TRUE,FALSE, TRUE) # primary scenario; poly
@@ -120,17 +121,30 @@ run_ercot_program <- function(RStataPath, RStataVersion){
   # 
   # for(covar_version_input in covar_versions) {
   #   print(paste('starting models for covar version: ', covar_version_input, sep=''))
-  #   
+  # 
   #   for (i in seq_along(scenarios)) {
-  #     
+  # 
   #     rolling_3_month = scenarios[[i]][1]
   #     exclude_winter_storm_uri = scenarios[[i]][2]
   #     run_polynomial_weather = scenarios[[i]][3]
-  #     
+  # 
   #     run_regressions(covar_version_input, rolling_3_month,exclude_winter_storm_uri, run_polynomial_weather)
   #   }
   # }
+
+  ######### Underbidding Models ###################
+  ########## Table 5 #############################
+  ###############################################
+  # run_polynomial_weather=TRUE
+  # run_rls_timeseries_underbidding_model(run_polynomial_weather)
   # 
+  ########## Table 6 ##########################
+  ############################################
+  options("RStata.StataPath" = RStataPath)
+  options("RStata.StataVersion" = RStataVersion)
+  stata('../Stata/underbidding_matching.do')
+  
+  
 
 }
 
