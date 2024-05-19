@@ -1234,15 +1234,16 @@ run_rls_timeseries_underbidding_model <- function(run_polynomial_weather=TRUE){
   covar_version = 'base_covars'
   df_timeseries_data <- read_csv( '../Data/ERCOT Compiled Data/underbidding_data_w_lags.csv')
   
+  df_timeseries_data$date <- as.Date(paste(df_timeseries_data$year, df_timeseries_data$month, df_timeseries_data$day, sep = '-'), format="%Y-%m-%d")
+  df_timeseries_data$day_of_week <- as.POSIXlt(df_timeseries_data$date)$wday
   df_timeseries_data <- df_timeseries_data %>%
-    dummy_cols(select_columns = c('year', 'month', 'day', 'hour', 'minute'))
+    dummy_cols(select_columns = c('year', 'month', 'day_of_week', 'hour', 'minute'))
   
   
   
   covariates <- list(c('year_2022','year_2021','year_2020','year_2019','year_2018','year_2017', 'year_2016'),
                      c('month_12','month_11','month_10','month_9','month_8','month_7','month_6','month_5','month_4', 'month_3','month_2'),
-                     c('day_30','day_29', 'day_28','day_27', 'day_26','day_25', 'day_24','day_23', 'day_22','day_21', 'day_20', 'day_19','day_18', 'day_17', 'day_16','day_15', 'day_14', 'day_13','day_12', 'day_11', 'day_10',
-                       'day_9','day_8', 'day_7', 'day_6','day_5', 'day_4', 'day_3','day_2', 'day_1'),
+                     c('day_of_week_1', 'day_of_week_2','day_of_week_3','day_of_week_4','day_of_week_5','day_of_week_6'),
                      c('hour_23', 'hour_22','hour_21', 'hour_20', 'hour_19','hour_18', 'hour_17', 'hour_16','hour_15', 'hour_14', 'hour_13','hour_12', 'hour_11', 'hour_10',
                        'hour_9','hour_8', 'hour_7', 'hour_6','hour_5', 'hour_4', 'hour_3','hour_2', 'hour_1'),
                      c('minute_45', 'minute_30','minute_15'),
@@ -1266,8 +1267,7 @@ run_rls_timeseries_underbidding_model <- function(run_polynomial_weather=TRUE){
   # write_csv(df_phase_1[,unlist(covariates)],'../Images/Regressions/rls_for_robin/data/underbidding_dataset.csv')
   final_covariate_names  <- c('2022-year', '2021-year', '2020-year', '2019-year', '2018-year', '2017-year', '2016-year',
                               '12-month', '11-month', '10-month', '9-month', '8-month', '7-month', '6-month', '5-month', '4-month', '3-month', '2-month',
-                              '30-Day','29-Day', '28-Day','27-Day', '26-Day','25-Day', '24-Day','23-Day', '22-Day','21-Day', '20-Day', '19-Day','18-Day', '17-Day', '16-Day','15-Day', '14-Day', '13-Day','12-Day', '11-Day', '10-Day',
-                              '9-Day','8-Day', '7-Day', '6-Day','5-Day', '4-Day', '3-Day','2-Day', '1-Day',
+                              'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday',
                               '23-hour', '22-hour', '21-hour', '20-hour', '19-hour', '18-hour', '17-hour', '16-hour', '15-hour', '14-hour', '13-hour', '12-hour', '11-hour', '10-hour', '9-hour', '8-hour', '7-hour', '6-hour', '5-hour', '4-hour', '3-hour', '2-hour', '1-hour',
                               '45-minute', '30-minutes', '15-minute',
                               'Nat. Gas Capacity - GW', 'Renewable Capacity - GW', 'Other Capacity - GW',
@@ -1285,8 +1285,7 @@ run_rls_timeseries_underbidding_model <- function(run_polynomial_weather=TRUE){
       print(length(unlist(covariates)))
       final_covariate_names  <- c('2022-year', '2021-year', '2020-year', '2019-year', '2018-year', '2017-year', '2016-year',
                                   '12-month', '11-month', '10-month', '9-month', '8-month', '7-month', '6-month', '5-month', '4-month', '3-month', '2-month',
-                                  '30-Day','29-Day', '28-Day','27-Day', '26-Day','25-Day', '24-Day','23-Day', '22-Day','21-Day', '20-Day', '19-Day','18-Day', '17-Day', '16-Day','15-Day', '14-Day', '13-Day','12-Day', '11-Day', '10-Day',
-                                  '9-Day','8-Day', '7-Day', '6-Day','5-Day', '4-Day', '3-Day','2-Day', '1-Day',
+                                  'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday',
                                   '23-hour', '22-hour', '21-hour', '20-hour', '19-hour', '18-hour', '17-hour', '16-hour', '15-hour', '14-hour', '13-hour', '12-hour', '11-hour', '10-hour', '9-hour', '8-hour', '7-hour', '6-hour', '5-hour', '4-hour', '3-hour', '2-hour', '1-hour',
                                   '45-minute', '30-minutes', '15-minute',
                                   'Nat. Gas Capacity - GW', 'Renewable Capacity - GW', 'Other Capacity - GW',
@@ -1516,16 +1515,16 @@ run_rls_timeseries_underbidding_model <- function(run_polynomial_weather=TRUE){
     # print('after full')
     
     
-    stargazer(models[[83]],
-              models[[82]],
+    stargazer(models[[length(models)]],
+              models[[length(models)-1]],
               title=paste("RLS Active Treament", sep = ' '), align=TRUE,
               omit.stat=c("LL","ser","f"), no.space=TRUE, header = F, report = 'vc*', float.env = 'sidewaystable', font.size = 'footnotesize' , type = 'latex', out = '../Tables/Regressions/underbidding/gsls_ols_ts_matching_poly_weather.tex',
               star.cutoffs = c(0.05, 0.01, 0.001), column.sep.width = "1pt",covariate.labels = final_covariate_names,
               digits = 2
     )
     
-    stargazer(models[[83]],
-              models[[82]],
+    stargazer(models[[length(models)]],
+              models[[length(models)-1]],
               title=paste("RLS Active Treament", sep = ' '), align=TRUE,
               omit.stat=c("LL","ser","f"), no.space=TRUE, header = F, report = 'vc*', float.env = 'sidewaystable', font.size = 'footnotesize' , type = 'html', out = '../Tables/Regressions/underbidding/gsls_ols_compare_ts_poly_weather.html',
               star.cutoffs = c(0.05, 0.01, 0.001), column.sep.width = "1pt",covariate.labels = final_covariate_names,

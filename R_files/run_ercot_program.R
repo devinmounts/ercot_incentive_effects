@@ -135,14 +135,14 @@ run_ercot_program <- function(RStataPath, RStataVersion){
   ######### Underbidding Models ###################
   ########## Table 5 #############################
   ###############################################
-  # run_polynomial_weather=TRUE
-  # run_rls_timeseries_underbidding_model(run_polynomial_weather)
-  # 
+  run_polynomial_weather=TRUE
+  run_rls_timeseries_underbidding_model(run_polynomial_weather)
+
   ########## Table 6 ##########################
   ############################################
-  options("RStata.StataPath" = RStataPath)
-  options("RStata.StataVersion" = RStataVersion)
-  stata('../Stata/underbidding_matching.do')
+  # options("RStata.StataPath" = RStataPath)
+  # options("RStata.StataVersion" = RStataVersion)
+  # stata('../Stata/underbidding_matching.do')
   
   
 
