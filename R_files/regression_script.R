@@ -166,6 +166,7 @@ run_regressions <- function(covar_version_input, rolling_3_month_input, exclude_
     
     
     output_file_path <- paste("../Tables/Regressions/Capacity Model/",folder, file_type, ".htm", sep = "")
+    output_summary_stats_path <- paste("../Tables/Summary Stats/", file_type, "_summary.tex", sep = "")
     output_file_path_latex <- paste("../Tables/Regressions/Capacity Model/", folder, file_type, ".tex", sep = "")
     output_data_path <- paste('../Data/Regressions/Capacity Model/',folder, file_type, '_regression_set.csv', sep="")
     decorrelated_output_data_path <- paste('../Data/Regressions/Capacity Model/',folder, file_type, '_residuals.csv', sep="")
@@ -378,6 +379,16 @@ run_regressions <- function(covar_version_input, rolling_3_month_input, exclude_
     print(nrow(df_phase_1))
     print(min(df_phase_1$date))
     df_to_regress <- df_phase_1
+    
+    ### create summary statistics ####
+    if (lag_months == 12 & run_polynomial_weather==TRUE){
+      stargazer(as.data.frame(df_test[,unlist(covariates)]),
+                out=output_summary_stats_path,
+                covariate.labels = unlist(c(final_covariate_names_poly_weather[1:(length(final_covariate_names_poly_weather)-2)], 'Capacity - MW')),
+                digits = 2
+                )
+    }
+    
    
   
     print(setdiff(unlist(covariates), names(df_phase_1))) 

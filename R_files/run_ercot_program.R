@@ -114,29 +114,30 @@ run_ercot_program <- function(RStataPath, RStataVersion){
   ####### Capacity Models #######################
   ####### Tables 3 & 4 ########################### 
   ###############################################
-  # covar_versions <- c('full_controls')
-  # # scenarios: rolling_3_month, exclude_winter_storm_uri, run_polynomial_weather
-  # scenarios <- list(c(TRUE,FALSE, TRUE) # primary scenario; poly
-  #               )
-  # 
-  # for(covar_version_input in covar_versions) {
-  #   print(paste('starting models for covar version: ', covar_version_input, sep=''))
-  # 
-  #   for (i in seq_along(scenarios)) {
-  # 
-  #     rolling_3_month = scenarios[[i]][1]
-  #     exclude_winter_storm_uri = scenarios[[i]][2]
-  #     run_polynomial_weather = scenarios[[i]][3]
-  # 
-  #     run_regressions(covar_version_input, rolling_3_month,exclude_winter_storm_uri, run_polynomial_weather)
-  #   }
-  # }
+  ######## also creates summary stats for capacity model for appendix #######
+  covar_versions <- c('full_controls')
+  # scenarios: rolling_3_month, exclude_winter_storm_uri, run_polynomial_weather
+  scenarios <- list(c(TRUE,FALSE, TRUE) # primary scenario; poly
+                )
+
+  for(covar_version_input in covar_versions) {
+    print(paste('starting models for covar version: ', covar_version_input, sep=''))
+
+    for (i in seq_along(scenarios)) {
+
+      rolling_3_month = scenarios[[i]][1]
+      exclude_winter_storm_uri = scenarios[[i]][2]
+      run_polynomial_weather = scenarios[[i]][3]
+
+      run_regressions(covar_version_input, rolling_3_month,exclude_winter_storm_uri, run_polynomial_weather)
+    }
+  }
 
   ######### Underbidding Models ###################
   ########## Table 5 #############################
   ###############################################
-  run_polynomial_weather=TRUE
-  run_rls_timeseries_underbidding_model(run_polynomial_weather)
+  # run_polynomial_weather=TRUE
+  # run_rls_timeseries_underbidding_model(run_polynomial_weather)
 
   ########## Table 6 ##########################
   ############################################
