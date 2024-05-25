@@ -20,6 +20,7 @@ create_necessary_file_folders <- function(){
   dir.create(file.path('../Data/Regressions'))
   dir.create(file.path('../Data/Regressions/Capacity Model'))
   dir.create(file.path('../Data/Regressions/Capacity Model/pre_model_data'))
+  dir.create(file.path('../Data/Regressions/Capacity Model/robustness'))
   dir.create(file.path('../Data/Weather'))
   
   dir.create(file.path('../Tables'))
@@ -114,9 +115,9 @@ run_ercot_program <- function(RStataPath, RStataVersion){
   ###### Table 2 ##### (also process data to create autoregressive covariates and create summary stats table for appendix)
   ###############################################################
 
-  # options("RStata.StataPath" = RStataPath)
-  # options("RStata.StataVersion" = RStataVersion)
-  # stata('../Stata/underbidding_data_summary.do')
+  options("RStata.StataPath" = RStataPath)
+  options("RStata.StataVersion" = RStataVersion)
+  stata('../Stata/underbidding_data_summary.do')
 
 
   ################################### Results Section ############################
@@ -173,26 +174,41 @@ run_ercot_program <- function(RStataPath, RStataVersion){
   ##################### Main Body Select Stats ##########################
   #######################################################################
   #######################################################################
-  print_n_generators_in_sample()
-  
-  #### How many generators that enter the market show up in the applicant pool, and in how many phases of the applicant pool? ####
-  calculate_stats_on_presencence_in_applicant_pool()
-  
-  #### How long does it take for a generator to move through the applicant pool and in to operation? ####
-  time_to_operation()
-  
-  #### How much capacity that entered into the applicant pool was cancelled and never made it to operation? ####
-  calculate_cancelled_capacity()
-  
-  #### If a plant goes into standby (ie. Not in operation by expected to return...), how often does it actually return? ####
-  create_stats_on_standby_movement()
-  
+  # print_n_generators_in_sample()
+  # 
+  # #### How many generators that enter the market show up in the applicant pool, and in how many phases of the applicant pool? ####
+  # calculate_stats_on_presencence_in_applicant_pool()
+  # 
+  # #### How long does it take for a generator to move through the applicant pool and in to operation? ####
+  # time_to_operation()
+  # 
+  # #### How much capacity that entered into the applicant pool was cancelled and never made it to operation? ####
+  # calculate_cancelled_capacity()
+  # 
+  # #### If a plant goes into standby (ie. Not in operation by expected to return...), how often does it actually return? ####
+  # create_stats_on_standby_movement()
+  # 
   
   #######################################################################
   #######################################################################
-  ##################### Appendix Tables #################################
+  ################ Appendix Figures and Tables ##########################
   #######################################################################
   #######################################################################
+  
+  ### Summary Statistics for capacity model result from functions in main body section
+  
+  ### Profits of Major Firms and significance of scarcity adders
+  # plot_profit_margin_select_firms()
+  
+  ### Full capacity model and applicant pool results tables produced in main body section
+  
+  #######################################################################################
+  ################### Underbidding Autoregressive Robustness ############################
+  ######################################################################################
+  # run_polynomial_weather=TRUE
+  # run_rls_ar1_timeseries_underbidding_model(run_polynomial_weather)
+  # run_rls_ar10_timeseries_underbidding_model(run_polynomial_weather)
+  
   
   
   #######################################################################
@@ -201,7 +217,6 @@ run_ercot_program <- function(RStataPath, RStataVersion){
   #######################################################################
   #######################################################################
   
-  ### Profits of Major Firms and significance of scarcity adders
-  # plot_profit_margin_select_firms()
+  
 }
 

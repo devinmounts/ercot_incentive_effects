@@ -882,364 +882,6 @@ run_variable_lags_test <- function(){
 }
 
 
-run_rls_treatment_model <- function(run_polynomial_weather=TRUE){
-  
-  covar_version = 'base_covars'
-  active_low_threshold = 50
-  df_matching_data <- read_csv( '../Data/ERCOT Compiled Data/ercot_scarcity_pricing_matching_set.csv')
-  
-  df_matching_data <- df_matching_data %>%
-    dummy_cols(select_columns = c('year', 'month', 'hour', 'minute')) %>%
-    mutate(active = ifelse(total_pa >0, 1, 0),
-           rttotcap_gw = rttotcap/1000,
-           int_tot_gen_gas_gw = int_tot_gen_gas/1000,
-           int_tot_gen_renewable_gw = int_tot_gen_renewable/1000,
-           int_tot_gen_other_gw = int_tot_gen_other/1000,
-           ng_gw = NG/1000,
-           renewables_gw = Renewables/1000,
-           other_gw = Other/1000
-           )
-  
-  
-  
-  df_matching_data <- df_matching_data %>% drop_na(rtordpa,hb_hubavg_energy_only,hb_busavg_energy_only,NG,Renewables,Other)
-  
-  
-  covariates <- list(c('year_2022','year_2021','year_2020','year_2019','year_2018','year_2017', 'year_2016'),
-                     c('month_12','month_11','month_10','month_9','month_8','month_7','month_6','month_5','month_4', 'month_3','month_2'),
-                     c('hour_23', 'hour_22','hour_21', 'hour_20', 'hour_19','hour_18', 'hour_17', 'hour_16','hour_15', 'hour_14', 'hour_13','hour_12', 'hour_11', 'hour_10',
-                       'hour_9','hour_8', 'hour_7', 'hour_6','hour_5', 'hour_4', 'hour_3','hour_2', 'hour_1'),
-                     c('minute_45', 'minute_30','minute_15'),
-                     c('ng_gw', 'renewables_gw', 'other_gw'),
-                     c('temp_midpoint'),c('weather_wnds'),
-                     c('ng_price'), c('int_tot_gen_gas_gw', 'int_tot_gen_renewable_gw','int_tot_gen_other_gw'),
-                     c('rttotcap_gw'),
-                     c('scarcity_measure'),
-                     c('total_pa'),
-                     c('active'),
-                     c('hb_busavg_energy_only')
-  )
-  
-  df_phase_1 <- df_matching_data %>%
-    filter_at(vars(unlist(covariates)),all_vars(!is.na(.)))
-  
-  df_phase_1 <- df_phase_1 %>%
-    mutate(temp_midpoint = temp_midpoint - mean(df_phase_1$temp_midpoint),
-           temp_midpoint_sq = temp_midpoint**2)
-  
-  # write_csv(df_phase_1[,unlist(covariates)],'../Images/Regressions/rls_for_robin/data/underbidding_dataset.csv')
-  final_covariate_names  <- c('2022-year', '2021-year', '2020-year', '2019-year', '2018-year', '2017-year', '2016-year',
-                              '12-month', '11-month', '10-month', '9-month', '8-month', '7-month', '6-month', '5-month', '4-month', '3-month', '2-month',
-                              '23-hour', '22-hour', '21-hour', '20-hour', '19-hour', '18-hour', '17-hour', '16-hour', '15-hour', '14-hour', '13-hour', '12-hour', '11-hour', '10-hour', '9-hour', '8-hour', '7-hour', '6-hour', '5-hour', '4-hour', '3-hour', '2-hour', '1-hour',
-                              '45-minute', '30-minutes', '15-minute',
-                              'Nat. Gas Capacity - GW', 'Renewable Capacity - GW', 'Other Capacity - GW',
-                              'Midpoint Temp. ', 'Wind speed km/hr', 'Natural Gas Price - $/MMBtu',
-                              'Supply Nat. Gas - GW', 'Supply Renewables - GW', 'Supply Other - GW',
-                              'Reserve Capacity - GW', 'Capacity Utilization - %',
-                              'Incentive Payment - $/MW', 'Incentive Active - Y/N',
-                              'Constant')
-
-  #change weather covariate to polynomial form, dependent on the covariate version.
-  if (run_polynomial_weather) {
-    print('this is a polynomial weather model')
-    if (covar_version == 'base_covars'){
-      covariates[[6]] <- c('temp_midpoint', 'temp_midpoint_sq')
-      print(covariates[[1]])
-      final_covariate_names  <- c('2022-year', '2021-year', '2020-year', '2019-year', '2018-year', '2017-year', '2016-year',
-                                  '12-month', '11-month', '10-month', '9-month', '8-month', '7-month', '6-month', '5-month', '4-month', '3-month', '2-month',
-                                  '23-hour', '22-hour', '21-hour', '20-hour', '19-hour', '18-hour', '17-hour', '16-hour', '15-hour', '14-hour', '13-hour', '12-hour', '11-hour', '10-hour', '9-hour', '8-hour', '7-hour', '6-hour', '5-hour', '4-hour', '3-hour', '2-hour', '1-hour',
-                                  '45-minute', '30-minutes', '15-minute',
-                                  'Nat. Gas Capacity - GW', 'Renewable Capacity - GW', 'Other Capacity - GW',
-                                  'Midpoint Temp. ', 'Midpoint Temp. Sq.',  'Wind speed km/hr', 'Natural Gas Price - $/MMBtu',
-                                  'Supply Nat. Gas - GW', 'Supply Renewables - GW', 'Supply Other - GW',
-                                  'Reserve Capacity - GW', 'Capacity Utilization - %',
-                                  'Incentive Payment - $/MW',  'Incentive Active - Y/N',
-                                 'Constant')
-    }
-    print('Post Polynomial Weather Covars')
-    print(covariates)
-    
-  }
-  
-  df_to_regress <- df_phase_1
-  
-
-  models <- list()
-  saved_covariates <- NULL
-  select_covariates <- NULL
-  
-  print('List Structural Covariates')
-  print(covariates)
-  
-  for (i in seq_along(covariates)) {
-    print(paste('starting loop ',i,sep = ' '))
-    is_simultaneous = FALSE
-    if (length(covariates[[i]])>1) {
-      print(paste('this covaritate is simultaneous', covariates[[i]], sep=' '))
-      is_simultaneous = TRUE
-    } #end block to set simultaneous flag
-    
-    if (is_simultaneous) {
-      print('simultaneous block')
-      print(covariates[[i]])
-      
-      sim_covariates <- covariates[[i]]
-      #identify whether the select polynomial covariates are either the simultaneous
-      is_weather <- str_detect(sim_covariates, 'test')
-      if (TRUE %in% is_weather & run_polynomial_weather) {
-        polynomial_weather <- TRUE
-      }
-      else {
-        polynomial_weather <- FALSE
-      }
-      print(paste('polynomial weather: ', polynomial_weather, sep = " "))
-      for (j in sim_covariates) {
-        
-        dependent_var <- j
-        print(paste('dependent var:', dependent_var))
-        
-        if (is.null(saved_covariates)) {
-          print('saved covariates is null')
-          print(saved_covariates)
-          print('centering covariate around its mean')
-          mean_centered_vector <- df_to_regress[[dependent_var]]-mean(df_to_regress[[dependent_var]])
-          print('replacing covariate w mean centered')
-          df_to_regress[,dependent_var] <- mean_centered_vector
-        } # end null saved covariates block
-        else {
-          print('saved covariates')
-          print(saved_covariates)
-          f <- as.formula(paste(dependent_var,
-                                paste(saved_covariates, collapse = ' + '),
-                                sep = '~')
-          )
-          print(f)
-          fit <- do.call("lm", list(formula = f, data = quote(df_to_regress)))
-          # print(summary(fit))
-          print(paste('replacing dependent var. with residuals of', dependent_var, sep = ' '))
-          residuals <- resid(fit)
-          df_to_regress[,dependent_var] <- residuals
-          models <- c(models, list(fit))
-          
-          if (polynomial_weather) {
-            break
-          }
-          
-        } # end else null saved covariates block
-      } # end simultaneous covariates loop
-      if (polynomial_weather) {
-        print('creating specified polynomial weather features')
-        df_to_regress$temp_midpoint_sq <- df_to_regress$temp_midpoint**2
-        
-        #creat same vars for ols data set as well
-        df_phase_1$temp_midpoint_sq <- df_phase_1$temp_midpoint**2
-        
-        write_csv(df_to_regress,'../Data/ploy_test_resid.csv')
-        write_csv(df_phase_1,'../Data/ploy_test_orig.csv')
-        
-        sim_covariates <- c('temp_midpoint', 'temp_midpoint_sq')
-        covariates[[i]] <- c('temp_midpoint', 'temp_midpoint_sq')
-      }
-      saved_covariates <- c(saved_covariates, sim_covariates)
-      print(paste('saved covariates:', saved_covariates, sep = " "))
-    } # end simultaneous covariate block
-    else{
-      print('non simultaneuous block')
-      print(covariates[[i]])
-      
-      dependent_var <- covariates[[i]]
-      
-      if (i == 1){
-        print(dependent_var)
-        print('centering first covariate around its mean')
-        mean_centered_vector <- df_to_regress[[dependent_var]]-mean(df_to_regress[[dependent_var]])
-        print('replacing first covariate w mean centered')
-        df_to_regress[,dependent_var] <- mean_centered_vector
-      } # end first covariate block (handles case where first covariate is not simultaneous)
-      
-      else if (i == length(covariates)) {
-        print('final covariate residuals captured, running final model with all previous covariate residuals')
-        print(paste('dependent var:', dependent_var))
-        select_covariates <- unlist(covariates[1:i-1])
-        print('select covariates:')
-        print(select_covariates)
-        f = as.formula(
-          paste(dependent_var,
-                paste(select_covariates, collapse = '+'),
-                sep = '~')
-        )
-        print(f)
-        fit <- do.call("lm", list(formula = f, data = quote(df_to_regress)))
-        print(summary(fit))
-        
-        print('fitting ols model of final formula with original data set')
-        fit2 <- do.call("lm", list(formula = f, data = quote(df_phase_1)))
-        print(summary(fit2))
-        
-        models <- c(models, list(fit), list(fit2))
-      }
-      else{
-        print(paste('dependent var:', dependent_var))
-        select_covariates <- unlist(covariates[1:i-1])
-        print('select covariates:')
-        print(select_covariates)
-        f = as.formula(
-          paste(dependent_var,
-                paste(select_covariates, collapse = '+'),
-                sep = '~')
-        )
-        print(f)
-        fit <- do.call("lm", list(formula = f, data = quote(df_to_regress)))
-        # print(summary(fit))
-        print(paste('replacing dependent var. with residuals of', dependent_var, sep = ' '))
-        residuals <- resid(fit)
-        df_to_regress[,dependent_var] <- residuals
-        models <- c(models, list(fit))
-        # saved_covariates <- c(select_covariates, dependent_var)
-      }
-      
-      print('assigning dependent variable to saved covariates')
-      saved_covariates <- c(select_covariates, dependent_var)
-    } # end of non simultaneous block
-    
-  } # end of covariate loop
-  
-  
-  print(paste('number of models created: ', length(models), sep = ''))
-  if (run_polynomial_weather == TRUE) {
-    stargazer(models[[1]],
-              models[[2]],
-              models[[3]],
-              models[[4]],
-              models[[5]],
-              models[[6]],
-              models[[7]],
-              models[[8]],
-              models[[9]],
-              models[[10]],
-              models[[11]],
-              models[[12]],
-              models[[13]],
-              models[[14]],
-              models[[15]],
-              models[[16]],
-              models[[17]],
-              models[[18]],
-              models[[19]],
-              models[[20]],
-              models[[21]],
-              models[[22]],
-              models[[23]],
-              models[[24]],
-              models[[25]],
-              models[[26]],
-              models[[27]],
-              models[[28]],
-              models[[29]],
-              models[[30]],
-              models[[31]],
-              models[[32]],
-              models[[33]],
-              models[[34]],
-              models[[35]],
-              models[[36]],
-              models[[37]],
-              models[[38]],
-              models[[39]],
-              models[[40]],
-              models[[41]],
-              models[[42]],
-              models[[43]],
-              models[[44]],
-              models[[45]],
-              models[[46]],
-              models[[47]],
-              models[[48]],
-              models[[49]],
-              models[[50]],
-              models[[51]],
-              models[[52]],
-              models[[53]],
-              title=paste("RLS Active Treament", sep = ' '), align=TRUE,
-              omit.stat=c("LL","ser","f"), no.space=TRUE, header = F, report = 'vc*', float.env = 'sidewaystable', font.size = 'footnotesize' , type = 'html', out = '../Images/Regressions/matching/rls_matching_poly_weather.html',
-              star.cutoffs = c(0.05, 0.01, 0.001), column.sep.width = "1pt", covariate.labels = final_covariate_names, digits = 2
-              )
-    
-    stargazer(models[[52]],
-              models[[53]],
-              title=paste("RLS Active Treament", sep = ' '), align=TRUE,
-              omit.stat=c("LL","ser","f"), no.space=TRUE, header = F, report = 'vc*', float.env = 'sidewaystable', font.size = 'footnotesize' , type = 'html', out = '../Images/Regressions/matching/rls__ols_compare_matching_poly_weather.html',
-              star.cutoffs = c(0.05, 0.01, 0.001), column.sep.width = "1pt",covariate.labels = final_covariate_names, digits = 2
-              )
-    stargazer(models[[52]],
-              models[[53]],
-              title=paste("RLS Active Treament", sep = ' '), align=TRUE,
-              omit.stat=c("LL","ser","f"), no.space=TRUE, header = F, report = 'vc*', float.env = 'sidewaystable', font.size = 'footnotesize' , type = 'latex', out = '../Images/Regressions/matching/rls__ols_compare_matching_poly_weather.tex',
-              star.cutoffs = c(0.05, 0.01, 0.001), column.sep.width = "1pt",covariate.labels = final_covariate_names, digits = 2
-    )
-  } ### end poly weather print statements
-  else {
-    stargazer(models[[1]],
-              models[[2]],
-              models[[3]],
-              models[[4]],
-              models[[5]],
-              models[[6]],
-              models[[7]],
-              models[[8]],
-              models[[9]],
-              models[[10]],
-              models[[11]],
-              models[[12]],
-              models[[13]],
-              models[[14]],
-              models[[15]],
-              models[[16]],
-              models[[17]],
-              models[[18]],
-              models[[19]],
-              models[[20]],
-              models[[21]],
-              models[[22]],
-              models[[23]],
-              models[[24]],
-              models[[25]],
-              models[[26]],
-              models[[27]],
-              models[[28]],
-              models[[29]],
-              models[[30]],
-              models[[31]],
-              models[[32]],
-              models[[33]],
-              models[[34]],
-              models[[35]],
-              models[[36]],
-              models[[37]],
-              models[[38]],
-              models[[39]],
-              models[[40]],
-              models[[41]],
-              models[[42]],
-              models[[43]],
-              models[[44]],
-              models[[45]],
-              models[[46]],
-              models[[47]],
-              models[[48]],
-              models[[49]],
-              models[[50]],
-              models[[51]],
-              models[[52]],
-              title=paste("RLS Active Treament", sep = ' '), align=TRUE,
-              omit.stat=c("LL","ser","f"), no.space=TRUE, header = F, report = 'vc*', float.env = 'sidewaystable', font.size = 'footnotesize' , type = 'html', out = '../Images/Regressions/matching/rls_matching.html',
-              star.cutoffs = c(0.05, 0.01, 0.001), column.sep.width = "1pt", covariate.labels = final_covariate_names, digits = 2
-              )
-  } ### end no poly print statements
- 
-  
-}## end RLS underbidding model
-
 run_rls_timeseries_underbidding_model <- function(run_polynomial_weather=TRUE){
   
   covar_version = 'base_covars'
@@ -1254,7 +896,6 @@ run_rls_timeseries_underbidding_model <- function(run_polynomial_weather=TRUE){
   
   covariates <- list(c('year_2022','year_2021','year_2020','year_2019','year_2018','year_2017', 'year_2016'),
                      c('month_12','month_11','month_10','month_9','month_8','month_7','month_6','month_5','month_4', 'month_3','month_2'),
-                     c('day_of_week_1', 'day_of_week_2','day_of_week_3','day_of_week_4','day_of_week_5','day_of_week_6'),
                      c('hour_23', 'hour_22','hour_21', 'hour_20', 'hour_19','hour_18', 'hour_17', 'hour_16','hour_15', 'hour_14', 'hour_13','hour_12', 'hour_11', 'hour_10',
                        'hour_9','hour_8', 'hour_7', 'hour_6','hour_5', 'hour_4', 'hour_3','hour_2', 'hour_1'),
                      c('minute_45', 'minute_30','minute_15'),
@@ -1278,7 +919,6 @@ run_rls_timeseries_underbidding_model <- function(run_polynomial_weather=TRUE){
   # write_csv(df_phase_1[,unlist(covariates)],'../Images/Regressions/rls_for_robin/data/underbidding_dataset.csv')
   final_covariate_names  <- c('2022-year', '2021-year', '2020-year', '2019-year', '2018-year', '2017-year', '2016-year',
                               '12-month', '11-month', '10-month', '9-month', '8-month', '7-month', '6-month', '5-month', '4-month', '3-month', '2-month',
-                              'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday',
                               '23-hour', '22-hour', '21-hour', '20-hour', '19-hour', '18-hour', '17-hour', '16-hour', '15-hour', '14-hour', '13-hour', '12-hour', '11-hour', '10-hour', '9-hour', '8-hour', '7-hour', '6-hour', '5-hour', '4-hour', '3-hour', '2-hour', '1-hour',
                               '45-minute', '30-minutes', '15-minute',
                               'Nat. Gas Capacity - GW', 'Renewable Capacity - GW', 'Other Capacity - GW',
@@ -1292,11 +932,10 @@ run_rls_timeseries_underbidding_model <- function(run_polynomial_weather=TRUE){
   if (run_polynomial_weather) {
     print('this is a polynomial weather model')
     if (covar_version == 'base_covars'){
-      covariates[[7]] <- c('temp_midpoint_cent', 'temp_midpoint_sq')
+      covariates[[6]] <- c('temp_midpoint_cent', 'temp_midpoint_sq')
       print(length(unlist(covariates)))
       final_covariate_names  <- c('2022-year', '2021-year', '2020-year', '2019-year', '2018-year', '2017-year', '2016-year',
                                   '12-month', '11-month', '10-month', '9-month', '8-month', '7-month', '6-month', '5-month', '4-month', '3-month', '2-month',
-                                  'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday',
                                   '23-hour', '22-hour', '21-hour', '20-hour', '19-hour', '18-hour', '17-hour', '16-hour', '15-hour', '14-hour', '13-hour', '12-hour', '11-hour', '10-hour', '9-hour', '8-hour', '7-hour', '6-hour', '5-hour', '4-hour', '3-hour', '2-hour', '1-hour',
                                   '45-minute', '30-minutes', '15-minute',
                                   'Nat. Gas Capacity - GW', 'Renewable Capacity - GW', 'Other Capacity - GW',
@@ -1456,75 +1095,6 @@ run_rls_timeseries_underbidding_model <- function(run_polynomial_weather=TRUE){
   print(paste('number of models created: ', length(models), sep = ''))
   print(paste('run_poly_weather', run_polynomial_weather))
   if (run_polynomial_weather == TRUE) {
-    print('inside')
-    # stargazer(models[[1]],
-    #           models[[2]],
-    #           models[[3]],
-    #           models[[4]],
-    #           models[[5]],
-    #           models[[6]],
-    #           models[[7]],
-    #           models[[8]],
-    #           models[[9]],
-    #           models[[10]],
-    #           models[[11]],
-    #           models[[12]],
-    #           models[[13]],
-    #           models[[14]],
-    #           models[[15]],
-    #           models[[16]],
-    #           models[[17]],
-    #           models[[18]],
-    #           models[[19]],
-    #           models[[20]],
-    #           models[[21]],
-    #           models[[22]],
-    #           models[[23]],
-    #           models[[24]],
-    #           models[[25]],
-    #           models[[26]],
-    #           models[[27]],
-    #           models[[28]],
-    #           models[[29]],
-    #           models[[30]],
-    #           models[[31]],
-    #           models[[32]],
-    #           models[[33]],
-    #           models[[34]],
-    #           models[[35]],
-    #           models[[36]],
-    #           models[[37]],
-    #           models[[38]],
-    #           models[[39]],
-    #           models[[40]],
-    #           models[[41]],
-    #           models[[42]],
-    #           models[[43]],
-    #           models[[44]],
-    #           models[[45]],
-    #           models[[46]],
-    #           models[[47]],
-    #           models[[48]],
-    #           models[[49]],
-    #           models[[50]],
-    #           models[[51]],
-    #           models[[52]],
-    #           models[[53]],
-    #           models[[54]],
-    #           models[[55]],
-    #           models[[56]],
-    #           models[[57]],
-    #           models[[58]],
-    #           models[[59]],
-    #           models[[60]],
-    #           models[[61]],
-    #           models[[62]],
-    #           title=paste("RLS Active Treament", sep = ' '), align=TRUE,
-    #           omit.stat=c("LL","ser","f"), no.space=TRUE, header = F, report = 'vc*', float.env = 'sidewaystable', font.size = 'footnotesize' , type = 'html', out = '../Images/Regressions/matching/rls_matching_poly_weather.html',
-    #           star.cutoffs = c(0.05, 0.01, 0.001), column.sep.width = "1pt", covariate.labels = final_covariate_names, digits = 2
-    # )
-    # print('after full')
-    
     
     stargazer(models[[length(models)]],
               models[[length(models)-1]],
@@ -1534,83 +1104,12 @@ run_rls_timeseries_underbidding_model <- function(run_polynomial_weather=TRUE){
               digits = 2
     )
     
-    stargazer(models[[length(models)]],
-              models[[length(models)-1]],
-              title=paste("RLS Active Treament", sep = ' '), align=TRUE,
-              omit.stat=c("LL","ser","f"), no.space=TRUE, header = F, report = 'vc*', float.env = 'sidewaystable', font.size = 'footnotesize' , type = 'html', out = '../Tables/Regressions/underbidding/gsls_ols_compare_ts_poly_weather.html',
-              star.cutoffs = c(0.05, 0.01, 0.001), column.sep.width = "1pt",covariate.labels = final_covariate_names,
-              digits = 2
-    )
+    
+    ### save direct effects to csv
+    write.csv(tidy(models[[length(models)]]), "../Tables/Regressions/underbidding/gsls_ols_ts_matching_poly_weather.csv")
     
   } ### end poly weather print statements
-  else {
-    stargazer(models[[1]],
-              models[[2]],
-              models[[3]],
-              models[[4]],
-              models[[5]],
-              models[[6]],
-              models[[7]],
-              models[[8]],
-              models[[9]],
-              models[[10]],
-              models[[11]],
-              models[[12]],
-              models[[13]],
-              models[[14]],
-              models[[15]],
-              models[[16]],
-              models[[17]],
-              models[[18]],
-              models[[19]],
-              models[[20]],
-              models[[21]],
-              models[[22]],
-              models[[23]],
-              models[[24]],
-              models[[25]],
-              models[[26]],
-              models[[27]],
-              models[[28]],
-              models[[29]],
-              models[[30]],
-              models[[31]],
-              models[[32]],
-              models[[33]],
-              models[[34]],
-              models[[35]],
-              models[[36]],
-              models[[37]],
-              models[[38]],
-              models[[39]],
-              models[[40]],
-              models[[41]],
-              models[[42]],
-              models[[43]],
-              models[[44]],
-              models[[45]],
-              models[[46]],
-              models[[47]],
-              models[[48]],
-              models[[49]],
-              models[[50]],
-              models[[51]],
-              models[[52]],
-              models[[53]],
-              models[[54]],
-              models[[55]],
-              models[[56]],
-              models[[57]],
-              models[[58]],
-              models[[59]],
-              models[[60]],
-              models[[61]],
-              models[[62]],
-              title=paste("RLS Active Treament", sep = ' '), align=TRUE,
-              omit.stat=c("LL","ser","f"), no.space=TRUE, header = F, report = 'vc*', float.env = 'sidewaystable', font.size = 'footnotesize' , type = 'html', out = '../Tables/Regressions/underbidding/underbidding_direct_and_total_effects.html',
-              star.cutoffs = c(0.05, 0.01, 0.001), column.sep.width = "1pt", covariate.labels = final_covariate_names, digits = 2
-    )
-  } ### end no poly print statements
+
   
   
 }## end RLS timeseries underbidding model
@@ -1619,7 +1118,7 @@ run_rls_timeseries_underbidding_model <- function(run_polynomial_weather=TRUE){
 run_rls_ar1_timeseries_underbidding_model <- function(run_polynomial_weather=TRUE){
   
   covar_version = 'base_covars'
-  df_timeseries_data <- read_csv( '../Data/Generation/underbidding_data_w_lags.csv')
+  df_timeseries_data <- read_csv( '../Data/ERCOT Compiled Data/underbidding_data_w_lags.csv')
   
   df_timeseries_data <- df_timeseries_data %>%
     dummy_cols(select_columns = c('year', 'month', 'day', 'hour', 'minute'))
@@ -1628,8 +1127,6 @@ run_rls_ar1_timeseries_underbidding_model <- function(run_polynomial_weather=TRU
   
   covariates <- list(c('year_2022','year_2021','year_2020','year_2019','year_2018','year_2017', 'year_2016'),
                      c('month_12','month_11','month_10','month_9','month_8','month_7','month_6','month_5','month_4', 'month_3','month_2'),
-                     c('day_30','day_29', 'day_28','day_27', 'day_26','day_25', 'day_24','day_23', 'day_22','day_21', 'day_20', 'day_19','day_18', 'day_17', 'day_16','day_15', 'day_14', 'day_13','day_12', 'day_11', 'day_10',
-                       'day_9','day_8', 'day_7', 'day_6','day_5', 'day_4', 'day_3','day_2', 'day_1'),
                      c('hour_23', 'hour_22','hour_21', 'hour_20', 'hour_19','hour_18', 'hour_17', 'hour_16','hour_15', 'hour_14', 'hour_13','hour_12', 'hour_11', 'hour_10',
                        'hour_9','hour_8', 'hour_7', 'hour_6','hour_5', 'hour_4', 'hour_3','hour_2', 'hour_1'),
                      c('minute_45', 'minute_30','minute_15'),
@@ -1654,8 +1151,6 @@ run_rls_ar1_timeseries_underbidding_model <- function(run_polynomial_weather=TRU
   # write_csv(df_phase_1[,unlist(covariates)],'../Images/Regressions/rls_for_robin/data/underbidding_dataset.csv')
   final_covariate_names  <- c('2022-year', '2021-year', '2020-year', '2019-year', '2018-year', '2017-year', '2016-year',
                               '12-month', '11-month', '10-month', '9-month', '8-month', '7-month', '6-month', '5-month', '4-month', '3-month', '2-month',
-                              '30-Day','29-Day', '28-Day','27-Day', '26-Day','25-Day', '24-Day','23-Day', '22-Day','21-Day', '20-Day', '19-Day','18-Day', '17-Day', '16-Day','15-Day', '14-Day', '13-Day','12-Day', '11-Day', '10-Day',
-                              '9-Day','8-Day', '7-Day', '6-Day','5-Day', '4-Day', '3-Day','2-Day', '1-Day',
                               '23-hour', '22-hour', '21-hour', '20-hour', '19-hour', '18-hour', '17-hour', '16-hour', '15-hour', '14-hour', '13-hour', '12-hour', '11-hour', '10-hour', '9-hour', '8-hour', '7-hour', '6-hour', '5-hour', '4-hour', '3-hour', '2-hour', '1-hour',
                               '45-minute', '30-minutes', '15-minute',
                               'Nat. Gas Capacity - GW', 'Renewable Capacity - GW', 'Other Capacity - GW',
@@ -1669,12 +1164,10 @@ run_rls_ar1_timeseries_underbidding_model <- function(run_polynomial_weather=TRU
   if (run_polynomial_weather) {
     print('this is a polynomial weather model')
     if (covar_version == 'base_covars'){
-      covariates[[7]] <- c('temp_midpoint_cent', 'temp_midpoint_sq')
+      covariates[[6]] <- c('temp_midpoint_cent', 'temp_midpoint_sq')
       print(length(unlist(covariates)))
       final_covariate_names  <- c('2022-year', '2021-year', '2020-year', '2019-year', '2018-year', '2017-year', '2016-year',
                                   '12-month', '11-month', '10-month', '9-month', '8-month', '7-month', '6-month', '5-month', '4-month', '3-month', '2-month',
-                                  '30-Day','29-Day', '28-Day','27-Day', '26-Day','25-Day', '24-Day','23-Day', '22-Day','21-Day', '20-Day', '19-Day','18-Day', '17-Day', '16-Day','15-Day', '14-Day', '13-Day','12-Day', '11-Day', '10-Day',
-                                  '9-Day','8-Day', '7-Day', '6-Day','5-Day', '4-Day', '3-Day','2-Day', '1-Day',
                                   '23-hour', '22-hour', '21-hour', '20-hour', '19-hour', '18-hour', '17-hour', '16-hour', '15-hour', '14-hour', '13-hour', '12-hour', '11-hour', '10-hour', '9-hour', '8-hour', '7-hour', '6-hour', '5-hour', '4-hour', '3-hour', '2-hour', '1-hour',
                                   '45-minute', '30-minutes', '15-minute',
                                   'Nat. Gas Capacity - GW', 'Renewable Capacity - GW', 'Other Capacity - GW',
@@ -1837,162 +1330,27 @@ run_rls_ar1_timeseries_underbidding_model <- function(run_polynomial_weather=TRU
   print(paste('number of models created: ', length(models), sep = ''))
   print(paste('run_poly_weather', run_polynomial_weather))
   if (run_polynomial_weather == TRUE) {
-    print('inside')
-    # stargazer(models[[1]],
-    #           models[[2]],
-    #           models[[3]],
-    #           models[[4]],
-    #           models[[5]],
-    #           models[[6]],
-    #           models[[7]],
-    #           models[[8]],
-    #           models[[9]],
-    #           models[[10]],
-    #           models[[11]],
-    #           models[[12]],
-    #           models[[13]],
-    #           models[[14]],
-    #           models[[15]],
-    #           models[[16]],
-    #           models[[17]],
-    #           models[[18]],
-    #           models[[19]],
-    #           models[[20]],
-    #           models[[21]],
-    #           models[[22]],
-    #           models[[23]],
-    #           models[[24]],
-    #           models[[25]],
-    #           models[[26]],
-    #           models[[27]],
-    #           models[[28]],
-    #           models[[29]],
-    #           models[[30]],
-    #           models[[31]],
-    #           models[[32]],
-    #           models[[33]],
-    #           models[[34]],
-    #           models[[35]],
-    #           models[[36]],
-    #           models[[37]],
-    #           models[[38]],
-    #           models[[39]],
-    #           models[[40]],
-    #           models[[41]],
-    #           models[[42]],
-    #           models[[43]],
-    #           models[[44]],
-    #           models[[45]],
-    #           models[[46]],
-    #           models[[47]],
-    #           models[[48]],
-    #           models[[49]],
-    #           models[[50]],
-    #           models[[51]],
-    #           models[[52]],
-    #           models[[53]],
-    #           models[[54]],
-    #           models[[55]],
-    #           models[[56]],
-    #           models[[57]],
-    #           models[[58]],
-    #           models[[59]],
-    #           models[[60]],
-    #           models[[61]],
-    #           models[[62]],
-    #           title=paste("RLS Active Treament", sep = ' '), align=TRUE,
-    #           omit.stat=c("LL","ser","f"), no.space=TRUE, header = F, report = 'vc*', float.env = 'sidewaystable', font.size = 'footnotesize' , type = 'html', out = '../Images/Regressions/matching/rls_matching_poly_weather.html',
-    #           star.cutoffs = c(0.05, 0.01, 0.001), column.sep.width = "1pt", covariate.labels = final_covariate_names, digits = 2
-    # )
-    # print('after full')
-    
-  
-    stargazer(models[[84]],
-              models[[83]],
+
+    stargazer(models[[length(models)]],
+              models[[length(models)-1]],
               title=paste("RLS Active Treament", sep = ' '), align=TRUE,
-              omit.stat=c("LL","ser","f"), no.space=TRUE, header = F, report = 'vc*', float.env = 'sidewaystable', font.size = 'footnotesize' , type = 'latex', out = '../Images/Regressions/matching/rls_ols_ts_matching_poly_weather_ar1.tex',
+              omit.stat=c("LL","ser","f"), no.space=TRUE, header = F, report = 'vc*', float.env = 'sidewaystable', font.size = 'footnotesize' , type = 'latex', out = '../Tables/Regressions/underbidding/rls_ols_ts_matching_poly_weather_ar1.tex',
               star.cutoffs = c(0.05, 0.01, 0.001), column.sep.width = "1pt",covariate.labels = final_covariate_names,
               digits = 2
     )
     
+    ### save direct effects to csv
+    write.csv(tidy(models[[length(models)]]), "../Tables/Regressions/underbidding/ar1_ts_matching_poly_weather.csv")
    
   } ### end poly weather print statements
-  else {
-    stargazer(models[[1]],
-              models[[2]],
-              models[[3]],
-              models[[4]],
-              models[[5]],
-              models[[6]],
-              models[[7]],
-              models[[8]],
-              models[[9]],
-              models[[10]],
-              models[[11]],
-              models[[12]],
-              models[[13]],
-              models[[14]],
-              models[[15]],
-              models[[16]],
-              models[[17]],
-              models[[18]],
-              models[[19]],
-              models[[20]],
-              models[[21]],
-              models[[22]],
-              models[[23]],
-              models[[24]],
-              models[[25]],
-              models[[26]],
-              models[[27]],
-              models[[28]],
-              models[[29]],
-              models[[30]],
-              models[[31]],
-              models[[32]],
-              models[[33]],
-              models[[34]],
-              models[[35]],
-              models[[36]],
-              models[[37]],
-              models[[38]],
-              models[[39]],
-              models[[40]],
-              models[[41]],
-              models[[42]],
-              models[[43]],
-              models[[44]],
-              models[[45]],
-              models[[46]],
-              models[[47]],
-              models[[48]],
-              models[[49]],
-              models[[50]],
-              models[[51]],
-              models[[52]],
-              models[[53]],
-              models[[54]],
-              models[[55]],
-              models[[56]],
-              models[[57]],
-              models[[58]],
-              models[[59]],
-              models[[60]],
-              models[[61]],
-              models[[62]],
-              title=paste("RLS Active Treament", sep = ' '), align=TRUE,
-              omit.stat=c("LL","ser","f"), no.space=TRUE, header = F, report = 'vc*', float.env = 'sidewaystable', font.size = 'footnotesize' , type = 'html', out = '../Images/Regressions/matching/rls_matching.html',
-              star.cutoffs = c(0.05, 0.01, 0.001), column.sep.width = "1pt", covariate.labels = final_covariate_names, digits = 2
-    )
-  } ### end no poly print statements
-  
+ 
   
 }## end RLS AR1 timeseries underbidding model
 
-run_rls_ar_all_timeseries_underbidding_model <- function(run_polynomial_weather=TRUE){
+run_rls_ar10_timeseries_underbidding_model <- function(run_polynomial_weather=TRUE){
   
   covar_version = 'base_covars'
-  df_timeseries_data <- read_csv( '../Data/Generation/underbidding_data_w_lags.csv')
+  df_timeseries_data <- read_csv( '../Data/ERCOT Compiled Data/underbidding_data_w_lags.csv')
   
   df_timeseries_data <- df_timeseries_data %>%
     dummy_cols(select_columns = c('year', 'month', 'day', 'hour', 'minute'))
@@ -2001,8 +1359,6 @@ run_rls_ar_all_timeseries_underbidding_model <- function(run_polynomial_weather=
   
   covariates <- list(c('year_2022','year_2021','year_2020','year_2019','year_2018','year_2017', 'year_2016'),
                      c('month_12','month_11','month_10','month_9','month_8','month_7','month_6','month_5','month_4', 'month_3','month_2'),
-                     c('day_30','day_29', 'day_28','day_27', 'day_26','day_25', 'day_24','day_23', 'day_22','day_21', 'day_20', 'day_19','day_18', 'day_17', 'day_16','day_15', 'day_14', 'day_13','day_12', 'day_11', 'day_10',
-                       'day_9','day_8', 'day_7', 'day_6','day_5', 'day_4', 'day_3','day_2', 'day_1'),
                      c('hour_23', 'hour_22','hour_21', 'hour_20', 'hour_19','hour_18', 'hour_17', 'hour_16','hour_15', 'hour_14', 'hour_13','hour_12', 'hour_11', 'hour_10',
                        'hour_9','hour_8', 'hour_7', 'hour_6','hour_5', 'hour_4', 'hour_3','hour_2', 'hour_1'),
                      c('minute_45', 'minute_30','minute_15'),
@@ -2028,8 +1384,6 @@ run_rls_ar_all_timeseries_underbidding_model <- function(run_polynomial_weather=
   # write_csv(df_phase_1[,unlist(covariates)],'../Images/Regressions/rls_for_robin/data/underbidding_dataset.csv')
   final_covariate_names  <- c('2022-year', '2021-year', '2020-year', '2019-year', '2018-year', '2017-year', '2016-year',
                               '12-month', '11-month', '10-month', '9-month', '8-month', '7-month', '6-month', '5-month', '4-month', '3-month', '2-month',
-                              '30-Day','29-Day', '28-Day','27-Day', '26-Day','25-Day', '24-Day','23-Day', '22-Day','21-Day', '20-Day', '19-Day','18-Day', '17-Day', '16-Day','15-Day', '14-Day', '13-Day','12-Day', '11-Day', '10-Day',
-                              '9-Day','8-Day', '7-Day', '6-Day','5-Day', '4-Day', '3-Day','2-Day', '1-Day',
                               '23-hour', '22-hour', '21-hour', '20-hour', '19-hour', '18-hour', '17-hour', '16-hour', '15-hour', '14-hour', '13-hour', '12-hour', '11-hour', '10-hour', '9-hour', '8-hour', '7-hour', '6-hour', '5-hour', '4-hour', '3-hour', '2-hour', '1-hour',
                               '45-minute', '30-minutes', '15-minute',
                               'Nat. Gas Capacity - GW', 'Renewable Capacity - GW', 'Other Capacity - GW',
@@ -2043,12 +1397,10 @@ run_rls_ar_all_timeseries_underbidding_model <- function(run_polynomial_weather=
   if (run_polynomial_weather) {
     print('this is a polynomial weather model')
     if (covar_version == 'base_covars'){
-      covariates[[12]] <- c('temp_midpoint_cent', 'temp_midpoint_sq')
+      covariates[[11]] <- c('temp_midpoint_cent', 'temp_midpoint_sq')
       print(length(unlist(covariates)))
       final_covariate_names  <- c('2022-year', '2021-year', '2020-year', '2019-year', '2018-year', '2017-year', '2016-year',
                                   '12-month', '11-month', '10-month', '9-month', '8-month', '7-month', '6-month', '5-month', '4-month', '3-month', '2-month',
-                                  '30-Day','29-Day', '28-Day','27-Day', '26-Day','25-Day', '24-Day','23-Day', '22-Day','21-Day', '20-Day', '19-Day','18-Day', '17-Day', '16-Day','15-Day', '14-Day', '13-Day','12-Day', '11-Day', '10-Day',
-                                  '9-Day','8-Day', '7-Day', '6-Day','5-Day', '4-Day', '3-Day','2-Day', '1-Day',
                                   '23-hour', '22-hour', '21-hour', '20-hour', '19-hour', '18-hour', '17-hour', '16-hour', '15-hour', '14-hour', '13-hour', '12-hour', '11-hour', '10-hour', '9-hour', '8-hour', '7-hour', '6-hour', '5-hour', '4-hour', '3-hour', '2-hour', '1-hour',
                                   '45-minute', '30-minutes', '15-minute',
                                   'Nat. Gas Capacity - GW', 'Renewable Capacity - GW', 'Other Capacity - GW'
@@ -2210,521 +1562,25 @@ run_rls_ar_all_timeseries_underbidding_model <- function(run_polynomial_weather=
   print(paste('number of models created: ', length(models), sep = ''))
   print(paste('run_poly_weather', run_polynomial_weather))
   if (run_polynomial_weather == TRUE) {
-    print('inside')
-    # stargazer(models[[1]],
-    #           models[[2]],
-    #           models[[3]],
-    #           models[[4]],
-    #           models[[5]],
-    #           models[[6]],
-    #           models[[7]],
-    #           models[[8]],
-    #           models[[9]],
-    #           models[[10]],
-    #           models[[11]],
-    #           models[[12]],
-    #           models[[13]],
-    #           models[[14]],
-    #           models[[15]],
-    #           models[[16]],
-    #           models[[17]],
-    #           models[[18]],
-    #           models[[19]],
-    #           models[[20]],
-    #           models[[21]],
-    #           models[[22]],
-    #           models[[23]],
-    #           models[[24]],
-    #           models[[25]],
-    #           models[[26]],
-    #           models[[27]],
-    #           models[[28]],
-    #           models[[29]],
-    #           models[[30]],
-    #           models[[31]],
-    #           models[[32]],
-    #           models[[33]],
-    #           models[[34]],
-    #           models[[35]],
-    #           models[[36]],
-    #           models[[37]],
-    #           models[[38]],
-    #           models[[39]],
-    #           models[[40]],
-    #           models[[41]],
-    #           models[[42]],
-    #           models[[43]],
-    #           models[[44]],
-    #           models[[45]],
-    #           models[[46]],
-    #           models[[47]],
-    #           models[[48]],
-    #           models[[49]],
-    #           models[[50]],
-    #           models[[51]],
-    #           models[[52]],
-    #           models[[53]],
-    #           models[[54]],
-    #           models[[55]],
-    #           models[[56]],
-    #           models[[57]],
-    #           models[[58]],
-    #           models[[59]],
-    #           models[[60]],
-    #           models[[61]],
-    #           models[[62]],
-    #           title=paste("RLS Active Treament", sep = ' '), align=TRUE,
-    #           omit.stat=c("LL","ser","f"), no.space=TRUE, header = F, report = 'vc*', float.env = 'sidewaystable', font.size = 'footnotesize' , type = 'html', out = '../Images/Regressions/matching/rls_matching_poly_weather.html',
-    #           star.cutoffs = c(0.05, 0.01, 0.001), column.sep.width = "1pt", covariate.labels = final_covariate_names, digits = 2
-    # )
-    # print('after full')
     
     
-    stargazer(models[[93]],
-              models[[92]],
+    stargazer(models[[length(models)]],
+              models[[length(models)-1]],
               title=paste("RLS Active Treament", sep = ' '), align=TRUE,
-              omit.stat=c("LL","ser","f"), no.space=TRUE, header = F, report = 'vc*', float.env = 'sidewaystable', font.size = 'footnotesize' , type = 'latex', out = '../Images/Regressions/matching/rls_ols_ts_matching_poly_weather_ar10.tex',
+              omit.stat=c("LL","ser","f"), no.space=TRUE, header = F, report = 'vc*', float.env = 'sidewaystable', font.size = 'footnotesize' , type = 'latex', out = '../Tables/Regressions/underbidding/rls_ols_ts_matching_poly_weather_ar10.tex',
               star.cutoffs = c(0.05, 0.01, 0.001), column.sep.width = "1pt",#covariate.labels = final_covariate_names,
               digits = 2
     )
     
+    ### save direct effects to csv
+    write.csv(tidy(models[[length(models)]]), "../Tables/Regressions/underbidding/ar10_ols_ts_matching_poly_weather.csv")
     
   } ### end poly weather print statements
-  else {
-    stargazer(models[[1]],
-              models[[2]],
-              models[[3]],
-              models[[4]],
-              models[[5]],
-              models[[6]],
-              models[[7]],
-              models[[8]],
-              models[[9]],
-              models[[10]],
-              models[[11]],
-              models[[12]],
-              models[[13]],
-              models[[14]],
-              models[[15]],
-              models[[16]],
-              models[[17]],
-              models[[18]],
-              models[[19]],
-              models[[20]],
-              models[[21]],
-              models[[22]],
-              models[[23]],
-              models[[24]],
-              models[[25]],
-              models[[26]],
-              models[[27]],
-              models[[28]],
-              models[[29]],
-              models[[30]],
-              models[[31]],
-              models[[32]],
-              models[[33]],
-              models[[34]],
-              models[[35]],
-              models[[36]],
-              models[[37]],
-              models[[38]],
-              models[[39]],
-              models[[40]],
-              models[[41]],
-              models[[42]],
-              models[[43]],
-              models[[44]],
-              models[[45]],
-              models[[46]],
-              models[[47]],
-              models[[48]],
-              models[[49]],
-              models[[50]],
-              models[[51]],
-              models[[52]],
-              models[[53]],
-              models[[54]],
-              models[[55]],
-              models[[56]],
-              models[[57]],
-              models[[58]],
-              models[[59]],
-              models[[60]],
-              models[[61]],
-              models[[62]],
-              title=paste("RLS Active Treament", sep = ' '), align=TRUE,
-              omit.stat=c("LL","ser","f"), no.space=TRUE, header = F, report = 'vc*', float.env = 'sidewaystable', font.size = 'footnotesize' , type = 'html', out = '../Images/Regressions/matching/rls_matching.html',
-              star.cutoffs = c(0.05, 0.01, 0.001), column.sep.width = "1pt", covariate.labels = final_covariate_names, digits = 2
-    )
-  } ### end no poly print statements
+  
   
   
 }## end RLS AR_all timeseries underbidding model
 
-
-regress_active_price_adder <- function(){
-  
-  df_matching_data <- read_csv( '../Data/Generation/ercot_scarcity_pricing_matching_set.csv')
-  
-  df_matching_data <- df_matching_data %>% 
-    mutate(active_low = if_else(rtorpa >0 & rtorpa <=.5,1,0),
-           active_high = if_else(rtorpa >.5,1,0)
-           ) %>%
-    rename(price = hub_hubavg_energy_only)
-  
-  fit_matching <- lm(price~active_high + active_low + as.character(month) + as.character(year) + as.character(hour) + as.character(minute)
-                     + int_tot_gen_gas + int_tot_gen_renewable + int_tot_gen_other
-                     + rttotcap + rtordpa + rtorpa + scarcity_measure + ng + other + renewables +
-                       I(c.temp_midpoint, 3))
-  
-  return(fit_matching)
-  
-  
-}
-
-#### code for reference does not execute as a function ####
-tests_for_OLS_Monthly_to_panel_continuity <- function() {
-  #generators for unit root tests
-  df_EIA860M <- read_csv('../Data/EIA Compiled Data/EIA860M_compiled_data.csv')
-  
-  
-  operating_generators <- df_EIA860M %>% filter(status_phase %in% c(7,8)) %>% distinct(plant_gen_id) %>% pull(plant_gen_id)
-  df_tests <- df_EIA860M %>% 
-    filter(balancing_authority_code == 'ERCO', energy_source_code_group %in% c('NG', 'Renewables'), plant_gen_id %in% operating_generators) %>%
-    select(plant_gen_id, energy_source_code_group, net_summer_capacity_mw, year, month, status_phase) %>%
-    mutate(date = as.Date(paste(year, month, '01', sep='-'))) %>%
-    filter(date >= '2016-09-01') %>%
-    sample_n(1000)
-  
-  
-  
-  
-  df_ng <- read_csv('../Data/Regressions/pre_model_data/ng_panel_totalquantity_12mo_lag.csv')
-  roll_covariates <- c('p_labf', 'p_uner', 'cpi','mean_shortr','lcoe_wind_dollars_mw','lcoe_sun_dollars_mw','mean_hh_price_MMBtu','mean_int_tot_spin_cap_mw','mean_rtoffcap','mean_net_sys_lamda', 'mean_sys_lamda', 'mean_rtoffpa','mean_hb_busavg_energy_only','mean_counterfeit_pa','mean_rtordpa','mean_net_rtorpa','mean_pnm','mean_ng_cap_gini_coef','mean_wnd_cap_gini_coef','strat_pool_total_mw_Renewables', 'strat_pool_total_mw_NG','strat_pool_mean_status_phase_Renewables', 'strat_pool_mean_status_phase_NG')
-  
-  
-  df_ng <- df_ng %>% filter(date >= '2016-07-01')
-  df_ng <- df_ng %>%
-    group_by(plant_gen_id) %>%
-    arrange(plant_gen_id, date) %>%
-    mutate_at(vars(roll_covariates),
-              ~ rollapplyr(.x, list(-seq(2)), mean, na.rm = TRUE, partial = FALSE, fill = NA)) %>%
-    ungroup() %>%
-    rename(new_mw_phs_1 = new_mw_phs_entrants)
-  
-  df_ng <-  df_ng %>% filter_at(vars(roll_covariates),all_vars(!is.na(.)))
-  
-  
-  
-  
-  
-  df_ng_panel <- df_ng
-  length(unique(df_ng$date))
-  length(unique(df_ng$plant_gen_id))
-  df_ng_monthly <- df_ng %>%
-    filter(status_phase %in% c(7,8)) %>%
-    group_by(year, month) %>%
-    mutate(new_mw_phs_1 = sum(new_mw_phs_1)) %>%
-    ungroup() %>%
-    select(-c(plant_gen_id:unfilled_net_summer_capacity_mw), -planned_capacity_mw) %>%
-    distinct()
-  
-  
-  
-  df_ng_panel %>%
-    select(date, plant_gen_id, new_mw_phs_1,  roll_covariates) %>%
-    arrange(date, plant_gen_id)
-  
-  df_ng_monthly %>%
-    select(date, new_mw_phs_1, roll_covariates)
-  
-  df_ng_panel %>%
-    group_by(date) %>%
-    summarise(mean_mw = mean(new_mw_phs_1),
-              n_gen = length(unique(plant_gen_id))) %>%
-    mutate(total_cap_at_mean = mean_mw*n_gen)
-  
-  df_ng_monthly %>% slice(rep(row_number(), length(unique(df_ng$plant_gen_id)))) %>%
-    mutate(new_mw_phs_1 = new_mw_phs_1/length(unique(df_ng$plant_gen_id))) %>%
-    select(date, new_mw_phs_1,  roll_covariates) %>%
-    arrange(date)
-  
-  df_ng_monthly %>% slice(rep(row_number(), length(unique(df_ng$plant_gen_id)))) %>%
-    mutate(new_mw_phs_1 = new_mw_phs_1/length(unique(df_ng$plant_gen_id))) %>%
-    select(date, new_mw_phs_1,  roll_covariates) %>%
-    arrange(date) %>%
-    distinct(date, new_mw_phs_1)
-  
-  df_ng_monthly %>%
-    group_by(date) %>%
-    summarize(new_mw_phs_1 = sum(new_mw_phs_1))
-  
-  
-  
-  
-  
-  
-  
-  
-  ##compare panel grouped by month with monthly panel for equivalency
-  all.equal( df_ng_panel %>%
-               group_by(date) %>%
-               summarize(new_mw_phs_1 = sum(new_mw_phs_1)),
-             
-             df_ng_monthly %>%
-               group_by(date) %>%
-               summarize(new_mw_phs_1 = sum(new_mw_phs_1)))
-  
-  ##compare panel grouped by month with monthly panel repliicated and divided to create "mean generator" dataset
-  all.equal( df_ng_panel %>%
-               group_by(date) %>%
-               summarize(new_mw_phs_1 = sum(new_mw_phs_1)),
-             
-             df_ng_monthly %>% slice(rep(row_number(), length(unique(df_ng$plant_gen_id)))) %>%
-               mutate(new_mw_phs_1 = new_mw_phs_1/length(unique(df_ng$plant_gen_id))) %>%
-               group_by(date) %>%
-               summarize(new_mw_phs_1 = sum(new_mw_phs_1)))
-  
-  
-  df_ng_panel %>%
-    group_by(plant_gen_id) %>%
-    tally() %>%
-    arrange(desc(n))
-  
-  
-  
-  
-  df_tests
-  df_tests %>% filter(energy_source_code_group == 'NG') %>%
-    left_join(df_ng_panel %>% select(date, plant_gen_id, energy_source_code_group, status_phase, new_mw_phs_1), by=c('plant_gen_id', 'date')) %>%
-    write_csv('../Data/Regressions/unit_tests/ng_panel_mw_comparision.csv')
-  
-  
-  
-  
-  
-  
-  df_renewable <- read_csv('../Data/Regressions/pre_model_data/renewable_panel_totalquantity_12mo_lag.csv')
-  roll_covariates <- c('p_labf', 'p_uner', 'cpi','mean_shortr','lcoe_wind_dollars_mw','lcoe_sun_dollars_mw','mean_hh_price_MMBtu','mean_int_tot_spin_cap_mw','mean_rtoffcap','mean_net_sys_lamda', 'mean_sys_lamda', 'mean_rtoffpa','mean_hb_busavg_energy_only','mean_counterfeit_pa','mean_rtordpa','mean_net_rtorpa','mean_pnm','mean_ng_cap_gini_coef','mean_wnd_cap_gini_coef','strat_pool_total_mw_Renewables', 'strat_pool_total_mw_NG','strat_pool_mean_status_phase_Renewables', 'strat_pool_mean_status_phase_NG')
-  
-  df_renewable <- df_renewable %>% filter(date >= '2016-07-01')
-  df_renewable <- df_renewable %>%
-    group_by(plant_gen_id) %>%
-    arrange(plant_gen_id, date) %>%
-    mutate_at(vars(roll_covariates),
-              ~ rollapplyr(.x, list(-seq(2)), mean, na.rm = TRUE, partial = FALSE, fill = NA)) %>%
-    ungroup() %>%
-    rename(new_mw_phs_1 = new_mw_phs_entrants)
-  
-  df_renewable <-  df_renewable %>% filter_at(vars(roll_covariates),all_vars(!is.na(.)))
-  
-  
-  df_renewable_panel <- df_renewable
-  length(unique(df_renewable_panel$date))
-  length(unique(df_renewable_panel$plant_gen_id))
-  df_renewable_monthly <- df_renewable %>%
-    filter(status_phase %in% c(7,8)) %>%
-    group_by(year, month) %>%
-    mutate(new_mw_phs_1 = sum(new_mw_phs_1)) %>%
-    ungroup() %>%
-    select(-c(plant_gen_id:unfilled_net_summer_capacity_mw), -planned_capacity_mw) %>%
-    distinct()
-  
-  ##compare panel grouped by month with monthly panel for equivalency
-  all.equal(df_renewable_panel %>%
-              group_by(date) %>%
-              summarize(new_mw_phs_1 = sum(new_mw_phs_1)),
-            
-            df_renewable_monthly %>%
-              group_by(date) %>%
-              summarize(new_mw_phs_1 = sum(new_mw_phs_1)))
-  
-  ##compare panel grouped by month with monthly panel repliicated and divided to create "mean generator" dataset
-  all.equal(df_renewable_panel %>%
-              group_by(date) %>%
-              summarize(new_mw_phs_1 = sum(new_mw_phs_1)),
-            
-            df_renewable_monthly %>% slice(rep(row_number(), length(unique(df_renewable$plant_gen_id)))) %>%
-              mutate(new_mw_phs_1 = new_mw_phs_1/length(unique(df_renewable$plant_gen_id))) %>%
-              group_by(date) %>%
-              summarize(new_mw_phs_1 = sum(new_mw_phs_1)))
-  
-  df_renewable_panel %>%
-    group_by(plant_gen_id) %>%
-    tally() %>%
-    arrange(desc(n))
-  
-  df_tests
-  df_tests %>%  filter(energy_source_code_group == 'Renewables') %>%
-    left_join(df_renewable_panel %>% select(date, plant_gen_id, energy_source_code_group, status_phase, new_mw_phs_1), by=c('plant_gen_id', 'date')) %>%
-    write_csv('../Data/Regressions/unit_tests/renewable_panel_mw_comparision.csv')
-  
-  all.equal(df_tests %>% filter(status_phase == 7, date > '2015-07-01', energy_source_code_group == 'Renewables') %>% select(date, status_phase, net_summer_capacity_mw),
-            df_renewable_panel %>% filter(status_phase == 7, date > '2015-07-01', plant_gen_id %in% c(unique(df_tests$plant_gen_id))) %>% select(date, status_phase, new_mw_phs_1))
-  
-  
-  formula <- 'new_mw_phs_1 ~ year_2022 + year_2021 + year_2020 + year_2019 + 
-    year_2018 + year_2017 + year_2016 + year_2015 + month_12 + 
-    month_11 + month_10 + month_9 + month_8 + month_7 + month_6 + 
-    month_5 + month_3 + month_2 + month_1 + roll_temp_midpoint + 
-    p_labf + p_uner + cpi + mean_shortr + lcoe_wind_dollars_mw + 
-    lcoe_sun_dollars_mw + mean_hh_price_MMBtu + mean_int_tot_spin_cap_mw + 
-    mean_rtoffcap + mean_total_gen_rtcap_ratio + mean_net_sys_lamda + 
-    mean_hb_busavg_energy_only + mean_rtorpa + mean_rtordpa + 
-    mean_pnm + mean_ng_cap_gini_coef + mean_wnd_cap_gini_coef + 
-    strat_pool_total_mw_Renewables + strat_pool_total_mw_NG + 
-    strat_pool_mean_status_phase_Renewables + strat_pool_mean_status_phase_NG'
-  
-  # formula <- 'new_mw_phs_1 ~ year_2022 + year_2021 + year_2020 + year_2019 +
-  #     year_2018 + year_2017 + year_2016 + year_2015 + month_12 +
-  #     month_11 + month_10 + month_9 + month_8 + month_7 + month_6 +
-  #     month_5 + month_3 + month_2 + month_1 + roll_temp_midpoint + 
-  #     p_labf + p_uner + cpi + mean_shortr + lcoe_wind_dollars_mw + 
-  #     lcoe_sun_dollars_mw + mean_hh_price_MMBtu + mean_int_tot_spin_cap_mw + 
-  #     mean_rtoffcap + mean_total_gen_rtcap_ratio + mean_net_sys_lamda + 
-  #     mean_hb_busavg_energy_only + mean_rtorpa + mean_rtordpa + 
-  #     mean_pnm + mean_ng_cap_gini_coef + mean_wnd_cap_gini_coef '
-  # 
-  # formula <- 'new_mw_phs_1 ~ year_2022 + year_2021 + year_2020 + year_2019 +
-  #     year_2018 + year_2017 + year_2016 + year_2015 + month_12 +
-  #     month_11 + month_10 + month_9 + month_8 + month_7 + month_6 +
-  #     month_5 + month_3 + month_2 + month_1 + roll_temp_midpoint + 
-  #     p_labf + p_uner + cpi + mean_shortr + lcoe_wind_dollars_mw + 
-  #     lcoe_sun_dollars_mw + mean_hh_price_MMBtu + mean_int_tot_spin_cap_mw + 
-  #     mean_rtoffcap + mean_total_gen_rtcap_ratio + mean_net_sys_lamda + 
-  #     mean_hb_busavg_energy_only'
-  # 
-  # formula <- 'new_mw_phs_1 ~ year_2022 + year_2021 + year_2020 + year_2019 +
-  #     year_2018 + year_2017 + year_2016 + year_2015 + month_12 +
-  #     month_11 + month_10 + month_9 + month_8 + month_7 + month_6 +
-  #     month_5 + month_3 + month_2 + month_1 + roll_temp_midpoint + 
-  #     p_labf + p_uner + cpi + mean_shortr + lcoe_wind_dollars_mw + 
-  #     lcoe_sun_dollars_mw + mean_hh_price_MMBtu'
-  # 
-  # formula <- 'new_mw_phs_1 ~ year_2022 + year_2021 + year_2020 + year_2019 +
-  #     year_2018 + year_2017 + year_2016 + year_2015 + month_12 +
-  #     month_11 + month_10 + month_9 + month_8 + month_7 + month_6 +
-  #     month_5 + month_3 + month_2 + month_1'
-  # 
-  
-  fit_1 <- lm(formula,
-              data=df_ng_monthly %>% slice(rep(row_number(), length(unique(df_ng$plant_gen_id)))) %>%
-                mutate(new_mw_phs_1 = new_mw_phs_1/length(unique(df_ng$plant_gen_id))))
-  
-  fit_2 <- lm(formula,
-              data=df_ng_monthly)
-  
-  fit_3 <- lm(formula,
-              data=df_ng_panel)
-  
-  print(formula)
-  fit_4 <- tobit(new_mw_phs_1 ~ year_2022 + year_2021 + year_2020 + year_2019 + 
-                   year_2018 + year_2017 + year_2016 + year_2015 + month_12 + 
-                   month_11 + month_10 + month_9 + month_8 + month_7 + month_6 + 
-                   month_5 + month_3 + month_2 + month_1 + roll_temp_midpoint + 
-                   p_labf + p_uner + cpi + mean_shortr + lcoe_wind_dollars_mw + 
-                   lcoe_sun_dollars_mw + mean_hh_price_MMBtu + mean_int_tot_spin_cap_mw + 
-                   mean_rtoffcap + mean_total_gen_rtcap_ratio + mean_net_sys_lamda + 
-                   mean_hb_busavg_energy_only + mean_rtorpa + mean_rtordpa + 
-                   mean_pnm + mean_ng_cap_gini_coef + mean_wnd_cap_gini_coef + 
-                   strat_pool_total_mw_Renewables + strat_pool_total_mw_NG + 
-                   strat_pool_mean_status_phase_Renewables + strat_pool_mean_status_phase_NG,
-                 left = 0,
-                 data = df_renewable_panel)
-  
-  fit_4
-  summary(fit_1)
-  summary(fit_2)
-  summary(fit_3)
-  summary(fit_4)
-  
-  # stargazer(fit_1, out='../Images/Regressions/ng_monthly_repeated_by_distinct_generator_count.html',
-  #           star.cutoffs = c(0.05, 0.01, 0.001))
-  # stargazer(fit_2, out='../Images/Regressions/ng_monthly.html',
-  #         star.cutoffs = c(0.05, 0.01, 0.001))
-  # 
-  # stargazer(fit_3, out='../Images/Regressions/ng_panel.html',
-  #         star.cutoffs = c(0.05, 0.01, 0.001))
-  
-  
-  formula <- 'new_mw_phs_1 ~ year_2022 + year_2021 + year_2020 + year_2019 + 
-    year_2018 + year_2017 + year_2016 + year_2015 + month_12 + 
-    month_11 + month_10 + month_9 + month_8 + month_7 + month_6 + 
-    month_5 + month_3 + month_2 + month_1 + roll_temp_midpoint + 
-    p_labf + p_uner + cpi + mean_shortr + lcoe_wind_dollars_mw + 
-    lcoe_sun_dollars_mw + mean_hh_price_MMBtu + mean_int_tot_spin_cap_mw + 
-    mean_rtoffcap + mean_total_gen_rtcap_ratio + mean_net_sys_lamda + 
-    mean_hb_busavg_energy_only + mean_rtorpa + mean_rtordpa + 
-    mean_pnm + mean_ng_cap_gini_coef + mean_wnd_cap_gini_coef + 
-    strat_pool_total_mw_Renewables + strat_pool_total_mw_NG + 
-    strat_pool_mean_status_phase_Renewables + strat_pool_mean_status_phase_NG'
-  
-  # formula <- 'new_mw_phs_1 ~ year_2022 + year_2021 + year_2020 + year_2019 +
-  #     year_2018 + year_2017 + year_2016 + year_2015 + month_12 +
-  #     month_11 + month_10 + month_9 + month_8 + month_7 + month_6 +
-  #     month_5 + month_3 + month_2 + month_1 + roll_temp_midpoint + 
-  #     p_labf + p_uner + cpi + mean_shortr + lcoe_wind_dollars_mw + 
-  #     lcoe_sun_dollars_mw + mean_hh_price_MMBtu + mean_int_tot_spin_cap_mw + 
-  #     mean_rtoffcap + mean_total_gen_rtcap_ratio + mean_net_sys_lamda + 
-  #     mean_hb_busavg_energy_only + mean_rtorpa + mean_rtordpa + 
-  #     mean_pnm + mean_ng_cap_gini_coef + mean_wnd_cap_gini_coef '
-  # 
-  # formula <- 'new_mw_phs_1 ~ year_2022 + year_2021 + year_2020 + year_2019 +
-  #     year_2018 + year_2017 + year_2016 + year_2015 + month_12 +
-  #     month_11 + month_10 + month_9 + month_8 + month_7 + month_6 +
-  #     month_5 + month_3 + month_2 + month_1 + roll_temp_midpoint + 
-  #     p_labf + p_uner + cpi + mean_shortr + lcoe_wind_dollars_mw + 
-  #     lcoe_sun_dollars_mw + mean_hh_price_MMBtu + mean_int_tot_spin_cap_mw + 
-  #     mean_rtoffcap + mean_total_gen_rtcap_ratio + mean_net_sys_lamda + 
-  #     mean_hb_busavg_energy_only'
-  
-  # formula <- 'new_mw_phs_1 ~ year_2022 + year_2021 + year_2020 + year_2019 +
-  #     year_2018 + year_2017 + year_2016 + year_2015 + month_12 +
-  #     month_11 + month_10 + month_9 + month_8 + month_7 + month_6 +
-  #     month_5 + month_3 + month_2 + month_1 + roll_temp_midpoint + 
-  #     p_labf + p_uner + cpi + mean_shortr + lcoe_wind_dollars_mw + 
-  #     lcoe_sun_dollars_mw + mean_hh_price_MMBtu'
-  
-  # formula <- 'new_mw_phs_1 ~ year_2022 + year_2021 + year_2020 + year_2019 +
-  #     year_2018 + year_2017 + year_2016 + year_2015 + month_12 +
-  #     month_11 + month_10 + month_9 + month_8 + month_7 + month_6 +
-  #     month_5 + month_3 + month_2 + month_1'
-  # 
-  # formula <- 'new_mw_phs_1 ~ year_2022 + year_2021 + year_2020 + year_2019 +
-  #     year_2018 + year_2017 + year_2016 + year_2015'
-  
-  
-  fit_4 <- lm(formula,
-              data=df_renewable_monthly %>% slice(rep(row_number(), length(unique(df_renewable$plant_gen_id)))) %>%
-                mutate(new_mw_phs_1 = new_mw_phs_1/length(unique(df_renewable$plant_gen_id))))
-  
-  fit_5 <- lm(formula,
-              data=df_renewable_monthly)
-  
-  fit_6 <- lm(formula,
-              data=df_renewable_panel)
-  
-  # summary(fit_4)
-  summary(fit_5)
-  # summary(fit_6)
-  
-  # stargazer(fit_4, out='../Images/Regressions/renewable_monthly_repeated_by_distinct_generator_count.html',
-  #           star.cutoffs = c(0.05, 0.01, 0.001))
-  # stargazer(fit_5, out='../Images/Regressions/renewable_monthly.html',
-  #         star.cutoffs = c(0.05, 0.01, 0.001))
-  # 
-  # stargazer(fit_6, out='../Images/Regressions/renewable_panel.html',
-  #         star.cutoffs = c(0.05, 0.01, 0.001))
-  df_renewable_panel %>% write_csv('../Data/Regressions/pre_model_data/test_renewable_panel_12mo_lag_3mo_roll.csv')
-  df_ng_panel %>% write_csv('../Data/Regressions/pre_model_data/test_ng_panel_12mo_lag_3mo_roll.csv')
-  
-  df_ng_panel %>%
-    filter(date = '2017-01-01') %>%
-    groupby(date) %>%
-    summarize(total_mw = sum(new_mw_phs_entrants))
-  
-}
 
 capture_output_for_variable_lags_test <- function(fit, fit2, i, segment, covar_version, run_polynomial_weather, lag_months){
   
@@ -2785,7 +1641,7 @@ capture_output_for_variable_lags_test <- function(fit, fit2, i, segment, covar_v
                           )
     
     
-    write_csv(df_output, '../Data/Regressions/lag_model_statistics_roll_monthly_data.csv')
+    write_csv(df_output, '../Data/Regressions/Capacity Model/robustness/lag_model_statistics_roll_monthly_data.csv')
     
   } ### end print block for first iteration of model 
   else {
@@ -2796,7 +1652,7 @@ capture_output_for_variable_lags_test <- function(fit, fit2, i, segment, covar_v
     )
     
     # writing row in the csv file 
-    write.table(row, file = '../Data/Regressions/lag_model_statistics_roll_monthly_data.csv', sep = ",", 
+    write.table(row, file = '../Data/Regressions/Capacity Model/robustness/lag_model_statistics_roll_monthly_data.csv', sep = ",", 
                 append = TRUE, quote = FALSE, 
                 col.names = FALSE, row.names = FALSE)
     
@@ -2806,7 +1662,7 @@ capture_output_for_variable_lags_test <- function(fit, fit2, i, segment, covar_v
 } ## end of function to capture output for variable lags test
 
 create_variable_lags_appendix_summary_and_figure <- function(){
-  df_lags <- read_csv('../Data/Regressions/lag_model_statistics_roll_monthly_data_1pa_0to36.csv')
+  df_lags <- read_csv('../Data/Regressions/Capacity Model/robustness/lag_model_statistics_roll_monthly_data.csv')
   
   
   df_lags_review <- df_lags %>% mutate(is_significant_95 = ifelse(p_val_mean_total_pa_ols <=0.05,1,0),
@@ -2849,5 +1705,5 @@ create_variable_lags_appendix_summary_and_figure <- function(){
       axis.title=element_text(size=16),
       legend.title=element_text(size=16),
       legend.text=element_text(size=14))
-  ggsave('../Images/Figures/variable_lags_hist.png', width= 15)
+  ggsave('../Figures/capacity_model_robustness_hist.png', width= 15)
 }### end of variable_lags appendix figure

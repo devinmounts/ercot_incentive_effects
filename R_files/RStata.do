@@ -1,3 +1,7 @@
+set more off
+
+capture noisily {
+/*RSTATA: cut me here*/
 *********************************************************************************
 ****************************** Derivative Price Simulation **********************
 ** Written DM 6.8.21
@@ -289,3 +293,6 @@
 	cd "../Data/ERCOT Compiled Data/"
 	export delimited "underbidding_data_w_lags.csv", replace
 	save underbidding_data_w_lags, replace
+/*RSTATA: cut me here*/
+} /* end capture noisily */
+exit, clear STATA
