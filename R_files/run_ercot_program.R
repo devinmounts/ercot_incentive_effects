@@ -9,7 +9,7 @@ source('ercot_preprocess_functions.R')
 source('eia_pre_process_functions.R')
 source('statistic_functions.R')
 source('regression_script.R')
-source('figure_functions.R')
+source('figure_and_stat_functions.R')
 
 
 create_necessary_file_folders <- function(){
@@ -39,7 +39,12 @@ run_ercot_program <- function(RStataPath, RStataVersion){
   print('creating target file folders')
   create_necessary_file_folders()
   
-  # #### loads and processes ERCOT datasets ####
+  #######################################################################
+  #######################################################################
+  ################ Load and Process Source Data #########################
+  #######################################################################
+  #######################################################################
+  
   # ############################################
   # 
   # create_generation_capacity_and_adder_data()
@@ -92,9 +97,11 @@ run_ercot_program <- function(RStataPath, RStataVersion){
   # create_matching_dataset()
   # gc()
   # 
-  # ###############################################################
-  # ################# Main Body Tables ###########################
-  # ##############################################################
+  #######################################################################
+  #######################################################################
+  ##################### Main Body Tables  ###############################
+  #######################################################################
+  #######################################################################
   # 
   # ################################# Data Summaries ##########################
   # ########################################################################
@@ -104,8 +111,8 @@ run_ercot_program <- function(RStataPath, RStataVersion){
   # create_operating_pool_stats_latex()
 
 
-  ###### Table 2 ##### (also process data to create autoregressive covariates)
-  ###############################################################3
+  ###### Table 2 ##### (also process data to create autoregressive covariates and create summary stats table for appendix)
+  ###############################################################
 
   # options("RStata.StataPath" = RStataPath)
   # options("RStata.StataVersion" = RStataVersion)
@@ -149,16 +156,52 @@ run_ercot_program <- function(RStataPath, RStataVersion){
   # options("RStata.StataVersion" = RStataVersion)
   # stata('../Stata/underbidding_matching.do')
   
-  print('End of Main Body Tables')
-  ########################################################################
-  ########################################################################
-  ###################### Main Body Figures ###############################
-  ########################################################################
-  ########################################################################
-  print('Begin Main Body Figures')
+  # print('End of Main Body Tables')
+  
+  #######################################################################
+  #######################################################################
+  ##################### Main Body Figures ###############################
+  #######################################################################
+  #######################################################################
+  # print('Begin Main Body Figures')
   #### Prints Figures 1 and 2: Comparison of Peak hour to Sunset Hour. Also prints averages of Sunset and Peak hour Times.
-  create_peak_daily_and_sunset_interval_realtime_cap_figures()
-  gc()
-
+  # create_peak_daily_and_sunset_interval_realtime_cap_figures()
+  # gc()
+  
+  #######################################################################
+  #######################################################################
+  ##################### Main Body Select Stats ##########################
+  #######################################################################
+  #######################################################################
+  print_n_generators_in_sample()
+  
+  #### How many generators that enter the market show up in the applicant pool, and in how many phases of the applicant pool? ####
+  calculate_stats_on_presencence_in_applicant_pool()
+  
+  #### How long does it take for a generator to move through the applicant pool and in to operation? ####
+  time_to_operation()
+  
+  #### How much capacity that entered into the applicant pool was cancelled and never made it to operation? ####
+  calculate_cancelled_capacity()
+  
+  #### If a plant goes into standby (ie. Not in operation by expected to return...), how often does it actually return? ####
+  create_stats_on_standby_movement()
+  
+  
+  #######################################################################
+  #######################################################################
+  ##################### Appendix Tables #################################
+  #######################################################################
+  #######################################################################
+  
+  
+  #######################################################################
+  #######################################################################
+  ##################### Appendix Figures ################################
+  #######################################################################
+  #######################################################################
+  
+  ### Profits of Major Firms and significance of scarcity adders
+  # plot_profit_margin_select_firms()
 }
 
