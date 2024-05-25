@@ -1,9 +1,7 @@
-#ignore all files in source data
-source_data/
-
 #ignore all files in Tables and data
 Tables/
 Data/
+Figures/
 
 #ignore file extensions
 *.DS_Store
@@ -12,3 +10,4 @@ Data/
 *.dta
 *.stswp
 *.stswp
+*.DS_Store

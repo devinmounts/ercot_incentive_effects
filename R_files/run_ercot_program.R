@@ -1,13 +1,15 @@
 #### ERCOT Energy Incentive
 ### necessary libraries
 if (!require("pacman")) install.packages("pacman")
-pacman::p_load('tidyverse', 'ggplot2', 'readxl', 'janitor', 'lubridate', 'geojsonio', 'broom', 'sp', 'zoo', 'fastDummies', 'stargazer', 'RStata')
+pacman::p_load('tidyverse', 'ggplot2', 'readxl', 'janitor', 'lubridate', 'geojsonio', 'broom', 'sp', 'zoo', 'fastDummies', 'stargazer', 'RStata', 'suncalc',
+               'cowplot')
 
 ### necessary scripts
 source('ercot_preprocess_functions.R')
 source('eia_pre_process_functions.R')
 source('statistic_functions.R')
 source('regression_script.R')
+source('figure_functions.R')
 
 
 create_necessary_file_folders <- function(){
@@ -27,6 +29,8 @@ create_necessary_file_folders <- function(){
   dir.create(file.path('../Tables/Regressions/Capacity Model/Latex'))
   dir.create(file.path('../Tables/Regressions/underbidding'))
   dir.create(file.path('../Tables/Summary Stats'))
+  
+  dir.create(file.path('../Figures'))
   
 
 }
@@ -115,23 +119,23 @@ run_ercot_program <- function(RStataPath, RStataVersion){
   ####### Tables 3 & 4 ########################### 
   ###############################################
   ######## also creates summary stats for capacity model for appendix #######
-  covar_versions <- c('full_controls')
-  # scenarios: rolling_3_month, exclude_winter_storm_uri, run_polynomial_weather
-  scenarios <- list(c(TRUE,FALSE, TRUE) # primary scenario; poly
-                )
-
-  for(covar_version_input in covar_versions) {
-    print(paste('starting models for covar version: ', covar_version_input, sep=''))
-
-    for (i in seq_along(scenarios)) {
-
-      rolling_3_month = scenarios[[i]][1]
-      exclude_winter_storm_uri = scenarios[[i]][2]
-      run_polynomial_weather = scenarios[[i]][3]
-
-      run_regressions(covar_version_input, rolling_3_month,exclude_winter_storm_uri, run_polynomial_weather)
-    }
-  }
+  # covar_versions <- c('full_controls')
+  # # scenarios: rolling_3_month, exclude_winter_storm_uri, run_polynomial_weather
+  # scenarios <- list(c(TRUE,FALSE, TRUE) # primary scenario; poly
+  #               )
+  # 
+  # for(covar_version_input in covar_versions) {
+  #   print(paste('starting models for covar version: ', covar_version_input, sep=''))
+  # 
+  #   for (i in seq_along(scenarios)) {
+  # 
+  #     rolling_3_month = scenarios[[i]][1]
+  #     exclude_winter_storm_uri = scenarios[[i]][2]
+  #     run_polynomial_weather = scenarios[[i]][3]
+  # 
+  #     run_regressions(covar_version_input, rolling_3_month,exclude_winter_storm_uri, run_polynomial_weather)
+  #   }
+  # }
 
   ######### Underbidding Models ###################
   ########## Table 5 #############################
@@ -145,7 +149,16 @@ run_ercot_program <- function(RStataPath, RStataVersion){
   # options("RStata.StataVersion" = RStataVersion)
   # stata('../Stata/underbidding_matching.do')
   
-  
+  print('End of Main Body Tables')
+  ########################################################################
+  ########################################################################
+  ###################### Main Body Figures ###############################
+  ########################################################################
+  ########################################################################
+  print('Begin Main Body Figures')
+  #### Prints Figures 1 and 2: Comparison of Peak hour to Sunset Hour. Also prints averages of Sunset and Peak hour Times.
+  create_peak_daily_and_sunset_interval_realtime_cap_figures()
+  gc()
 
 }
 
