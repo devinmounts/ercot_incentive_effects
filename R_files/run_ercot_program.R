@@ -10,6 +10,7 @@ source('eia_pre_process_functions.R')
 source('statistic_functions.R')
 source('regression_script.R')
 source('figure_and_stat_functions.R')
+source('variable_layers_regression_script.R')
 
 
 create_necessary_file_folders <- function(){
@@ -210,6 +211,14 @@ run_ercot_program <- function(RStataPath, RStataVersion){
   # run_rls_ar10_timeseries_underbidding_model(run_polynomial_weather)
   
   
+  #######################################################################################
+  ################### Capacity Model Robustness ############################
+  ######################################################################################
+  run_variable_lags_test()
+  create_variable_lags_appendix_summary_and_figure()
+  
+  run_variable_layers_regression_test()
+  format_and_save_latex_output_of_variable_layers_regression()
   
   #######################################################################
   #######################################################################
