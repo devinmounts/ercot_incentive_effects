@@ -887,8 +887,6 @@ run_rls_timeseries_underbidding_model <- function(run_polynomial_weather=TRUE){
   covar_version = 'base_covars'
   df_timeseries_data <- read_csv( '../Data/ERCOT Compiled Data/underbidding_data_w_lags.csv')
   
-  df_timeseries_data$date <- as.Date(paste(df_timeseries_data$year, df_timeseries_data$month, df_timeseries_data$day, sep = '-'), format="%Y-%m-%d")
-  df_timeseries_data$day_of_week <- as.POSIXlt(df_timeseries_data$date)$wday
   df_timeseries_data <- df_timeseries_data %>%
     dummy_cols(select_columns = c('year', 'month', 'day_of_week', 'hour', 'minute'))
   
@@ -896,6 +894,7 @@ run_rls_timeseries_underbidding_model <- function(run_polynomial_weather=TRUE){
   
   covariates <- list(c('year_2022','year_2021','year_2020','year_2019','year_2018','year_2017', 'year_2016'),
                      c('month_12','month_11','month_10','month_9','month_8','month_7','month_6','month_5','month_4', 'month_3','month_2'),
+                     c('day_of_week_1', 'day_of_week_2','day_of_week_3','day_of_week_4','day_of_week_5','day_of_week_6'),
                      c('hour_23', 'hour_22','hour_21', 'hour_20', 'hour_19','hour_18', 'hour_17', 'hour_16','hour_15', 'hour_14', 'hour_13','hour_12', 'hour_11', 'hour_10',
                        'hour_9','hour_8', 'hour_7', 'hour_6','hour_5', 'hour_4', 'hour_3','hour_2', 'hour_1'),
                      c('minute_45', 'minute_30','minute_15'),
@@ -919,6 +918,7 @@ run_rls_timeseries_underbidding_model <- function(run_polynomial_weather=TRUE){
   # write_csv(df_phase_1[,unlist(covariates)],'../Images/Regressions/rls_for_robin/data/underbidding_dataset.csv')
   final_covariate_names  <- c('2022-year', '2021-year', '2020-year', '2019-year', '2018-year', '2017-year', '2016-year',
                               '12-month', '11-month', '10-month', '9-month', '8-month', '7-month', '6-month', '5-month', '4-month', '3-month', '2-month',
+                              'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday',
                               '23-hour', '22-hour', '21-hour', '20-hour', '19-hour', '18-hour', '17-hour', '16-hour', '15-hour', '14-hour', '13-hour', '12-hour', '11-hour', '10-hour', '9-hour', '8-hour', '7-hour', '6-hour', '5-hour', '4-hour', '3-hour', '2-hour', '1-hour',
                               '45-minute', '30-minutes', '15-minute',
                               'Nat. Gas Capacity - GW', 'Renewable Capacity - GW', 'Other Capacity - GW',
@@ -932,10 +932,11 @@ run_rls_timeseries_underbidding_model <- function(run_polynomial_weather=TRUE){
   if (run_polynomial_weather) {
     print('this is a polynomial weather model')
     if (covar_version == 'base_covars'){
-      covariates[[6]] <- c('temp_midpoint_cent', 'temp_midpoint_sq')
+      covariates[[7]] <- c('temp_midpoint_cent', 'temp_midpoint_sq')
       print(length(unlist(covariates)))
       final_covariate_names  <- c('2022-year', '2021-year', '2020-year', '2019-year', '2018-year', '2017-year', '2016-year',
                                   '12-month', '11-month', '10-month', '9-month', '8-month', '7-month', '6-month', '5-month', '4-month', '3-month', '2-month',
+                                  'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday',
                                   '23-hour', '22-hour', '21-hour', '20-hour', '19-hour', '18-hour', '17-hour', '16-hour', '15-hour', '14-hour', '13-hour', '12-hour', '11-hour', '10-hour', '9-hour', '8-hour', '7-hour', '6-hour', '5-hour', '4-hour', '3-hour', '2-hour', '1-hour',
                                   '45-minute', '30-minutes', '15-minute',
                                   'Nat. Gas Capacity - GW', 'Renewable Capacity - GW', 'Other Capacity - GW',
@@ -1106,7 +1107,7 @@ run_rls_timeseries_underbidding_model <- function(run_polynomial_weather=TRUE){
     
     
     ### save direct effects to csv
-    write.csv(tidy(models[[length(models)]]), "../Tables/Regressions/underbidding/gsls_ols_ts_matching_poly_weather.csv")
+    write.csv(tidy(models[[length(models)]]), "../Tables/Regressions/underbidding/robustness/gsls_ols_ts_matching_poly_weather.csv")
     
   } ### end poly weather print statements
 
@@ -1121,12 +1122,13 @@ run_rls_ar1_timeseries_underbidding_model <- function(run_polynomial_weather=TRU
   df_timeseries_data <- read_csv( '../Data/ERCOT Compiled Data/underbidding_data_w_lags.csv')
   
   df_timeseries_data <- df_timeseries_data %>%
-    dummy_cols(select_columns = c('year', 'month', 'day', 'hour', 'minute'))
+    dummy_cols(select_columns = c('year', 'month', 'day_of_week', 'hour', 'minute'))
   
   
   
   covariates <- list(c('year_2022','year_2021','year_2020','year_2019','year_2018','year_2017', 'year_2016'),
                      c('month_12','month_11','month_10','month_9','month_8','month_7','month_6','month_5','month_4', 'month_3','month_2'),
+                     c('day_of_week_1', 'day_of_week_2','day_of_week_3','day_of_week_4','day_of_week_5','day_of_week_6'),
                      c('hour_23', 'hour_22','hour_21', 'hour_20', 'hour_19','hour_18', 'hour_17', 'hour_16','hour_15', 'hour_14', 'hour_13','hour_12', 'hour_11', 'hour_10',
                        'hour_9','hour_8', 'hour_7', 'hour_6','hour_5', 'hour_4', 'hour_3','hour_2', 'hour_1'),
                      c('minute_45', 'minute_30','minute_15'),
@@ -1151,6 +1153,7 @@ run_rls_ar1_timeseries_underbidding_model <- function(run_polynomial_weather=TRU
   # write_csv(df_phase_1[,unlist(covariates)],'../Images/Regressions/rls_for_robin/data/underbidding_dataset.csv')
   final_covariate_names  <- c('2022-year', '2021-year', '2020-year', '2019-year', '2018-year', '2017-year', '2016-year',
                               '12-month', '11-month', '10-month', '9-month', '8-month', '7-month', '6-month', '5-month', '4-month', '3-month', '2-month',
+                              'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday',
                               '23-hour', '22-hour', '21-hour', '20-hour', '19-hour', '18-hour', '17-hour', '16-hour', '15-hour', '14-hour', '13-hour', '12-hour', '11-hour', '10-hour', '9-hour', '8-hour', '7-hour', '6-hour', '5-hour', '4-hour', '3-hour', '2-hour', '1-hour',
                               '45-minute', '30-minutes', '15-minute',
                               'Nat. Gas Capacity - GW', 'Renewable Capacity - GW', 'Other Capacity - GW',
@@ -1164,10 +1167,11 @@ run_rls_ar1_timeseries_underbidding_model <- function(run_polynomial_weather=TRU
   if (run_polynomial_weather) {
     print('this is a polynomial weather model')
     if (covar_version == 'base_covars'){
-      covariates[[6]] <- c('temp_midpoint_cent', 'temp_midpoint_sq')
+      covariates[[7]] <- c('temp_midpoint_cent', 'temp_midpoint_sq')
       print(length(unlist(covariates)))
       final_covariate_names  <- c('2022-year', '2021-year', '2020-year', '2019-year', '2018-year', '2017-year', '2016-year',
                                   '12-month', '11-month', '10-month', '9-month', '8-month', '7-month', '6-month', '5-month', '4-month', '3-month', '2-month',
+                                  'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday',
                                   '23-hour', '22-hour', '21-hour', '20-hour', '19-hour', '18-hour', '17-hour', '16-hour', '15-hour', '14-hour', '13-hour', '12-hour', '11-hour', '10-hour', '9-hour', '8-hour', '7-hour', '6-hour', '5-hour', '4-hour', '3-hour', '2-hour', '1-hour',
                                   '45-minute', '30-minutes', '15-minute',
                                   'Nat. Gas Capacity - GW', 'Renewable Capacity - GW', 'Other Capacity - GW',
@@ -1340,7 +1344,7 @@ run_rls_ar1_timeseries_underbidding_model <- function(run_polynomial_weather=TRU
     )
     
     ### save direct effects to csv
-    write.csv(tidy(models[[length(models)]]), "../Tables/Regressions/underbidding/ar1_ts_matching_poly_weather.csv")
+    write.csv(tidy(models[[length(models)]]), "../Tables/Regressions/underbidding/robustness/ar1_ts_matching_poly_weather.csv")
    
   } ### end poly weather print statements
  
@@ -1353,12 +1357,13 @@ run_rls_ar10_timeseries_underbidding_model <- function(run_polynomial_weather=TR
   df_timeseries_data <- read_csv( '../Data/ERCOT Compiled Data/underbidding_data_w_lags.csv')
   
   df_timeseries_data <- df_timeseries_data %>%
-    dummy_cols(select_columns = c('year', 'month', 'day', 'hour', 'minute'))
+    dummy_cols(select_columns = c('year', 'month', 'day_of_week', 'hour', 'minute'))
   
   
   
   covariates <- list(c('year_2022','year_2021','year_2020','year_2019','year_2018','year_2017', 'year_2016'),
                      c('month_12','month_11','month_10','month_9','month_8','month_7','month_6','month_5','month_4', 'month_3','month_2'),
+                     c('day_of_week_1', 'day_of_week_2','day_of_week_3','day_of_week_4','day_of_week_5','day_of_week_6'),
                      c('hour_23', 'hour_22','hour_21', 'hour_20', 'hour_19','hour_18', 'hour_17', 'hour_16','hour_15', 'hour_14', 'hour_13','hour_12', 'hour_11', 'hour_10',
                        'hour_9','hour_8', 'hour_7', 'hour_6','hour_5', 'hour_4', 'hour_3','hour_2', 'hour_1'),
                      c('minute_45', 'minute_30','minute_15'),
@@ -1384,6 +1389,7 @@ run_rls_ar10_timeseries_underbidding_model <- function(run_polynomial_weather=TR
   # write_csv(df_phase_1[,unlist(covariates)],'../Images/Regressions/rls_for_robin/data/underbidding_dataset.csv')
   final_covariate_names  <- c('2022-year', '2021-year', '2020-year', '2019-year', '2018-year', '2017-year', '2016-year',
                               '12-month', '11-month', '10-month', '9-month', '8-month', '7-month', '6-month', '5-month', '4-month', '3-month', '2-month',
+                              'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday',
                               '23-hour', '22-hour', '21-hour', '20-hour', '19-hour', '18-hour', '17-hour', '16-hour', '15-hour', '14-hour', '13-hour', '12-hour', '11-hour', '10-hour', '9-hour', '8-hour', '7-hour', '6-hour', '5-hour', '4-hour', '3-hour', '2-hour', '1-hour',
                               '45-minute', '30-minutes', '15-minute',
                               'Nat. Gas Capacity - GW', 'Renewable Capacity - GW', 'Other Capacity - GW',
@@ -1397,10 +1403,11 @@ run_rls_ar10_timeseries_underbidding_model <- function(run_polynomial_weather=TR
   if (run_polynomial_weather) {
     print('this is a polynomial weather model')
     if (covar_version == 'base_covars'){
-      covariates[[11]] <- c('temp_midpoint_cent', 'temp_midpoint_sq')
+      covariates[[12]] <- c('temp_midpoint_cent', 'temp_midpoint_sq')
       print(length(unlist(covariates)))
       final_covariate_names  <- c('2022-year', '2021-year', '2020-year', '2019-year', '2018-year', '2017-year', '2016-year',
                                   '12-month', '11-month', '10-month', '9-month', '8-month', '7-month', '6-month', '5-month', '4-month', '3-month', '2-month',
+                                  'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday',
                                   '23-hour', '22-hour', '21-hour', '20-hour', '19-hour', '18-hour', '17-hour', '16-hour', '15-hour', '14-hour', '13-hour', '12-hour', '11-hour', '10-hour', '9-hour', '8-hour', '7-hour', '6-hour', '5-hour', '4-hour', '3-hour', '2-hour', '1-hour',
                                   '45-minute', '30-minutes', '15-minute',
                                   'Nat. Gas Capacity - GW', 'Renewable Capacity - GW', 'Other Capacity - GW'
@@ -1573,7 +1580,7 @@ run_rls_ar10_timeseries_underbidding_model <- function(run_polynomial_weather=TR
     )
     
     ### save direct effects to csv
-    write.csv(tidy(models[[length(models)]]), "../Tables/Regressions/underbidding/ar10_ols_ts_matching_poly_weather.csv")
+    write.csv(tidy(models[[length(models)]]), "../Tables/Regressions/underbidding/robustness/ar10_ols_ts_matching_poly_weather.csv")
     
   } ### end poly weather print statements
   

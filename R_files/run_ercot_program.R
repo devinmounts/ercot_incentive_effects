@@ -30,6 +30,7 @@ create_necessary_file_folders <- function(){
   dir.create(file.path('../Tables/Regressions/Capacity Model/Summary'))
   dir.create(file.path('../Tables/Regressions/Capacity Model/Latex'))
   dir.create(file.path('../Tables/Regressions/underbidding'))
+  dir.create(file.path('../Tables/Regressions/underbidding/robustness'))
   dir.create(file.path('../Tables/Summary Stats'))
   
   dir.create(file.path('../Figures'))
@@ -116,9 +117,9 @@ run_ercot_program <- function(RStataPath, RStataVersion){
   ###### Table 2 ##### (also process data to create autoregressive covariates and create summary stats table for appendix)
   ###############################################################
 
-  options("RStata.StataPath" = RStataPath)
-  options("RStata.StataVersion" = RStataVersion)
-  stata('../Stata/underbidding_data_summary.do')
+  # options("RStata.StataPath" = RStataPath)
+  # options("RStata.StataVersion" = RStataVersion)
+  # stata('../Stata/underbidding_data_summary.do')
 
 
   ################################### Results Section ############################
@@ -214,11 +215,18 @@ run_ercot_program <- function(RStataPath, RStataVersion){
   #######################################################################################
   ################### Capacity Model Robustness ############################
   ######################################################################################
-  run_variable_lags_test()
-  create_variable_lags_appendix_summary_and_figure()
+  # run_variable_lags_test()
+  # create_variable_lags_appendix_summary_and_figure()
+  # 
+  # run_variable_layers_regression_test()
+  # format_and_save_latex_output_of_variable_layers_regression()
   
-  run_variable_layers_regression_test()
-  format_and_save_latex_output_of_variable_layers_regression()
+  #######################################################################################
+  ######################## Underbidding Matching Robustness ############################
+  ######################################################################################
+  options("RStata.StataPath" = RStataPath)
+  options("RStata.StataVersion" = RStataVersion)
+  stata('../Stata/underbidding_matching_robustness.do')
   
   #######################################################################
   #######################################################################

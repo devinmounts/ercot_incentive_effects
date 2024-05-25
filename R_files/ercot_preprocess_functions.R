@@ -1219,6 +1219,8 @@ create_matching_dataset <- function(){
     left_join(df_gini, 
               by=c('year', 'month'))
   
+  df_gen_cap$day_of_week <- as.POSIXlt(df_gen_cap$date)$wday ## (0-6 starting on Sunday).
+  
   rm(df_gini)  
   write_csv(df_gen_cap, '../Data/ERCOT Compiled Data/ercot_scarcity_pricing_matching_set.csv')
   

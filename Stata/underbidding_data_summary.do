@@ -135,11 +135,11 @@
 	** Select columns
 	keep price active active_rtorpa rtorpa rtordpa total_pa int_tot_gen_gas_gw int_tot_gen_renewable_gw int_tot_gen_other_gw scarcity_measure ///
 	rttotcap_gw  ng_gw renewables_gw other_gw temp_midpoint_cent temp_midpoint_sq ng_price weather_wnds ///
-	year month day hour minute repeated_hour_flag
+	year month day_of_week day hour minute repeated_hour_flag
 
 	order price active active_rtorpa rtorpa rtordpa  int_tot_gen_gas_gw int_tot_gen_renewable_gw int_tot_gen_other_gw scarcity_measure ///
 	rttotcap_gw  ng_gw renewables_gw other_gw temp_midpoint_cent temp_midpoint_sq ng_price weather_wnds ///
-	year month day hour minute repeated_hour_flag
+	year month day_of_week day hour minute repeated_hour_flag
 
 	
 	** Run
@@ -169,16 +169,18 @@
 			replace active = (incentive > 0)
 			order active, last
 			
-			eststo all:  estpost sum price active total_pa int_tot_gen_gas_gw int_tot_gen_renewable_gw int_tot_gen_other_gw scarcity_measure rttotcap_gw  ng_gw renewables_gw other_gw temp_midpoint_cent temp_midpoint_sq ng_price weather_wnds year month hour minute  
-			eststo active_off:  estpost sum price active total_pa int_tot_gen_gas_gw int_tot_gen_renewable_gw int_tot_gen_other_gw scarcity_measure rttotcap_gw  ng_gw renewables_gw other_gw temp_midpoint_cent temp_midpoint_sq ng_price weather_wnds year month hour minute  if active == 0 
-			eststo active_on:  estpost sum price active total_pa  int_tot_gen_gas_gw int_tot_gen_renewable_gw int_tot_gen_other_gw scarcity_measure rttotcap_gw  ng_gw renewables_gw other_gw temp_midpoint_cent temp_midpoint_sq ng_price weather_wnds year month hour minute  if active == 1
+			eststo all:  estpost sum price active total_pa int_tot_gen_gas_gw int_tot_gen_renewable_gw int_tot_gen_other_gw scarcity_measure rttotcap_gw  ng_gw renewables_gw other_gw temp_midpoint_cent temp_midpoint_sq ng_price weather_wnds year month day_of_week hour minute  
+			eststo active_off:  estpost sum price active total_pa int_tot_gen_gas_gw int_tot_gen_renewable_gw int_tot_gen_other_gw scarcity_measure rttotcap_gw  ng_gw renewables_gw other_gw temp_midpoint_cent temp_midpoint_sq ng_price weather_wnds year month day_of_week hour minute  if active == 0 
+			eststo active_on:  estpost sum price active total_pa  int_tot_gen_gas_gw int_tot_gen_renewable_gw int_tot_gen_other_gw scarcity_measure rttotcap_gw  ng_gw renewables_gw other_gw temp_midpoint_cent temp_midpoint_sq ng_price weather_wnds year month day_of_week hour minute  if active == 1
 
 			cd "`dir'"
 			esttab all active_off active_on using "../Tables/Summary Stats/covariate_means_by_incentive_state.tex", replace unstack mtitle("All Intervals" "Inactive Incentive" "Active Incentive") cells("mean(fmt(2))") label title(Covariate Means by Scarcity Incentive State)
 			
+			
+			
 			eststo clear
 			** Run simple
-			reg price year##year month##month day##day hour##hour ///
+			reg price year##year month##month day_of_week##day_of_week hour##hour minute##minute ///
 				int_tot_gen_gas_gw-weather_wnds active incentive 
 
 			
@@ -251,27 +253,15 @@
 			
 
 			
-			reg price year##year month##month day##day hour##hour ///
+			eststo reg1: reg price year##year month##month day_of_week##day_of_week hour##hour minute##minute///
 				int_tot_gen_gas_gw-weather_wnds active incentive 
-			reg price year##year month##month day##day hour##hour ///
-				int_tot_gen_gas_gw-weather_wnds active incentive e_*
-			reg price year##year month##month day##day hour##hour ///
-				int_tot_gen_gas_gw-weather_wnds active incentive e_* d_*
-			reg price year##year month##month day##day hour##hour ///
-				int_tot_gen_gas_gw-weather_wnds active incentive e_1 
-			reg price year##year month##month day##day hour##hour ///
-				int_tot_gen_gas_gw-weather_wnds active incentive e_1 d_1
-			
-			
-			eststo reg1: reg price year##year month##month day##day hour##hour ///
-				int_tot_gen_gas_gw-weather_wnds active incentive 
-			eststo reg2: reg price year##year month##month day##day hour##hour ///
+			eststo reg2: reg price year##year month##month day_of_week##day_of_week hour##hour minute##minute///
 				int_tot_gen_gas_gw-weather_wnds active incentive e_1
-			eststo reg3: reg price year##year month##month day##day hour##hour ///
+			eststo reg3: reg price year##year month##month day_of_week##day_of_week hour##hour minute##minute///
 				int_tot_gen_gas_gw-weather_wnds active incentive e_1 d_1
-			eststo reg4: reg price year##year month##month day##day hour##hour ///
+			eststo reg4: reg price year##year month##month day_of_week##day_of_week hour##hour minute##minute///
 				int_tot_gen_gas_gw-weather_wnds active incentive e_1 e_2 e_3 e_4
-			eststo reg5: reg price year##year month##month day##day hour##hour ///
+			eststo reg5: reg price year##year month##month day_of_week##day_of_week hour##hour minute##minute ///
 				int_tot_gen_gas_gw-weather_wnds active incentive e_1 e_2 e_3 e_4 e_5 d_1 d_2 d_3 d_4 d_5
 			esttab reg1 reg2 reg3 reg4 reg5 using "../Tables/Regressions/underbidding/underbidding_w_autoregressive_variations.tex", replace r2 aic bic scalar(F)	
 			

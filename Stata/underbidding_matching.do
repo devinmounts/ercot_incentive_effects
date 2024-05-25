@@ -20,7 +20,7 @@
 	******************************************************************
 	************************* Matching *******************************
 	******************************************************************
-	local test_matching = 0
+	local test_matching = 1
 	clear all
 	
 	local dir =  "/`c(pwd)'"
@@ -29,7 +29,10 @@
 	use underbidding_data_w_lags, clear
 	cd "`dir'"
 	
-	drop temp_midpoint_sq
+	*** drop columns
+	drop temp_midpoint_sq day
+	
+	
 	if `test_matching'==1 {
 		generate random = runiform()
 		sort random
@@ -48,6 +51,9 @@
 	matrix teresults_xpose = teresults'
 	matrix list teresults_xpose
 	esttab matrix(teresults_xpose) using "../Tables/Regressions/underbidding/active_match_results.tex", replace ///
+	cells("b(fmt(%5.3f)) se(fmt(%5.3f)) z(fmt(%5.3f)) pvalue(fmt(%5.3f))")
+	
+	esttab matrix(teresults_xpose) using "../Tables/Regressions/underbidding/active_match_results.csv", replace ///
 	cells("b(fmt(%5.3f)) se(fmt(%5.3f)) z(fmt(%5.3f)) pvalue(fmt(%5.3f))")
 
 	** save and output match balance summary
