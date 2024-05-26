@@ -253,13 +253,13 @@
 			
 
 			
-			eststo reg1: reg price year##year month##month day_of_week##day_of_week hour##hour minute##minute///
+			eststo reg1: reg price year##year month##month day_of_week##day_of_week hour##hour minute##minute ///
 				int_tot_gen_gas_gw-weather_wnds active incentive 
-			eststo reg2: reg price year##year month##month day_of_week##day_of_week hour##hour minute##minute///
+			eststo reg2: reg price year##year month##month day_of_week##day_of_week hour##hour minute##minute ///
 				int_tot_gen_gas_gw-weather_wnds active incentive e_1
-			eststo reg3: reg price year##year month##month day_of_week##day_of_week hour##hour minute##minute///
+			eststo reg3: reg price year##year month##month day_of_week##day_of_week hour##hour minute##minute ///
 				int_tot_gen_gas_gw-weather_wnds active incentive e_1 d_1
-			eststo reg4: reg price year##year month##month day_of_week##day_of_week hour##hour minute##minute///
+			eststo reg4: reg price year##year month##month day_of_week##day_of_week hour##hour minute##minute ///
 				int_tot_gen_gas_gw-weather_wnds active incentive e_1 e_2 e_3 e_4
 			eststo reg5: reg price year##year month##month day_of_week##day_of_week hour##hour minute##minute ///
 				int_tot_gen_gas_gw-weather_wnds active incentive e_1 e_2 e_3 e_4 e_5 d_1 d_2 d_3 d_4 d_5

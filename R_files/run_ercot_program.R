@@ -42,19 +42,20 @@ run_ercot_program <- function(RStataPath, RStataVersion){
   print('creating target file folders')
   create_necessary_file_folders()
   
-  #######################################################################
-  #######################################################################
-  ################ Load and Process Source Data #########################
-  #######################################################################
-  #######################################################################
-  
-  # ############################################
+  # #######################################################################
+  # #######################################################################
+  # ################ Load and Process Source Data #########################
+  # #######################################################################
+  # #######################################################################
   # 
+  # ############################################
+  # print('loading ERCOT data')
   # create_generation_capacity_and_adder_data()
   # gc()
   # 
-  # # #### loads and processes EIA datasets ####
-  # # #########################################
+  # #### loads and processes EIA datasets ####
+  # #########################################
+  # print('loading EIA data')
   # EIA_data <- load_EIA860M_and_EIA932A()
   # 
   # df_EIA860M <- EIA_data$EIA860M
@@ -67,11 +68,13 @@ run_ercot_program <- function(RStataPath, RStataVersion){
   # 
   # #### Shape EIA data to represent chronological life of a generator. ####
   # ########################################################################
+  # print('creating EIA plant timeline')
   # create_plant_gen_id_phase_timeline_csv()
   # gc()
   # 
   # ################## Create Supporting Data Sets ###################
   # ##################################################################
+  # print('creating controls data')
   # lag_months = 12 # default 12 months for main body, robustness data created in appendix section.
   # load_peaker_net_margin()
   # gc()
@@ -95,40 +98,41 @@ run_ercot_program <- function(RStataPath, RStataVersion){
   # 
   # ####################### Interval Data #################################
   # #######################################################################
+  # print('creating interval data')
   # create_daily_weather_data()
   # gc()
   # create_matching_dataset()
   # gc()
-  # 
-  #######################################################################
-  #######################################################################
-  ##################### Main Body Tables  ###############################
-  #######################################################################
-  #######################################################################
-  # 
-  # ################################# Data Summaries ##########################
-  # ########################################################################
-  # 
-  # ################### Table 1 #### - Entry and Exit of Operating Capacity
-  # #################################
-  # create_operating_pool_stats_latex()
-
-
-  ###### Table 2 ##### (also process data to create autoregressive covariates and create summary stats table for appendix)
-  ###############################################################
-
+# 
+#   #######################################################################
+#   #######################################################################
+#   ##################### Main Body Tables  ###############################
+#   #######################################################################
+#   #######################################################################
+# 
+#   ################################# Data Summaries ##########################
+#   ########################################################################
+# 
+#   ################### Table 1 #### - Entry and Exit of Operating Capacity
+#   #################################
+#   create_operating_pool_stats_latex()
+# 
+# 
+#   ###### Table 2 ##### (also process data to create autoregressive covariates and create summary stats table for appendix)
+#   ###############################################################
+  # print('Generating Table two')
   # options("RStata.StataPath" = RStataPath)
   # options("RStata.StataVersion" = RStataVersion)
   # stata('../Stata/underbidding_data_summary.do')
-
-
-  ################################### Results Section ############################
-  ###############################################################################
-  
-  ####### Capacity Models #######################
-  ####### Tables 3 & 4 ########################### 
-  ###############################################
-  ######## also creates summary stats for capacity model for appendix #######
+  # 
+  # 
+  # ################################### Results Section ############################
+  # ###############################################################################
+  # 
+  # ####### Capacity Models #######################
+  # ####### Tables 3 & 4 ###########################
+  # ###############################################
+  # ######## also creates summary stats for capacity model for appendix #######
   # covar_versions <- c('full_controls')
   # # scenarios: rolling_3_month, exclude_winter_storm_uri, run_polynomial_weather
   # scenarios <- list(c(TRUE,FALSE, TRUE) # primary scenario; poly
@@ -146,36 +150,36 @@ run_ercot_program <- function(RStataPath, RStataVersion){
   #     run_regressions(covar_version_input, rolling_3_month,exclude_winter_storm_uri, run_polynomial_weather)
   #   }
   # }
-
-  ######### Underbidding Models ###################
-  ########## Table 5 #############################
-  ###############################################
+  # 
+  # ######### Underbidding Models ###################
+  # ########## Table 5 #############################
+  # ###############################################
   # run_polynomial_weather=TRUE
   # run_rls_timeseries_underbidding_model(run_polynomial_weather)
-
-  ########## Table 6 ##########################
-  ############################################
+  # 
+  # ########## Table 6 ##########################
+  # ############################################
   # options("RStata.StataPath" = RStataPath)
   # options("RStata.StataVersion" = RStataVersion)
   # stata('../Stata/underbidding_matching.do')
-  
+  # 
   # print('End of Main Body Tables')
-  
-  #######################################################################
-  #######################################################################
-  ##################### Main Body Figures ###############################
-  #######################################################################
-  #######################################################################
+  # 
+  # #######################################################################
+  # #######################################################################
+  # ##################### Main Body Figures ###############################
+  # #######################################################################
+  # #######################################################################
   # print('Begin Main Body Figures')
-  #### Prints Figures 1 and 2: Comparison of Peak hour to Sunset Hour. Also prints averages of Sunset and Peak hour Times.
+  # ### Prints Figures 1 and 2: Comparison of Peak hour to Sunset Hour. Also prints averages of Sunset and Peak hour Times.
   # create_peak_daily_and_sunset_interval_realtime_cap_figures()
   # gc()
-  
-  #######################################################################
-  #######################################################################
-  ##################### Main Body Select Stats ##########################
-  #######################################################################
-  #######################################################################
+  # 
+  # #######################################################################
+  # #######################################################################
+  # ##################### Main Body Select Stats ##########################
+  # #######################################################################
+  # #######################################################################
   # print_n_generators_in_sample()
   # 
   # #### How many generators that enter the market show up in the applicant pool, and in how many phases of the applicant pool? ####
@@ -190,37 +194,37 @@ run_ercot_program <- function(RStataPath, RStataVersion){
   # #### If a plant goes into standby (ie. Not in operation by expected to return...), how often does it actually return? ####
   # create_stats_on_standby_movement()
   # 
-  
-  #######################################################################
-  #######################################################################
-  ################ Appendix Figures and Tables ##########################
-  #######################################################################
-  #######################################################################
-  
-  ### Summary Statistics for capacity model result from functions in main body section
-  
-  ### Profits of Major Firms and significance of scarcity adders
-  # plot_profit_margin_select_firms()
-  
-  ### Full capacity model and applicant pool results tables produced in main body section
-  
-  #######################################################################################
-  ################### Underbidding Autoregressive Robustness ############################
-  ######################################################################################
-  # run_polynomial_weather=TRUE
-  # run_rls_ar1_timeseries_underbidding_model(run_polynomial_weather)
-  # run_rls_ar10_timeseries_underbidding_model(run_polynomial_weather)
-  
-  
+# 
+#   #######################################################################
+#   #######################################################################
+#   ################ Appendix Figures and Tables ##########################
+#   #######################################################################
+#   #######################################################################
+#   ### Summary Statistics for capacity model result from functions in main body section
+# 
+#   ### Profits of Major Firms and significance of scarcity adders
+#   print('Plotting Profit Margin of Major Firms')
+#   plot_profit_margin_select_firms()
+# 
+#   ### Full capacity model and applicant pool results tables produced in main body section
+# 
+#   #######################################################################################
+#   ################### Underbidding Autoregressive Robustness ############################
+#   ######################################################################################
+#   run_polynomial_weather=TRUE
+#   run_rls_ar1_timeseries_underbidding_model(run_polynomial_weather)
+#   run_rls_ar10_timeseries_underbidding_model(run_polynomial_weather)
+# 
+# 
   #######################################################################################
   ################### Capacity Model Robustness ############################
   ######################################################################################
-  # run_variable_lags_test()
-  # create_variable_lags_appendix_summary_and_figure()
-  # 
-  # run_variable_layers_regression_test()
-  # format_and_save_latex_output_of_variable_layers_regression()
-  
+  run_variable_lags_test()
+  create_variable_lags_appendix_summary_and_figure()
+
+  run_variable_layers_regression_test()
+  format_and_save_latex_output_of_variable_layers_regression()
+
   #######################################################################################
   ######################## Underbidding Matching Robustness ############################
   ######################################################################################
@@ -228,11 +232,7 @@ run_ercot_program <- function(RStataPath, RStataVersion){
   options("RStata.StataVersion" = RStataVersion)
   stata('../Stata/underbidding_matching_robustness.do')
   
-  #######################################################################
-  #######################################################################
-  ##################### Appendix Figures ################################
-  #######################################################################
-  #######################################################################
+
   
   
 }

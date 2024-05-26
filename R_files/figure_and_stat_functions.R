@@ -279,7 +279,7 @@ create_peak_day_generation_by_fuel_w_select_summer_and_winter <- function(df_pea
 
 plot_profit_margin_select_firms <- function(){
   df_profits = read_excel('../source_data/Generator Profits/sec_filings_ng.xlsx')
-  df_annual_pas = read_csv('../Data/ERCOT Complied Data/ercot_pa_annaul_sum.csv')
+  df_annual_pas = read_csv('../Data/ERCOT Compiled Data/ercot_pa_annaul_sum.csv')
   
   print(paste('Annual mean of Incentive:', mean(df_annual_pas[df_annual_pas$year >=2015,]$annual_rtorpa)))
   print(paste('Annual mean of Incentive payments:$', mean(df_annual_pas[df_annual_pas$year >=2015,]$total_pa_payments_bill), 'billion'))
@@ -533,19 +533,19 @@ create_operating_pool_stats_latex <- function() {
   }
   
   
-  stargazer(df_summary_operation,
-            summary = F,
-            title='Generator Summary Statistics',
-            header = F,
-            digits=2,
-            rownames = F, 
-            notes = 'Values in parenthesis denote share of total',
-            font.size = 'small',
-            out ='../Images/Figures/operating_generators_summary_statistics.tex')
+  # stargazer(df_summary_operation,
+  #           summary = F,
+  #           title='Generator Summary Statistics',
+  #           header = F,
+  #           digits=2,
+  #           rownames = F, 
+  #           notes = 'Values in parenthesis denote share of total',
+  #           font.size = 'small',
+  #           out ='../Images/Figures/operating_generators_summary_statistics.tex')
   
   stargazer(df_summary_operation, summary = F, title='Generator Summary Statistics', header = F, digits=2, rownames = F, notes = 'Values in parenthesis denote share of total', font.size = 'small',
-            out = '../Images/Summary Stats/generators_entry_exit_summary_statistics.csv')
-  return(stargazer(df_summary_operation, summary = F, title='Generator Summary Statistics', header = F, digits=2, rownames = F, notes = 'Values in parenthesis denote share of total', font.size = 'small'))
+            out = '../Tables/Summary Stats/generators_entry_exit_summary_statistics.csv')
+  # return(stargazer(df_summary_operation, summary = F, title='Generator Summary Statistics', header = F, digits=2, rownames = F, notes = 'Values in parenthesis denote share of total', font.size = 'small'))
 }
 
 time_to_operation <- function() {

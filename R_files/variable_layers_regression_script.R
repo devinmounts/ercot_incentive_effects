@@ -1,5 +1,5 @@
 
-run_regressions <- function(covar_version_input, rolling_3_month_input, exclude_winter_storm_uri_input, run_polynomial_weather_input, variable_lags_test=FALSE, lag_months, months_to_lag){
+run_variable_layers_regressions <- function(covar_version_input, rolling_3_month_input, exclude_winter_storm_uri_input, run_polynomial_weather_input, variable_lags_test=FALSE, lag_months, months_to_lag){
 
   summary_file <- '../Data/Regressions/variable_layers_regression.csv'
   
@@ -158,7 +158,7 @@ run_regressions <- function(covar_version_input, rolling_3_month_input, exclude_
     if (regressions[1] == TRUE) {
       print(paste('running regressions w/ data for: ', regressions_string[i], 'monthtly aggregate'))
       ## monthly observation regression
-      df_phase_1 <- read_csv('../Data/Regressions/pre_model_data/ng_panel_totalquantity_12mo_lag.csv')
+      df_phase_1 <- read_csv('../Data/Regressions/Capacity Model/pre_model_data/ng_panel_totalquantity_12mo_lag.csv')
 
       df_phase_1 <- df_phase_1 %>%
         mutate(log_pool_n_plant_gen_id_Renewables = 0,
@@ -183,7 +183,7 @@ run_regressions <- function(covar_version_input, rolling_3_month_input, exclude_
     if (regressions[2] == TRUE) {
       print(paste('running regressions w/ data for: ', regressions_string[i], 'monthtly aggregate'))
       ## monthly observation regression
-      df_phase_1 <- read_csv('../Data/Regressions/pre_model_data/renewable_panel_totalquantity_12mo_lag.csv')
+      df_phase_1 <- read_csv('../Data/Regressions/Capacity Model/pre_model_data/renewable_panel_totalquantity_12mo_lag.csv')
 
       df_phase_1 <- df_phase_1 %>%
         mutate(log_pool_n_plant_gen_id_Renewables = 0,
@@ -578,7 +578,7 @@ run_variable_layers_regression_test <- function(reload_data=TRUE){
         exclude_winter_storm_uri = scenarios[[i]][2]
         run_polynomial_weather = scenarios[[i]][3]
         
-        run_regressions(covar_version_input, rolling_3_month,exclude_winter_storm_uri, run_polynomial_weather, variable_lags_test, lag_months, months_to_lag)
+        run_variable_layers_regressions(covar_version_input, rolling_3_month,exclude_winter_storm_uri, run_polynomial_weather, variable_lags_test, lag_months, months_to_lag)
       }
     }
     gc()

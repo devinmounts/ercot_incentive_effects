@@ -18,7 +18,7 @@
 
 	************************* Matching *******************************
 	******************************************************************
-	local test_matching = 1
+	local test_matching = 0
 	clear all
 	
 	local dir =  "/`c(pwd)'"
@@ -130,13 +130,13 @@
 	esttab all active_off active_on using "../Tables/Regressions/underbidding/robustness/covariate_means_by_incentive_state_no_uri.csv", replace unstack mtitle("All Intervals" "Inactive Incentive" "Active Incentive") cells("mean(fmt(2))") label title(Covariate Means by Scarcity Incentive State)
 	
 	******************* Basic Regressions *****************
-	eststo reg1: reg price year##year month##month day_of_week##day_of_week hour##hour minute##minute///
+	eststo reg1: reg price year##year month##month day_of_week##day_of_week hour##hour minute##minute ///
 		int_tot_gen_gas_gw-weather_wnds active incentive 
-	eststo reg2: reg price year##year month##month day_of_week##day_of_week hour##hour minute##minute///
+	eststo reg2: reg price year##year month##month day_of_week##day_of_week hour##hour minute##minute ///
 		int_tot_gen_gas_gw-weather_wnds active incentive e_1
-	eststo reg3: reg price year##year month##month day_of_week##day_of_week hour##hour minute##minute///
+	eststo reg3: reg price year##year month##month day_of_week##day_of_week hour##hour minute##minute ///
 		int_tot_gen_gas_gw-weather_wnds active incentive e_1 d_1
-	eststo reg4: reg price year##year month##month day_of_week##day_of_week hour##hour minute##minute///
+	eststo reg4: reg price year##year month##month day_of_week##day_of_week hour##hour minute##minute ///
 		int_tot_gen_gas_gw-weather_wnds active incentive e_1 e_2 e_3 e_4
 	eststo reg5: reg price year##year month##month day_of_week##day_of_week hour##hour minute##minute ///
 		int_tot_gen_gas_gw-weather_wnds active incentive e_1 e_2 e_3 e_4 e_5 d_1 d_2 d_3 d_4 d_5
@@ -271,13 +271,13 @@
 	esttab all active_off active_on using "../Tables/Regressions/underbidding/robustness/covariate_means_by_incentive_price_cap_gap.csv", replace unstack mtitle("All Intervals" "Inactive Incentive" "Active Incentive") cells("mean(fmt(2))") label title(Covariate Means by Scarcity Incentive State)
 	
 	******************* Basic Regressions *****************
-		eststo reg1: reg price year##year month##month day_of_week##day_of_week hour##hour minute##minute///
+		eststo reg1: reg price year##year month##month day_of_week##day_of_week hour##hour minute##minute ///
 		int_tot_gen_gas_gw-weather_wnds active incentive 
-	eststo reg2: reg price year##year month##month day_of_week##day_of_week hour##hour minute##minute///
+	eststo reg2: reg price year##year month##month day_of_week##day_of_week hour##hour minute##minute ///
 		int_tot_gen_gas_gw-weather_wnds active incentive e_1
-	eststo reg3: reg price year##year month##month day_of_week##day_of_week hour##hour minute##minute///
+	eststo reg3: reg price year##year month##month day_of_week##day_of_week hour##hour minute##minute ///
 		int_tot_gen_gas_gw-weather_wnds active incentive e_1 d_1
-	eststo reg4: reg price year##year month##month day_of_week##day_of_week hour##hour minute##minute///
+	eststo reg4: reg price year##year month##month day_of_week##day_of_week hour##hour minute##minute ///
 		int_tot_gen_gas_gw-weather_wnds active incentive e_1 e_2 e_3 e_4
 	eststo reg5: reg price year##year month##month day_of_week##day_of_week hour##hour minute##minute ///
 		int_tot_gen_gas_gw-weather_wnds active incentive e_1 e_2 e_3 e_4 e_5 d_1 d_2 d_3 d_4 d_5
