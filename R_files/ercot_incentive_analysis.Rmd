@@ -19,4 +19,165 @@ run_ercot_program(RStataPath, RStataVersion)
 gc()
 ```
 
+```{r}
+#### Underbidding Appendix Comparison Table
+### Model 1
+model_results_files <- c('../Tables/Regressions/underbidding/underbidding_w_autoregressive_variations.csv',
+                         '../Tables/Regressions/underbidding/robustness/underbidding_w_autoregressive_variations_price_cap_gap.csv',
+                         '../Tables/Regressions/underbidding/robustness/underbidding_w_autoregressive_variations_no_uri.csv',
+                         '../Tables/Regressions/underbidding/robustness/underbidding_w_autoregressive_variations_price_cap_gap.csv',
+                         '../Tables/Regressions/underbidding/robustness/underbidding_w_autoregressive_variations_price_cap_gap.csv',
+                         '../Tables/Regressions/underbidding/robustness/active_match_results_price_cap_gap.csv',
+                         '../Tables/Regressions/underbidding/robustness/active_match_results_no_uri.csv',
+                         '../Tables/Regressions/underbidding/robustness/active_match_results_ar10_pcgap.csv'
+                         )
+incentive_state_files <- c('../Tables/Regressions/underbidding/robustness/covariate_means_by_incentive_state.csv',
+                           '../Tables/Regressions/underbidding/robustness/covariate_means_by_incentive_price_cap_gap.csv',
+                           '../Tables/Regressions/underbidding/robustness/covariate_means_by_incentive_state_no_uri.csv',
+                           '../Tables/Regressions/underbidding/robustness/covariate_means_by_incentive_price_cap_gap.csv',
+                           '../Tables/Regressions/underbidding/robustness/covariate_means_by_incentive_price_cap_gap.csv',
+                           '../Tables/Regressions/underbidding/robustness/covariate_means_by_incentive_price_cap_gap.csv',
+                           '../Tables/Regressions/underbidding/robustness/covariate_means_by_incentive_state_no_uri.csv',
+                           '../Tables/Regressions/underbidding/robustness/covariate_means_by_incentive_price_cap_gap.csv'
+                           )
+
+matching_size_files <- c('../Tables/Regressions/underbidding/robustness/active_match_size_price_cap_gap.csv',
+                        '../Tables/Regressions/underbidding/robustness/active_match_size_no_uri.csv',
+                        '../Tables/Regressions/underbidding/robustness/active_match_size_ar10_pcgap.csv'
+                        )
+
+for (model in c(1,2,3,4,5,6,7,8)){
+  print(paste('Starting Model', model))
+  if (model %in% c(1,2,3)){
+    model_to_select_from_effect_data <- 2 ### basic model
+  } else if (model %in% c(4)) {
+    model_to_select_from_effect_data <- 3 ### ar1
+  } else if (model %in% c(5)) {
+    model_to_select_from_effect_data <- 6 #### ar10
+  }
+  
+  if (model %in% c(1,2,3,4,5)) {
+    
+    ##### read and parse effects
+    df_effects_1 <- read_csv(model_results_files[model])
+    df_effects_1[] <- lapply(df_effects_1[], function(x) sub(".*\\=", "", x))
+    df_effects_1[] <- lapply(df_effects_1[], function(x) gsub("\"", "", x))
+    names(df_effects_1) <- c('coef', 1,2,3,4,5)
+    df_effects_1 <- df_effects_1[df_effects_1$coef %in% c('active', 'incentive', 'N', 'R-sq', 'AIC','BIC','F'),
+                      c(1,model_to_select_from_effect_data)]
+    
+    #read and parse incentive mean
+    df_pa_1 <- read_csv(incentive_state_files[model], skip=2)
+    df_pa_1[] <- lapply(df_pa_1[], function(x) sub(".*\\=", "", x))
+    df_pa_1[] <- lapply(df_pa_1[], function(x) gsub("\"", "", x))
+    names(df_pa_1) <- c('coef', 1,2,3)
+    df_pa_1 <- df_pa_1[df_pa_1$coef %in% c('total_pa'),
+                      c(1,4)]
+    
+    ### join data and calculate underbid
+    df_effects_1[nrow(df_effects_1)+1, ] = c(df_pa_1[,1], df_pa_1[,2])
+    total_underbid = round((parse_number(df_effects_1[[which(df_effects_1$coef=='active'), c(2)]]) + parse_number(df_effects_1[[which(df_effects_1$coef=='incentive'), c(2)]])*parse_number(df_effects_1[[which(df_effects_1$coef=='total_pa'), c(2)]])),2)
+    df_effects_1[nrow(df_effects_1)+1,] = list('total_underbid', as.character(total_underbid))
+
+  ## rename columns
+  names(df_effects_1) <- c('coef', model)
+  
+  ### end of direct effect models
+  } else if (model %in% c(6,7,8)) {
+    if (model == 6) {
+      matching_size_file = matching_size_files[1]
+    }
+    if (model == 7) {
+      matching_size_file = matching_size_files[2]
+    }
+    if (model == 8) {
+      matching_size_file = matching_size_files[3]
+    }
+    ### Matching coef
+    
+    df_effects_1 <-read_csv(model_results_files[model],skip=1)
+    df_effects_1[] <- lapply(df_effects_1[], function(x) sub(".*\\=", "", x))
+    df_effects_1[] <- lapply(df_effects_1[], function(x) gsub("\"", "", x))
+    names(df_effects_1) <- c('coef', 1,2,3,4)
+    df_effects_1 <- df_effects_1[df_effects_1$coef %in% c('r1vs0.active'),
+                  c(1,2)]
+    df_effects_1[df_effects_1$coef == 'r1vs0.active']$coef = 'active'
+    df_effects_1[df_effects_1$coef == 'r1vs0.active']$coef = 'active'
+    df_effects_1[(df_effects_1$coef=='active'), c(2)] = as.character(round(as.numeric(df_effects_1[[which(df_effects_1$coef=='active'), c(2)]]),2))
+    
+    ### Matching Size
+    df_size <-read_csv(matching_size_file,skip=1)
+    df_size[] <- lapply(df_size[], function(x) sub(".*\\=", "", x))
+    df_size[] <- lapply(df_size[], function(x) gsub("\"", "", x))
+    names(df_size) <- c('coef', 1,2)
+    df_size <- df_size[df_size$coef %in% c('Number of obs'),
+                  c(1,3)]
+    df_size[df_size$coef == 'Number of obs']$coef = 'N'
+    df_effects_1[nrow(df_effects_1)+1,] = list('N', df_size[[which(df_size$coef=='N'), c(2)]])
+    
+    #read and parse incentive mean
+    df_pa_1 <- read_csv(incentive_state_files[model], skip=2)
+    df_pa_1[] <- lapply(df_pa_1[], function(x) sub(".*\\=", "", x))
+    df_pa_1[] <- lapply(df_pa_1[], function(x) gsub("\"", "", x))
+    names(df_pa_1) <- c('coef', 1,2,3)
+    df_pa_1 <- df_pa_1[df_pa_1$coef %in% c('total_pa'),
+                  c(1,4)]
+    
+    ### join data and calculate underbid
+    df_effects_1[nrow(df_effects_1)+1, ] = c(df_pa_1[,1], df_pa_1[,2])
+    total_underbid = df_effects_1[[which(df_effects_1$coef=='active'), c(2)]]
+    df_effects_1[nrow(df_effects_1)+1,] = list('total_underbid', as.character(total_underbid))
+    
+    #### format significance stars manually
+    df_effects_1[(df_effects_1$coef=='active'), c(2)] = paste(df_effects_1[[which(df_effects_1$coef=='active'), c(2)]], '***', sep = '')
+    
+    ## rename columns
+    names(df_effects_1) <- c('coef', model)
+  }
+  
+  if (model == 1){
+    print('Setting Results for first model')
+    df_direct_effects <- df_effects_1
+  } else{
+    print(paste('Setting Results for model', model))
+    df_direct_effects <- merge(x = df_direct_effects, y = df_effects_1, by = "coef", all = TRUE)
+  }
+ 
+  
+}
+df_direct_effects[nrow(df_direct_effects)+1,] = list('FE and Controls', 'X', 'X', 'X', 'X', 'X', 'X', 'X', 'X') 
+df_direct_effects[nrow(df_direct_effects)+1,] = list('AR1', '', '', '', 'X', 'X', '', '', 'X') 
+df_direct_effects[nrow(df_direct_effects)+1,] = list('AR10', '', '', '', '', 'X', '', '', 'X') 
+df_direct_effects[nrow(df_direct_effects)+1,] = list('Matching', '', '', '', '', '', 'X', 'X', 'X') 
+df_direct_effects[nrow(df_direct_effects)+1,] = list('Exclude Tot. Payment >$7000', '', 'X', '', 'X', 'X', 'X', '', 'X') 
+df_direct_effects[nrow(df_direct_effects)+1,] = list('Exclude Uri', '', '', 'X', '', '', '', 'X', '') 
+
+rows_ordered <- c('active', 'incentive', 'total_pa', 'total_underbid',
+                                         'FE and Controls' ,'AR1', 'AR10', 'Matching', 'Exclude Tot. Payment >$7000', 'Exclude Uri',
+                                         'N','R-sq', 'AIC', 'BIC','F')
+
+df_direct_effects <- df_direct_effects[match(rows_ordered, df_direct_effects$coef),]
+names(df_direct_effects) <- c('coef', '(1)','(2)','(3)','(4)','(5)','(6)','(7)','(8)')
+df_direct_effects[(df_direct_effects$coef=='active'), c(1)] = 'Active Incentive Effect'
+df_direct_effects[(df_direct_effects$coef=='incentive'), c(1)] = 'Incentive Effect'
+df_direct_effects[(df_direct_effects$coef=='total_pa'), c(1)] ='Avg. Active Incentive -$/MW'
+df_direct_effects[(df_direct_effects$coef=='total_underbid'), c(1)] ='Avg. Underbid -$/MW'
+df_direct_effects[(df_direct_effects$coef=='N'), c(1)]  ='Obs'
+df_direct_effects[(df_direct_effects$coef=='R2'), c(1)] ='R2'
+df_direct_effects[(df_direct_effects$coef=='F'), c(1)] ='F Statistic'
+
+
+                                                   
+```
+
+```{r}
+ 
+
+
+df_direct_effects
+
+```
+```{r}
+
+```
 
