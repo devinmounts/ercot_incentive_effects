@@ -1,7 +1,7 @@
 
 run_variable_layers_regressions <- function(covar_version_input, rolling_3_month_input, exclude_winter_storm_uri_input, run_polynomial_weather_input, variable_lags_test=FALSE, lag_months, months_to_lag){
 
-  summary_file <- '../Data/Regressions/variable_layers_regression.csv'
+  summary_file <- '../Data/Regressions/Capacity Model/robustness/variable_layers_regression/variable_layers_regression.csv'
   
   if (file.exists(summary_file)) {
     df_covars_of_interest <- read_csv(summary_file)
@@ -149,10 +149,10 @@ run_variable_layers_regressions <- function(covar_version_input, rolling_3_month
     }
     
     
-    output_file_path <- paste("../Images/Regressions/Tables/",folder, file_type, ".htm", sep = "")
-    output_file_path_latex <- paste("../Images/Regressions/Tables/Latex/", folder, file_type, ".tex", sep = "")
-    output_data_path <- paste('../Data/Regressions/',folder, file_type, '_regression_set.csv', sep="")
-    decorrelated_output_data_path <- paste('../Data/Regressions/',folder, file_type, '_residuals.csv', sep="")
+    output_file_path <- paste("../Tables/Regressions/Capacity Model/robustness/",folder, file_type, ".htm", sep = "")
+    output_file_path_latex <- paste("../Tables/Regressions/Capacity Model/robustness/", folder, file_type, ".tex", sep = "")
+    output_data_path <- paste('../Data/Regressions/Capacity Model/robustness/',folder, file_type, '_regression_set.csv', sep="")
+    decorrelated_output_data_path <- paste('../Data/Regressions/Capacity Model/robustness/',folder, file_type, '_residuals.csv', sep="")
     
 
     if (regressions[1] == TRUE) {
@@ -517,6 +517,7 @@ run_variable_layers_regressions <- function(covar_version_input, rolling_3_month
     print('setting conditional back to false')
     regressions[i] = FALSE
     print(regressions)
+    rm(models)
   }### end of regressions loop
   
   
@@ -531,7 +532,7 @@ run_variable_layers_regression_test <- function(reload_data=TRUE){
   months_to_lag = c(6,12,24,36)
   iterations =  length(months_to_lag)
   
-  summary_file <- '../Data/Regressions/Capacity Model/robustness/layered_model_statistics_roll_monthly_data.csv'
+  summary_file <- '../Data/Regressions/Capacity Model/robustness/variable_layers_regression/layered_model_statistics_roll_monthly_data.csv'
   if (file.exists(summary_file)) {
     #Delete file if it exists
     file.remove(summary_file)
@@ -655,7 +656,7 @@ capture_output_for_variable_layers_regression <- function(fit, fit2, i, segment,
                            p_val_mean_total_pa_rls = df_pa_coefs_rls$p_val[1])
     
     
-    write_csv(df_output, '../Data/Regressions/Capacity Model/robustness/variable_layers_regression_summary.csv')
+    write_csv(df_output, '../Data/Regressions/Capacity Model/robustness/variable_layers_regression/variable_layers_regression_summary.csv')
     
   } ### end print block for first iteration of model 
   else {
@@ -666,7 +667,7 @@ capture_output_for_variable_layers_regression <- function(fit, fit2, i, segment,
     )
     
     # writing row in the csv file 
-    write.table(row, file = '../Data/Regressions/Capacity Model/robustness/variable_layers_regression_summary.csv', sep = ",", 
+    write.table(row, file = '../Data/Regressions/Capacity Model/robustness/variable_layers_regression/variable_layers_regression_summary.csv', sep = ",", 
                 append = TRUE, quote = FALSE, 
                 col.names = FALSE, row.names = FALSE)
     
@@ -676,7 +677,7 @@ capture_output_for_variable_layers_regression <- function(fit, fit2, i, segment,
 } ## end of function to capture output for variable layers test
 
 format_and_save_latex_output_of_variable_layers_regression <- function(){
-  df_variable_layers_results <- read_csv('../Data/Regressions/robustness/variable_layers_regression_summary.csv')
+  df_variable_layers_results <- read_csv('../Data/Regressions/Capacity Model/robustness/variable_layers_regression/variable_layers_regression_summary.csv')
   
   
   df_variable_layers_results <- df_variable_layers_results %>%

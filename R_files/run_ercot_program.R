@@ -2,7 +2,7 @@
 ### necessary libraries
 if (!require("pacman")) install.packages("pacman")
 pacman::p_load('tidyverse', 'ggplot2', 'readxl', 'janitor', 'lubridate', 'geojsonio', 'broom', 'sp', 'zoo', 'fastDummies', 'stargazer', 'RStata', 'suncalc',
-               'cowplot')
+               'cowplot', 'olsrr')
 
 ### necessary scripts
 source('ercot_preprocess_functions.R')
@@ -22,6 +22,7 @@ create_necessary_file_folders <- function(){
   dir.create(file.path('../Data/Regressions/Capacity Model'))
   dir.create(file.path('../Data/Regressions/Capacity Model/pre_model_data'))
   dir.create(file.path('../Data/Regressions/Capacity Model/robustness'))
+  dir.create(file.path('../Data/Regressions/Capacity Model/robustness/variable_layers_regression'))
   dir.create(file.path('../Data/Weather'))
   
   dir.create(file.path('../Tables'))
@@ -29,6 +30,8 @@ create_necessary_file_folders <- function(){
   dir.create(file.path('../Tables/Regressions/Capacity Model'))
   dir.create(file.path('../Tables/Regressions/Capacity Model/Summary'))
   dir.create(file.path('../Tables/Regressions/Capacity Model/Latex'))
+  dir.create(file.path('../Tables/Regressions/Capacity Model/robustness'))
+  dir.create(file.path('../Tables/Regressions/Capacity Model/robustness/variable_layers_regression'))
   dir.create(file.path('../Tables/Regressions/underbidding'))
   dir.create(file.path('../Tables/Regressions/underbidding/robustness'))
   dir.create(file.path('../Tables/Summary Stats'))
@@ -75,26 +78,26 @@ run_ercot_program <- function(RStataPath, RStataVersion){
   # ################## Create Supporting Data Sets ###################
   # ##################################################################
   # print('creating controls data')
-  # lag_months = 12 # default 12 months for main body, robustness data created in appendix section.
   # load_peaker_net_margin()
   # gc()
   # 
   # ################### Monthly Data ###############################
   # ################################################################
-  # create_monthly_ercot_summary(lag_months)
-  # gc()
-  # create_pnm_monthly_summary(lag_months)
-  # gc()
-  # create_ng_hh_monthly_summary(lag_months)
-  # gc()
-  # create_monthly_weather_data(lag_months)
-  # gc()
-  # create_economic_controls_data(lag_months)
-  # gc()
-  # create_monthly_gini_summary(lag_months)
-  # gc()
-  # create_panel_totalquantity_specific_regressions_12mo_lag(lag_months)
-  # gc()
+  lag_months = 12 # default 12 months for main body, robustness data created in appendix section.
+  create_monthly_ercot_summary(lag_months)
+  gc()
+  create_pnm_monthly_summary(lag_months)
+  gc()
+  create_ng_hh_monthly_summary(lag_months)
+  gc()
+  create_monthly_weather_data(lag_months)
+  gc()
+  create_economic_controls_data(lag_months)
+  gc()
+  create_monthly_gini_summary(lag_months)
+  gc()
+  create_panel_totalquantity_specific_regressions_12mo_lag(lag_months)
+  gc()
   # 
   # ####################### Interval Data #################################
   # #######################################################################
@@ -133,23 +136,23 @@ run_ercot_program <- function(RStataPath, RStataVersion){
   # ####### Tables 3 & 4 ###########################
   # ###############################################
   # ######## also creates summary stats for capacity model for appendix #######
-  # covar_versions <- c('full_controls')
-  # # scenarios: rolling_3_month, exclude_winter_storm_uri, run_polynomial_weather
-  # scenarios <- list(c(TRUE,FALSE, TRUE) # primary scenario; poly
-  #               )
-  # 
-  # for(covar_version_input in covar_versions) {
-  #   print(paste('starting models for covar version: ', covar_version_input, sep=''))
-  # 
-  #   for (i in seq_along(scenarios)) {
-  # 
-  #     rolling_3_month = scenarios[[i]][1]
-  #     exclude_winter_storm_uri = scenarios[[i]][2]
-  #     run_polynomial_weather = scenarios[[i]][3]
-  # 
-  #     run_regressions(covar_version_input, rolling_3_month,exclude_winter_storm_uri, run_polynomial_weather)
-  #   }
-  # }
+  covar_versions <- c('full_controls')
+  # scenarios: rolling_3_month, exclude_winter_storm_uri, run_polynomial_weather
+  scenarios <- list(c(TRUE,FALSE, TRUE) # primary scenario; poly
+                )
+
+  for(covar_version_input in covar_versions) {
+    print(paste('starting models for covar version: ', covar_version_input, sep=''))
+
+    for (i in seq_along(scenarios)) {
+
+      rolling_3_month = scenarios[[i]][1]
+      exclude_winter_storm_uri = scenarios[[i]][2]
+      run_polynomial_weather = scenarios[[i]][3]
+
+      run_regressions(covar_version_input, rolling_3_month,exclude_winter_storm_uri, run_polynomial_weather)
+    }
+  }
   # 
   # ######### Underbidding Models ###################
   # ########## Table 5 #############################
@@ -219,18 +222,20 @@ run_ercot_program <- function(RStataPath, RStataVersion){
   #######################################################################################
   ################### Capacity Model Robustness ############################
   ######################################################################################
-  run_variable_lags_test()
-  create_variable_lags_appendix_summary_and_figure()
+  # run_variable_lags_test()
+  # create_variable_lags_appendix_summary_and_figure()
+  # gc()
 
-  run_variable_layers_regression_test()
-  format_and_save_latex_output_of_variable_layers_regression()
+  # run_variable_layers_regression_test()
+  # format_and_save_latex_output_of_variable_layers_regression()
+  # gc()
 
   #######################################################################################
   ######################## Underbidding Matching Robustness ############################
   ######################################################################################
-  options("RStata.StataPath" = RStataPath)
-  options("RStata.StataVersion" = RStataVersion)
-  stata('../Stata/underbidding_matching_robustness.do')
+  # options("RStata.StataPath" = RStataPath)
+  # options("RStata.StataVersion" = RStataVersion)
+  # stata('../Stata/underbidding_matching_robustness.do')
   
 
   
