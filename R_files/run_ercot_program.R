@@ -41,7 +41,7 @@ create_necessary_file_folders <- function(){
 
 }
 
-run_ercot_program <- function(RStataPath, RStataVersion){
+run_ercot_program <- function(RStataPath, RStataVersion, run_appendix=FALSE){
   print('creating target file folders')
   create_necessary_file_folders()
   
@@ -203,41 +203,42 @@ create_stats_on_standby_movement()
   ################ Appendix Figures and Tables ##########################
   #######################################################################
   #######################################################################
-  ### Summary Statistics for capacity model result from functions in main body section
-
-  ### Profits of Major Firms and significance of scarcity adders
-  print('Plotting Profit Margin of Major Firms')
-  plot_profit_margin_select_firms()
-
-  ### Full capacity model and applicant pool results tables produced in main body section
-
-  #######################################################################################
-  ################### Underbidding Autoregressive Robustness ############################
-  ######################################################################################
-  run_polynomial_weather=TRUE
-  run_rls_ar1_timeseries_underbidding_model(run_polynomial_weather)
-  run_rls_ar10_timeseries_underbidding_model(run_polynomial_weather)
-
-
-  #######################################################################################
-  ################### Capacity Model Robustness ############################
-  ######################################################################################
-  run_variable_lags_test()
-  create_variable_lags_appendix_summary_and_figure()
-  gc()
-
-  run_variable_layers_regression_test()
-  format_and_save_latex_output_of_variable_layers_regression()
-  gc()
-
-  #######################################################################################
-  ######################## Underbidding Matching Robustness ############################
-  ######################################################################################
-  options("RStata.StataPath" = RStataPath)
-  options("RStata.StataVersion" = RStataVersion)
-  stata('../Stata/underbidding_matching_robustness.do')
-  format_underbidding_robustness_latex_table()
-
+if (run_appendix == TRUE){
+    ### Summary Statistics for capacity model result from functions in main body section
+  
+    ### Profits of Major Firms and significance of scarcity adders
+    print('Plotting Profit Margin of Major Firms')
+    plot_profit_margin_select_firms()
+  
+    ### Full capacity model and applicant pool results tables produced in main body section
+  
+    #######################################################################################
+    ################### Underbidding Autoregressive Robustness ############################
+    ######################################################################################
+    run_polynomial_weather=TRUE
+    run_rls_ar1_timeseries_underbidding_model(run_polynomial_weather)
+    run_rls_ar10_timeseries_underbidding_model(run_polynomial_weather)
+  
+  
+    #######################################################################################
+    ################### Capacity Model Robustness ############################
+    ######################################################################################
+    run_variable_lags_test()
+    create_variable_lags_appendix_summary_and_figure()
+    gc()
+  
+    run_variable_layers_regression_test()
+    format_and_save_latex_output_of_variable_layers_regression()
+    gc()
+  
+    #######################################################################################
+    ######################## Underbidding Matching Robustness ############################
+    ######################################################################################
+    options("RStata.StataPath" = RStataPath)
+    options("RStata.StataVersion" = RStataVersion)
+    stata('../Stata/underbidding_matching_robustness.do')
+    format_underbidding_robustness_latex_table()
+}
   
   print('Program Complete')
 }
