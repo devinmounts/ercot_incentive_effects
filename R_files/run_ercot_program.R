@@ -239,6 +239,6 @@ create_stats_on_standby_movement()
   format_underbidding_robustness_latex_table()
 
   
-  
+  print('Program Complete')
 }
 

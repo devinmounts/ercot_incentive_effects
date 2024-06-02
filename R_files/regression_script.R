@@ -16,7 +16,6 @@ run_regressions <- function(covar_version_input, rolling_3_month_input, exclude_
   }
   
   
-  
   ## definitions of various regression types ##
   ### movers: a mover is a generator observation where the plant_gen_id first shows up in a specific phase, in this case phase 1 (foremost planning phase)
   ### entrants: an entrant is a generator observation where the plant_gen_id first shows up in any planning phase (1-6)
@@ -32,6 +31,9 @@ run_regressions <- function(covar_version_input, rolling_3_month_input, exclude_
   #covariate version: base_covars, year_fixed_effects, renewable_breakout, both
   covar_version <- covar_version_input
   
+  dir.create(paste('../Data/Regressions/Capacity Model/', covar_version, sep = ''))
+  dir.create(paste('../Tables/Regressions/Capacity Model/', covar_version, sep = ''))
+  dir.create(paste('../Tables/Regressions/Capacity Model/Summary/', covar_version, sep = ''))
   
   if (covar_version == 'full_controls') {
     final_covariate_names <- c('2022-year', '2021-year', '2020-year', '2019-year', '2018-year', '2017-year',

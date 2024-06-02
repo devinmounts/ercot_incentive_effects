@@ -50,7 +50,7 @@
 // 	** Match - income - active_low (treatment) vs non_active (control)
 //	
 //	
-// 	teffects nnmatch (price year-weather_wnds e_1) (active), biasadj(year-weather_wnds e_1) generate(matches) atet 
+// 	teffects nnmatch (price year-day_of_week e_1) (active), biasadj(year-day_of_week e_1) generate(matches) atet 
 //	
 // 	** save and output match results
 // 	matrix teresults = r(table)
@@ -83,7 +83,7 @@
 // 	** Match - income - active_low (treatment) vs non_active (control)
 //	
 //	
-// 	teffects nnmatch (price year-weather_wnds e_* d_*) (active), biasadj(year-weather_wnds e_* d_*) generate(matches) atet 
+// 	teffects nnmatch (price year-day_of_week e_* d_*) (active), biasadj(year-day_of_week e_* d_*) generate(matches) atet 
 //	
 // 	** save and output match results
 // 	matrix teresults = r(table)
@@ -159,7 +159,7 @@
 	drop temp_midpoint_sq day
 	
 	** Match - income - active_low (treatment) vs non_active (control)
-	teffects nnmatch (price year-weather_wnds) (active), biasadj(year-weather_wnds) generate(matches) atet 
+	teffects nnmatch (price year-day_of_week) (active), biasadj(year-day_of_week) generate(matches) atet 
 
 	** save and output match results
 	matrix teresults = r(table)
@@ -193,7 +193,7 @@
 // 	** Match - income - active_low (treatment) vs non_active (control)
 //	
 //	
-// 	teffects nnmatch (price year-weather_wnds e_1) (active), biasadj(year-weather_wnds e_1) generate(matches) atet 
+// 	teffects nnmatch (price year-day_of_week e_1) (active), biasadj(year-day_of_week e_1) generate(matches) atet 
 //	
 // 	** save and output match results
 // 	matrix teresults = r(table)
@@ -226,7 +226,7 @@
 // 	** Match - income - active_low (treatment) vs non_active (control)
 //	
 //	
-// 	teffects nnmatch (price year-weather_wnds e_* d_*) (active), biasadj(year-weather_wnds e_* d_*) generate(matches) atet 
+// 	teffects nnmatch (price year-day_of_week e_* d_*) (active), biasadj(year-day_of_week e_* d_*) generate(matches) atet 
 //	
 // 	** save and output match results
 // 	matrix teresults = r(table)
@@ -298,7 +298,7 @@
 	drop temp_midpoint_sq day
 	
 	** Match - income - active_low (treatment) vs non_active (control)
-	teffects nnmatch (price year-weather_wnds) (active), biasadj(year-weather_wnds) generate(matches) atet 
+	teffects nnmatch (price year-day_of_week) (active), biasadj(year-day_of_week) generate(matches) atet 
 
 	** save and output match results
 	matrix teresults = r(table)
@@ -331,7 +331,7 @@
 // 	** Match - income - active_low (treatment) vs non_active (control)
 //	
 //	
-// 	teffects nnmatch (price year-weather_wnds e_1) (active), biasadj(year-weather_wnds e_1) generate(matches) atet 
+// 	teffects nnmatch (price year-day_of_week e_1) (active), biasadj(year-day_of_week e_1) generate(matches) atet 
 //	
 // 	** save and output match results
 // 	matrix teresults = r(table)
@@ -364,7 +364,7 @@
 	** Match - income - active_low (treatment) vs non_active (control)
 	
 	
-	teffects nnmatch (price year-weather_wnds e_* d_*) (active), biasadj(year-weather_wnds e_* d_*) generate(matches) atet 
+	teffects nnmatch (price year-day_of_week e_* d_*) (active), biasadj(year-day_of_week e_* d_*) generate(matches) atet 
 	
 	** save and output match results
 	matrix teresults = r(table)

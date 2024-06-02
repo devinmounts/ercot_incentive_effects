@@ -544,7 +544,7 @@ create_operating_pool_stats_latex <- function() {
   #           out ='../Images/Figures/operating_generators_summary_statistics.tex')
   
   stargazer(df_summary_operation, summary = F, title='Generator Summary Statistics', header = F, digits=2, rownames = F, notes = 'Values in parenthesis denote share of total', font.size = 'small',
-            out = '../Tables/Summary Stats/generators_entry_exit_summary_statistics.csv')
+            out = '../Tables/Summary Stats/generators_entry_exit_summary_statistics.tex')
   # return(stargazer(df_summary_operation, summary = F, title='Generator Summary Statistics', header = F, digits=2, rownames = F, notes = 'Values in parenthesis denote share of total', font.size = 'small'))
 }
 

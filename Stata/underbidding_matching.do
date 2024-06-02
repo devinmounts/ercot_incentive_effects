@@ -43,7 +43,7 @@
 	*********************** Match w/o autoregressive covariates *********
 	*********************************************************************
 	** Match - income - active_low (treatment) vs non_active (control)
-	teffects nnmatch (price year-weather_wnds) (active), biasadj(year-weather_wnds) generate(matches) atet 
+	teffects nnmatch (price year-day_of_week) (active), biasadj(year-day_of_week) generate(matches) atet 
 
 	** save and output match results
 	matrix teresults = r(table)
