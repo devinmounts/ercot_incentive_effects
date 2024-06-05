@@ -83,21 +83,21 @@ run_ercot_program <- function(RStataPath, RStataVersion, run_appendix=FALSE){
 
   ################### Monthly Data ###############################
   ################################################################
-  lag_months = 12 # default 12 months for main body, robustness data created in appendix section.
-  create_monthly_ercot_summary(lag_months)
-  gc()
-  create_pnm_monthly_summary(lag_months)
-  gc()
-  create_ng_hh_monthly_summary(lag_months)
-  gc()
-  create_monthly_weather_data(lag_months)
-  gc()
-  create_economic_controls_data(lag_months)
-  gc()
-  create_monthly_gini_summary(lag_months)
-  gc()
-  create_panel_totalquantity_specific_regressions_12mo_lag(lag_months)
-  gc()
+lag_months = 12 # default 12 months for main body, robustness data created in appendix section.
+create_monthly_ercot_summary(lag_months)
+gc()
+create_pnm_monthly_summary(lag_months)
+gc()
+create_ng_hh_monthly_summary(lag_months)
+gc()
+create_monthly_weather_data(lag_months)
+gc()
+create_economic_controls_data(lag_months)
+gc()
+create_monthly_gini_summary(lag_months)
+gc()
+create_panel_totalquantity_specific_regressions_12mo_lag(lag_months)
+gc()
 
 ####################### Interval Data #################################
 #######################################################################
@@ -205,32 +205,32 @@ create_stats_on_standby_movement()
   #######################################################################
 if (run_appendix == TRUE){
     ### Summary Statistics for capacity model result from functions in main body section
-  
+
     ### Profits of Major Firms and significance of scarcity adders
     print('Plotting Profit Margin of Major Firms')
     plot_profit_margin_select_firms()
-  
+
     ### Full capacity model and applicant pool results tables produced in main body section
-  
+
     #######################################################################################
     ################### Underbidding Autoregressive Robustness ############################
     ######################################################################################
     run_polynomial_weather=TRUE
     run_rls_ar1_timeseries_underbidding_model(run_polynomial_weather)
     run_rls_ar10_timeseries_underbidding_model(run_polynomial_weather)
-  
-  
+
+
     #######################################################################################
     ################### Capacity Model Robustness ############################
     ######################################################################################
     run_variable_lags_test()
     create_variable_lags_appendix_summary_and_figure()
     gc()
-  
+
     run_variable_layers_regression_test()
     format_and_save_latex_output_of_variable_layers_regression()
     gc()
-  
+
     #######################################################################################
     ######################## Underbidding Matching Robustness ############################
     ######################################################################################

@@ -108,70 +108,8 @@ run_regressions <- function(covar_version_input, rolling_3_month_input, exclude_
   }
   
   # regression types
-  # ng_movers = F
-  # renewable_movers = F
-  # ng_entrants = F
-  # renewable_entrants = F
-  # 
-  # ng_movers_12mo_lag = F
-  # renewable_movers_12mo_lag = F
-  # ng_entrants_12mo_lag = F
-  # renewable_entrants_12mo_lag = F
-  # 
-  # ng_operants = F
-  # renewable_operants = F
-  # ng_operants_12mo_lag = F
-  # renewable_operants_12mo_lag = F
-  # 
-  # market_operants_12mo_lag = F
-  # 
-  # ng_newquantity = F
-  # renewable_newquantity = F
-  # ng_newquantity_12mo_lag = F
-  # renewable_newquantity_12mo_lag = F
-  # 
-  # market_newquantity = F
-  # market_newquantity_12mo_lag = F
-  # nonng_newquantity = F
-  # nonng_newquantity_12mo_lag = F
-  # 
-  # ng_netquantity = F
-  # ng_netquantity_12mo_lag = F
-  # renewable_netquantity = F
-  # renewable_netquantity_12mo_lag = F
-  # market_netquantity = F
-  # market_netquantity_12mo_lag = F
-  # nonng_netquantity = F
-  # nonng_netquantity_12mo_lag = F
-  # 
-  # ng_totalquantity_12mo_lag = F
-  # renewable_totalquantity_12mo_lag = F
-  # wind_totalquantity_12mo_lag = F
-  # solar_totalquantity_12mo_lag = F
-  # market_totalquantity_12mo_lag = F
-  # nonng_totalquantity_12mo_lag = F
-  # other_totalquantity_12mo_lag = F
-  # 
-  # ng_totalquantityplanning_12mo_lag = F
-  # renewable_totalquantityplanning_12mo_lag = F
-  # market_totalquantityplanning_12mo_lag = F
-  # nonng_totalquantityplanning_12mo_lag = F
-  
   ng_monthly_totalquantity_12mo_lag = F
   renewable_monthly_totalquantity_12mo_lag = F
-  # ng_panel_totalquantity_12mo_lag = F
-  # renewable_panel_totalquantity_12mo_lag = F
-  
-  # ng_netquantity_1mo_lead = F
-  # ng_netquantity_8mo_lead = F
-  # renewable_netquantity_1mo_lead = F
-  # renewable_netquantity_8mo_lead = F
-  # market_netquantity_1mo_lead = F
-  # market_netquantity_8mo_lead = F
-  # nonng_netquantity_1mo_lead = F
-  # nonng_netquantity_8mo_lead = F
-  
-  
   # end regression types
   
   #variable to save final ng and renewable model comparisons
@@ -222,6 +160,7 @@ run_regressions <- function(covar_version_input, rolling_3_month_input, exclude_
     
     output_file_path <- paste('../Tables/Regressions/Capacity Model/',folder, file_type, ".htm", sep = "")
     output_file_path_latex <- paste('../Tables/Regressions/Capacity Model/', folder, file_type, ".tex", sep = "")
+    output_summary_stats_path <- paste("../Tables/Summary Stats/", file_type, "_summary.tex", sep = "")
     output_data_path <- paste('../Data/Regressions/Capacity Model/',folder, file_type, '_regression_set.csv', sep="")
     decorrelated_output_data_path <- paste('../Data/Regressions/Capacity Model/',folder, file_type, '_residuals.csv', sep="")
     
@@ -438,6 +377,14 @@ run_regressions <- function(covar_version_input, rolling_3_month_input, exclude_
     
     print(setdiff(unlist(covariates), names(df_phase_1))) 
     write_csv(df_to_regress[, c('date',unlist(covariates))], output_data_path)
+    
+    if (lag_months == 12 & run_polynomial_weather==TRUE){
+      stargazer(as.data.frame(df_to_regress[,unlist(covariates)]),
+                out=output_summary_stats_path,
+                covariate.labels = unlist(c(final_covariate_names_poly_weather[1:(length(final_covariate_names_poly_weather)-2)], 'Capacity - MW')),
+                digits = 2
+      )
+    }
     
     models <- list()
     saved_covariates <- NULL

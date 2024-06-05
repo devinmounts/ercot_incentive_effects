@@ -15,7 +15,7 @@ source('./run_ercot_program.R')
 ###### define stata options #########
 RStataPath <- '/Applications/Stata/StataSE.app/Contents/MacOS/stata-se'
 RStataVersion <- 18.5
-run_appendix = FALSE
+run_appendix = TRUE
 run_ercot_program(RStataPath, RStataVersion, run_appendix)
 gc()
 ```
