@@ -63,7 +63,7 @@
 	if `inputs' == 1 {
 	
 		clear all
-		cd "../Data/ERCOT Compiled Data"
+		cd "C:\data\EnergyOSU\Data\ercot_compiled_data"
 		ls
 
 		import delimited ercot_scarcity_pricing_matching_set.csv
