@@ -14,15 +14,16 @@
 ** Save .ado file to working directory
 ** Call:
 *********************************************************************************
-// capture program drop 	energy_time2
-// program define 			energy_time2
+capture program drop 	underbidding_data_summary
+program define 			underbidding_data_summary
+
 	clear all
 	pwd
 	display "Now running energy_time."
 	
 
-	local dir =  "/`c(pwd)'"
-	di "`dir'"
+	*local dir = "C:\data\ercot_incentive_effects\"
+	*di "`dir'"
 	*add .adopath to locate energy_price command
 	*adopath++ "\\onid-fs.onid.oregonstate.edu\mountsd\Profile\Desktop\Stata"
 
@@ -66,7 +67,8 @@
 	if `inputs' == 1 {
 	
 		clear all
-		cd "../Data/ERCOT Compiled Data"
+		cd_edata
+		*cd "../Data/ERCOT Compiled Data"
 		ls
 
 		import delimited ercot_scarcity_pricing_matching_set.csv
@@ -78,16 +80,15 @@
 		save underbidding_data_for_regression, replace
 		use underbidding_data_for_regression, clear
 		
-	
-		
 	} //End if
 	di "Done with input read."
 			
 	***clean data
 		** Load
 	clear
-	cd "`dir'"
-	cd "../Data/ERCOT Compiled Data"
+	*cd "`dir'"
+	*cd "../Data/ERCOT Compiled Data"
+	cd_edata
 	use underbidding_data_for_regression	
 
 	** Keep
@@ -173,10 +174,13 @@
 			eststo active_off:  estpost sum price active total_pa int_tot_gen_gas_gw int_tot_gen_renewable_gw int_tot_gen_other_gw scarcity_measure rttotcap_gw  ng_gw renewables_gw other_gw temp_midpoint_cent temp_midpoint_sq ng_price weather_wnds year month day_of_week hour minute  if active == 0 
 			eststo active_on:  estpost sum price active total_pa  int_tot_gen_gas_gw int_tot_gen_renewable_gw int_tot_gen_other_gw scarcity_measure rttotcap_gw  ng_gw renewables_gw other_gw temp_midpoint_cent temp_midpoint_sq ng_price weather_wnds year month day_of_week hour minute  if active == 1
 
-			cd "`dir'"
-			esttab all active_off active_on using "../Tables/Summary Stats/covariate_means_by_incentive_state.tex", replace unstack mtitle("All Intervals" "Inactive Incentive" "Active Incentive") cells("mean(fmt(2))") label title(Covariate Means by Scarcity Incentive State)
+			*cd "`dir'"
+			cd_estats
+			esttab all active_off active_on using "covariate_means_by_incentive_state.tex", replace unstack mtitle("All Intervals" "Inactive Incentive" "Active Incentive") cells("mean(fmt(2))") label title(Covariate Means by Scarcity Incentive State)
 			
-			
+				
+			** Print output
+			esttab, nonumber se ar2 r2(a5) compress not nostar
 			
 			eststo clear
 			** Run simple
@@ -250,9 +254,7 @@
 										
 			} //end if
 			di "Done with e d."
-			
-
-			
+						
 			eststo reg1: reg price year##year month##month day_of_week##day_of_week hour##hour minute##minute ///
 				int_tot_gen_gas_gw-weather_wnds active incentive 
 			eststo reg2: reg price year##year month##month day_of_week##day_of_week hour##hour minute##minute ///
@@ -263,11 +265,14 @@
 				int_tot_gen_gas_gw-weather_wnds active incentive e_1 e_2 e_3 e_4
 			eststo reg5: reg price year##year month##month day_of_week##day_of_week hour##hour minute##minute ///
 				int_tot_gen_gas_gw-weather_wnds active incentive e_1 e_2 e_3 e_4 e_5 d_1 d_2 d_3 d_4 d_5
-			esttab reg1 reg2 reg3 reg4 reg5 using "../Tables/Regressions/underbidding/underbidding_w_autoregressive_variations.tex", replace r2 aic bic scalar(F)	
+			cd_eunderbid
+			esttab reg1 reg2 reg3 reg4 reg5 using "underbidding_w_autoregressive_variations.tex", replace r2 aic bic scalar(F)	
 			
-			esttab reg1 reg2 reg3 reg4 reg5 using "../Tables/Regressions/underbidding/underbidding_w_autoregressive_variations.csv", replace r2 aic bic scalar(F)	
+			esttab reg1 reg2 reg3 reg4 reg5 using "underbidding_w_autoregressive_variations.csv", replace r2 aic bic scalar(F)	
 			
-			eststo clear
+				
+			** Print output
+			esttab, nonumber se ar2 r2(a5) compress not nostar
 
 		} //End if
 		di "Done with rho section"
@@ -275,7 +280,13 @@
 	} //End if
 	di "Done with greeks."
 
-	cd "`dir'"
-	cd "../Data/ERCOT Compiled Data/"
+	********************************************************
+	** Save for downstream scripts
+	********************************************************
+	*cd "`dir'"
+	*cd "../Data/ERCOT Compiled Data/"
+	cd_edata
 	export delimited "underbidding_data_w_lags.csv", replace
 	save underbidding_data_w_lags, replace
+	
+end
