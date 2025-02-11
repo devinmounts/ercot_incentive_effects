@@ -169,11 +169,14 @@ load_EIA860M <- function(){
   df_EIA860M <- bind_rows(df_operating,df_planned,df_retired,df_postponed)
 
   print('Check if point is within ERCOT region')
-  sdf_ercot_poly <- geojson_read('../source_data/Geospatial/NERC_Regions.geojson', what='sp')
-  sdf_ercot_poly_fortified <- tidy(sdf_ercot_poly)
-  df_EIA860M <- df_EIA860M %>%
-    mutate(in_ercot_shape = point.in.polygon(df_EIA860M$latitude, df_EIA860M$longitude, sdf_ercot_poly_fortified$lat, sdf_ercot_poly_fortified$long))
+  sdf_ercot_poly <- geojson_sf('../source_data/Geospatial/NERC_Regions.geojson')
+  sdf_ercot_poly_fortified <- sf::st_as_sf(sdf_ercot_poly)
   
+  
+  df_EIA860M <- df_EIA860M %>%
+    mutate(in_ercot_shape = point.in.polygon(df_EIA860M$latitude, df_EIA860M$longitude,
+                                             st_coordinates(sdf_ercot_poly_fortified$geometry)[,2],
+                                             st_coordinates(sdf_ercot_poly_fortified$geometry)[,1]))
   
   print('Assigining NULL balancing Authority Codes to ERCOT if lat long falls within ERCOT polygon')
   n_plants_to_alter <- df_EIA860M %>%

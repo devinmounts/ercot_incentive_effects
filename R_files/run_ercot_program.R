@@ -2,7 +2,7 @@
 ### necessary libraries
 if (!require("pacman")) install.packages("pacman")
 pacman::p_load('tidyverse', 'ggplot2', 'readxl', 'janitor', 'lubridate', 'geojsonio', 'broom', 'sp', 'zoo', 'fastDummies', 'stargazer', 'RStata', 'suncalc',
-               'cowplot', 'olsrr')
+               'cowplot', 'olsrr', 'sf', 'MESS')
 
 ### necessary scripts
 source('ercot_preprocess_functions.R')
