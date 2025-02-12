@@ -8,10 +8,10 @@ output: html_document
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 ########### Installs -- RC 11.18.24 ###########
-# install.packages("pryr")
-# install.packages("plyr")
-library(pryr)
-library(plyr)
+#install.packages("pryr")
+#install.packages("plyr")
+#library(pryr)
+#library(plyr)
 ```
 
 ```{r}
