@@ -11,10 +11,10 @@ install.packages("knitr")
 #library(knitr)
 
 ########### Installs -- RC 11.18.24 ###########
-#install.packages("pryr")
-#install.packages("plyr")
-#library(pryr)
-#library(plyr)
+install.packages("pryr")
+install.packages("plyr")
+library(pryr)
+library(plyr)
 ```
 
 ```{r}
