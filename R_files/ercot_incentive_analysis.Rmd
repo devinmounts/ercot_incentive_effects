@@ -6,7 +6,10 @@ output: html_document
 ---
 
 ```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
+install.packages("knitr")
+#knitr::opts_chunk$set(echo = TRUE)
+#library(knitr)
+
 ########### Installs -- RC 11.18.24 ###########
 #install.packages("pryr")
 #install.packages("plyr")
