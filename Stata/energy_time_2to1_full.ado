@@ -14,8 +14,8 @@
 ** Save .ado file to working directory
 ** Call:
 *********************************************************************************
- //capture program drop 		energy_time_2to1_full
- //program define 				energy_time_2to1_full
+ capture program drop 		energy_time_2to1_full
+ program define 			energy_time_2to1_full
  
 	pwd
 	display "Now running energy_time."
@@ -740,5 +740,5 @@
 // 	display "Done with energy_time2."
 //
 
-//end
+end
 
