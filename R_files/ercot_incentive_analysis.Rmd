@@ -6,23 +6,33 @@ output: html_document
 ---
 
 ```{r setup, include=FALSE}
-install.packages("knitr")
+# install.packages("knitr")
 #knitr::opts_chunk$set(echo = TRUE)
 #library(knitr)
 
+### necessary libraries
 ########### Installs -- RC 11.18.24 ###########
 install.packages("pryr")
 install.packages("plyr")
 library(pryr)
 library(plyr)
+
+if (!require("pacman")) install.packages("pacman")
+pacman::p_load('tidyverse', 'ggplot2', 'readxl', 'janitor', 'lubridate', 'geojsonio', 'broom', 'sp', 'zoo', 'fastDummies', 'stargazer', 'RStata', 'suncalc',
+               'cowplot', 'olsrr', 'sf', 'MESS')
+
+source('stargazer_patch.R')
+library('stargazer')
 ```
 
 ```{r}
 source('./run_ercot_program.R')
 ###### define stata options #########
-RStataPath <- '/Applications/Stata/StataSE.app/Contents/MacOS/stata-se'
-RStataVersion <- 18.5
-run_appendix = TRUE
-run_ercot_program(RStataPath, RStataVersion, run_appendix)
+# RStataPath <- '/Applications/Stata/StataSE.app/Contents/MacOS/stata-se'
+# RStataVersion <- 18.5
+run_appendix = FALSE
+run_ercot_program(run_appendix)
 gc()
 ```
+
+
