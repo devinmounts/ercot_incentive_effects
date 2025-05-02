@@ -94,22 +94,22 @@ load_EIA860M <- function(){
   df_operating <- df_operating %>%
     mutate(record_month_int = as.integer(plyr::mapvalues(record_month, months_str, months_int)),
            year = as.integer(record_year)) %>%
-    rename(month = record_month_int)
+    dplyr::rename(month = record_month_int)
   
   df_planned <- df_planned %>%
     mutate(record_month_int = as.integer(plyr::mapvalues(record_month, months_str, months_int)),
            year = as.integer(record_year)) %>%
-    rename(month = record_month_int)
+    dplyr::rename(month = record_month_int)
   
   df_retired <- df_retired %>%
     mutate(record_month_int = as.integer(plyr::mapvalues(record_month, months_str, months_int)),
            year = as.integer(record_year)) %>%
-    rename(month = record_month_int)
+    dplyr::rename(month = record_month_int)
   
   df_postponed <- df_postponed %>%
     mutate(record_month_int = as.integer(plyr::mapvalues(record_month, months_str, months_int)),
            year = as.integer(record_year)) %>%
-    rename(month = record_month_int)
+    dplyr::rename(month = record_month_int)
   
   ##improve this logic as it is not specific to the observations that I've identified as data quality issues.
   print('Altering lat long of unique records where values fall outside of Texas')
@@ -147,16 +147,16 @@ load_EIA860M <- function(){
   
   print(paste('Altering BA of', length(unique(operating_plant_id_na_ba)), 'operating plant ids with data from other year/months', sep = ' '))
   
-  df_operating <- df_operating %>% left_join(df_ba_fill_operating, by='plant_id' ) %>% rename(balancing_authority_code = balancing_authority_code.x) %>% mutate(unfilled_balancing_authority_code = balancing_authority_code,
+  df_operating <- df_operating %>% left_join(df_ba_fill_operating, by='plant_id' ) %>% dplyr::rename(balancing_authority_code = balancing_authority_code.x) %>% mutate(unfilled_balancing_authority_code = balancing_authority_code,
                                                                                                                                                                 balancing_authority_code = if_else(is.na(balancing_authority_code), balancing_authority_code.y, balancing_authority_code),
                                                                                                                                                                 is_filled_ba = if_else(is.na(balancing_authority_code), 1, 0)) %>% select(-balancing_authority_code.y)
-  df_planned <- df_planned %>% left_join(df_ba_fill_planned, by='plant_id' ) %>% rename(balancing_authority_code = balancing_authority_code.x) %>% mutate(unfilled_balancing_authority_code = balancing_authority_code,
+  df_planned <- df_planned %>% left_join(df_ba_fill_planned, by='plant_id' ) %>% dplyr::rename(balancing_authority_code = balancing_authority_code.x) %>% mutate(unfilled_balancing_authority_code = balancing_authority_code,
                                                                                                                                                           balancing_authority_code = if_else(is.na(balancing_authority_code), balancing_authority_code.y, balancing_authority_code),
                                                                                                                                                           is_filled_ba = if_else(is.na(balancing_authority_code), 1, 0)) %>% select(-balancing_authority_code.y)
-  df_retired <- df_retired %>% left_join(df_ba_fill_retired, by='plant_id' ) %>% rename(balancing_authority_code = balancing_authority_code.x) %>% mutate(unfilled_balancing_authority_code = balancing_authority_code,
+  df_retired <- df_retired %>% left_join(df_ba_fill_retired, by='plant_id' ) %>% dplyr::rename(balancing_authority_code = balancing_authority_code.x) %>% mutate(unfilled_balancing_authority_code = balancing_authority_code,
                                                                                                                                                           balancing_authority_code = if_else(is.na(balancing_authority_code), balancing_authority_code.y, balancing_authority_code),
                                                                                                                                                           is_filled_ba = if_else(is.na(balancing_authority_code), 1, 0)) %>% select(-balancing_authority_code.y)
-  df_postponed <- df_postponed %>% left_join(df_ba_fill_postponed, by='plant_id' ) %>% rename(balancing_authority_code = balancing_authority_code.x) %>% mutate(unfilled_balancing_authority_code = balancing_authority_code,
+  df_postponed <- df_postponed %>% left_join(df_ba_fill_postponed, by='plant_id' ) %>% dplyr::rename(balancing_authority_code = balancing_authority_code.x) %>% mutate(unfilled_balancing_authority_code = balancing_authority_code,
                                                                                                                                                                 balancing_authority_code = if_else(is.na(balancing_authority_code), balancing_authority_code.y, balancing_authority_code),
                                                                                                                                                                 is_filled_ba = if_else(is.na(balancing_authority_code), 1, 0)) %>% select(-balancing_authority_code.y)
   
@@ -217,18 +217,18 @@ load_EIA860M <- function(){
   df_EIA860M <- df_EIA860M %>% mutate(balancing_authority_code = ifelse(balancing_authority_code == 'ERCOT', 'ERCO', balancing_authority_code))
   
 
-  
   print('Calculate Market Capacity Gini')
   df_EIA860M <- calculate_market_cap_gini(df_EIA860M)
-  
+
   print('Calculate Natural Gas Capacity Gini')
   df_EIA860M <- calculate_ng_cap_gini(df_EIA860M)
-  
+
   print('Calculate Wind Capacity Gini')
   df_EIA860M <- calculate_wnd_cap_gini(df_EIA860M)
 
   print('Identify Gen. Entry and Exit by Record Category and Status')
   df_EIA860M <- identify_entry_and_exit_months_by_record_category_and_status(df_EIA860M)
+
   
   return(df_EIA860M)
   
@@ -595,11 +595,11 @@ load_EIA923A <- function (df_EIA860M){
         clean_names()
       
       if ('combined_heat_and_power_plant' %in% names(df_EIA923A_individual)) {
-        df_EIA923A_individual <- df_EIA923A_individual %>% rename(combined_heat_power_plant = combined_heat_and_power_plant)
+        df_EIA923A_individual <- df_EIA923A_individual %>% dplyr::rename(combined_heat_power_plant = combined_heat_and_power_plant)
       }
       
       if ('netgen_january' %in% names(df_EIA923A_individual)) {
-        df_EIA923A_individual <- df_EIA923A_individual %>% rename(netgen_jan = netgen_january,
+        df_EIA923A_individual <- df_EIA923A_individual %>% dplyr::rename(netgen_jan = netgen_january,
                                                                   netgen_feb = netgen_february,
                                                                   netgen_mar = netgen_march, 
                                                                   netgen_apr = netgen_april,
@@ -637,7 +637,7 @@ load_EIA923A <- function (df_EIA860M){
         clean_names()
       
       if ('netgen_january' %in% names(df_EIA923A_individual)) {
-        df_EIA923A_individual <- df_EIA923A_individual %>% rename(netgen_jan = netgen_january,
+        df_EIA923A_individual <- df_EIA923A_individual %>% dplyr::rename(netgen_jan = netgen_january,
                                                                   netgen_feb = netgen_february,
                                                                   netgen_mar = netgen_march, 
                                                                   netgen_apr = netgen_april,
@@ -652,7 +652,7 @@ load_EIA923A <- function (df_EIA860M){
       }
       
       if ('combined_heat_and_power_plant' %in% names(df_EIA923A_individual)) {
-        df_EIA923A_individual <- df_EIA923A_individual %>% rename(combined_heat_power_plant = combined_heat_and_power_plant)
+        df_EIA923A_individual <- df_EIA923A_individual %>% dplyr::rename(combined_heat_power_plant = combined_heat_and_power_plant)
       }
       df_EIA923A <- bind_rows(df_EIA923A, df_EIA923A_individual)
     }
@@ -681,15 +681,15 @@ load_EIA923A <- function (df_EIA860M){
         clean_names()
       
       if ('state' %in% names(df_EIA923A_individual)) {
-        df_EIA923A_individual <- df_EIA923A_individual %>% rename(plant_state = state)
+        df_EIA923A_individual <- df_EIA923A_individual %>% dplyr::rename(plant_state = state)
       }
       
       if ('combined_heat_and_power_plant' %in% names(df_EIA923A_individual)) {
-        df_EIA923A_individual <- df_EIA923A_individual %>% rename(combined_heat_power_plant = combined_heat_and_power_plant)
+        df_EIA923A_individual <- df_EIA923A_individual %>% dplyr::rename(combined_heat_power_plant = combined_heat_and_power_plant)
       }
       
       if ('netgen_january' %in% names(df_EIA923A_individual)) {
-        df_EIA923A_individual <- df_EIA923A_individual %>% rename(netgen_jan = netgen_january,
+        df_EIA923A_individual <- df_EIA923A_individual %>% dplyr::rename(netgen_jan = netgen_january,
                                                                   netgen_feb = netgen_february,
                                                                   netgen_mar = netgen_march, 
                                                                   netgen_apr = netgen_april,
@@ -721,7 +721,7 @@ load_EIA923A <- function (df_EIA860M){
     pivot_longer(cols = c(netgen_jan:netgen_dec), names_to = 'month', values_to = 'month_net_gen_m_wh') %>%
     mutate(month = str_sub(month, -3,-1),
            month_net_gen_m_wh = as.integer(month_net_gen_m_wh)) %>%
-    rename(annual_net_gen_m_wh = net_generation_megawatthours) %>%
+    dplyr::rename(annual_net_gen_m_wh = net_generation_megawatthours) %>%
     mutate(month = plyr::mapvalues(month, from = c('jan', 'feb', 'mar', 'apr', 'may', 'jun', 'jul', 'aug', 'sep', 'oct', 'nov', 'dec'), to=c(1,2,3,4,5,6,7,8,9,10,11,12)),
            month = as.integer(month),
            report_category = 'operating',
@@ -764,15 +764,16 @@ load_EIA923A <- function (df_EIA860M){
 # }
 
 calculate_market_cap_gini <- function(df_EIA860M) {
+  print('first join')
   df_market_cap_gini <- df_EIA860M %>% left_join(df_EIA860M %>%
                                                filter(record_category == 'operating', balancing_authority_code == 'ERCO') %>%
                                                group_by(year, month, entity_id) %>%
-                                               summarize(entity_cap_mw = sum(net_summer_capacity_mw, na.rm=T)) %>%
+                                               dplyr::summarize(entity_cap_mw = sum(net_summer_capacity_mw, na.rm=T)) %>%
                                                left_join(df_EIA860M %>% 
-                                                           filter(record_category == 'operating', balancing_authority_code == 'ERCO') %>% group_by(year, month) %>% summarize(total_cap_mw = sum(net_summer_capacity_mw, na.rm = T)),
+                                                           filter(record_category == 'operating', balancing_authority_code == 'ERCO') %>% group_by(year, month) %>% dplyr::summarize(total_cap_mw = sum(net_summer_capacity_mw, na.rm = T)),
                                                          by=c('year', 'month')) %>%
                                                left_join(df_EIA860M %>% 
-                                                           filter(record_category == 'operating', balancing_authority_code == 'ERCO') %>% group_by(year, month) %>% summarize(n_entities = length(unique(entity_id))),
+                                                           filter(record_category == 'operating', balancing_authority_code == 'ERCO') %>% group_by(year, month) %>% dplyr::summarize(n_entities = length(unique(entity_id))),
                                                          by=c('year', 'month')),
                                              by=c('year', 'month', 'entity_id')) %>%
     mutate(date = as.Date(paste(year, month, '01', sep = '-'), format='%Y-%m-%d')) %>%
@@ -790,6 +791,7 @@ calculate_market_cap_gini <- function(df_EIA860M) {
            date = as.Date(paste(year, month, '01', sep = '-'), format='%Y-%m-%d')) %>%
     distinct(year, month, market_cap_gini_coef)
   
+  print('last join')
   df_EIA860M <- df_EIA860M %>%
     left_join(df_market_cap_gini,
               by=c('year', 'month')) 
@@ -801,12 +803,12 @@ calculate_ng_cap_gini <- function(df_EIA860M) {
   df_ng_cap_gini <- df_EIA860M %>% left_join(df_EIA860M %>%
                                                filter(record_category == 'operating', balancing_authority_code == 'ERCO', energy_source_code == 'NG') %>%
                                                group_by(year, month, entity_id) %>%
-                                               summarize(entity_cap_mw = sum(net_summer_capacity_mw, na.rm=T)) %>%
+                                               dplyr::summarize(entity_cap_mw = sum(net_summer_capacity_mw, na.rm=T)) %>%
                                                left_join(df_EIA860M %>% 
-                                                           filter(record_category == 'operating', balancing_authority_code == 'ERCO', energy_source_code == 'NG') %>% group_by(year, month) %>% summarize(total_cap_mw = sum(net_summer_capacity_mw, na.rm = T)),
+                                                           filter(record_category == 'operating', balancing_authority_code == 'ERCO', energy_source_code == 'NG') %>% group_by(year, month) %>% dplyr::summarize(total_cap_mw = sum(net_summer_capacity_mw, na.rm = T)),
                                                          by=c('year', 'month')) %>%
                                                left_join(df_EIA860M %>% 
-                                                           filter(record_category == 'operating', balancing_authority_code == 'ERCO', energy_source_code == 'NG') %>% group_by(year, month) %>% summarize(n_entities = length(unique(entity_id))),
+                                                           filter(record_category == 'operating', balancing_authority_code == 'ERCO', energy_source_code == 'NG') %>% group_by(year, month) %>% dplyr::summarize(n_entities = length(unique(entity_id))),
                                                          by=c('year', 'month')),
                                              by=c('year', 'month', 'entity_id')) %>%
     mutate(date = as.Date(paste(year, month, '01', sep = '-'), format='%Y-%m-%d')) %>%
@@ -835,12 +837,12 @@ calculate_wnd_cap_gini <- function(df_EIA860M) {
   df_wnd_cap_gini <- df_EIA860M %>% left_join(df_EIA860M %>%
                                                filter(record_category == 'operating', balancing_authority_code == 'ERCO', energy_source_code == 'WND') %>%
                                                group_by(year, month, entity_id) %>%
-                                               summarize(entity_cap_mw = sum(net_summer_capacity_mw, na.rm=T)) %>%
+                                               dplyr::summarize(entity_cap_mw = sum(net_summer_capacity_mw, na.rm=T)) %>%
                                                left_join(df_EIA860M %>% 
-                                                           filter(record_category == 'operating', balancing_authority_code == 'ERCO', energy_source_code == 'WND') %>% group_by(year, month) %>% summarize(total_cap_mw = sum(net_summer_capacity_mw, na.rm = T)),
+                                                           filter(record_category == 'operating', balancing_authority_code == 'ERCO', energy_source_code == 'WND') %>% group_by(year, month) %>% dplyr::summarize(total_cap_mw = sum(net_summer_capacity_mw, na.rm = T)),
                                                          by=c('year', 'month')) %>%
                                                left_join(df_EIA860M %>% 
-                                                           filter(record_category == 'operating', balancing_authority_code == 'ERCO', energy_source_code == 'WND') %>% group_by(year, month) %>% summarize(n_entities = length(unique(entity_id))),
+                                                           filter(record_category == 'operating', balancing_authority_code == 'ERCO', energy_source_code == 'WND') %>% group_by(year, month) %>% dplyr::summarize(n_entities = length(unique(entity_id))),
                                                          by=c('year', 'month')),
                                              by=c('year', 'month', 'entity_id')) %>%
     mutate(date = as.Date(paste(year, month, '01', sep = '-'), format='%Y-%m-%d')) %>%
@@ -869,12 +871,12 @@ calculate_market_gen_gini <- function(df_EIA923A) {
   df_market_gen_gini <- df_EIA923A %>% left_join(df_EIA923A %>%
                                                    filter(balancing_authority_code == 'ERCO') %>%
                                                    group_by(year, month, operator_id) %>%
-                                                   summarize(operator_gen_m_wh = sum(month_net_gen_m_wh, na.rm=T)) %>%
+                                                   dplyr::summarize(operator_gen_m_wh = sum(month_net_gen_m_wh, na.rm=T)) %>%
                                                    left_join(df_EIA923A %>% 
-                                                               filter(balancing_authority_code == 'ERCO') %>% group_by(year, month) %>% summarize(total_gen_m_wh = sum(month_net_gen_m_wh, na.rm = T)),
+                                                               filter(balancing_authority_code == 'ERCO') %>% group_by(year, month) %>% dplyr::summarize(total_gen_m_wh = sum(month_net_gen_m_wh, na.rm = T)),
                                                              by=c('year', 'month')) %>%
                                                    left_join(df_EIA923A %>% 
-                                                               filter(balancing_authority_code == 'ERCO') %>% group_by(year, month) %>% summarize(n_operators = length(unique(operator_id))),
+                                                               filter(balancing_authority_code == 'ERCO') %>% group_by(year, month) %>% dplyr::summarize(n_operators = length(unique(operator_id))),
                                                              by=c('year', 'month')),
                                                  by=c('year', 'month', 'operator_id')) %>%
     mutate(date = as.Date(paste(year, month, '01', sep = '-'), format='%Y-%m-%d')) %>%
@@ -903,12 +905,12 @@ calculate_ng_gen_gini <- function(df_EIA923A) {
   df_ng_gen_gini <- df_EIA923A %>% left_join(df_EIA923A %>%
                                                filter(balancing_authority_code == 'ERCO', reported_fuel_type_code == 'NG') %>%
                                                group_by(year, month, operator_id) %>%
-                                               summarize(operator_gen_m_wh = sum(month_net_gen_m_wh, na.rm=T)) %>%
+                                               dplyr::summarize(operator_gen_m_wh = sum(month_net_gen_m_wh, na.rm=T)) %>%
                                                left_join(df_EIA923A %>% 
-                                                           filter(balancing_authority_code == 'ERCO', reported_fuel_type_code == 'NG') %>% group_by(year, month) %>% summarize(total_gen_m_wh = sum(month_net_gen_m_wh, na.rm = T)),
+                                                           filter(balancing_authority_code == 'ERCO', reported_fuel_type_code == 'NG') %>% group_by(year, month) %>% dplyr::summarize(total_gen_m_wh = sum(month_net_gen_m_wh, na.rm = T)),
                                                          by=c('year', 'month')) %>%
                                                left_join(df_EIA923A %>% 
-                                                           filter(balancing_authority_code == 'ERCO', reported_fuel_type_code == 'NG') %>% group_by(year, month) %>% summarize(n_operators = length(unique(operator_id))),
+                                                           filter(balancing_authority_code == 'ERCO', reported_fuel_type_code == 'NG') %>% group_by(year, month) %>% dplyr::summarize(n_operators = length(unique(operator_id))),
                                                          by=c('year', 'month')),
                                              by=c('year', 'month', 'operator_id')) %>%
     mutate(date = as.Date(paste(year, month, '01', sep = '-'), format='%Y-%m-%d')) %>%
@@ -937,12 +939,12 @@ calculate_wnd_gen_gini <- function(df_EIA923A) {
   df_wnd_gen_gini <- df_EIA923A %>% left_join(df_EIA923A %>%
                                                filter(balancing_authority_code == 'ERCO', reported_fuel_type_code == 'WND') %>%
                                                group_by(year, month, operator_id) %>%
-                                               summarize(operator_gen_m_wh = sum(month_net_gen_m_wh, na.rm=T)) %>%
+                                               dplyr::summarize(operator_gen_m_wh = sum(month_net_gen_m_wh, na.rm=T)) %>%
                                                left_join(df_EIA923A %>% 
-                                                           filter(balancing_authority_code == 'ERCO', reported_fuel_type_code == 'WND') %>% group_by(year, month) %>% summarize(total_gen_m_wh = sum(month_net_gen_m_wh, na.rm = T)),
+                                                           filter(balancing_authority_code == 'ERCO', reported_fuel_type_code == 'WND') %>% group_by(year, month) %>% dplyr::summarize(total_gen_m_wh = sum(month_net_gen_m_wh, na.rm = T)),
                                                          by=c('year', 'month')) %>%
                                                left_join(df_EIA923A %>% 
-                                                           filter(balancing_authority_code == 'ERCO', reported_fuel_type_code == 'WND') %>% group_by(year, month) %>% summarize(n_operators = length(unique(operator_id))),
+                                                           filter(balancing_authority_code == 'ERCO', reported_fuel_type_code == 'WND') %>% group_by(year, month) %>% dplyr::summarize(n_operators = length(unique(operator_id))),
                                                          by=c('year', 'month')),
                                              by=c('year', 'month', 'operator_id')) %>%
     mutate(date = as.Date(paste(year, month, '01', sep = '-'), format='%Y-%m-%d')) %>%
@@ -1115,11 +1117,11 @@ create_EIA_operating_cap_gen_summaries_market_and_ng <- function(df_EIA860M, df_
   df_ERCOT_EIA_market_operating_gen_cap_summary <- df_EIA860M %>%
     filter(balancing_authority_code == 'ERCO', record_category == 'operating') %>%
     group_by(year, month) %>%
-    summarize(capacity_mw = sum(net_summer_capacity_mw, na.rm = TRUE),
+    dplyr::summarize(capacity_mw = sum(net_summer_capacity_mw, na.rm = TRUE),
               cap_gini = mean(market_cap_gini_coef, na.rm=T)) %>%
     left_join(df_EIA923A %>% filter(balancing_authority_code == 'ERCO') %>%
                 group_by(year, month) %>%
-                summarize(generation_m_wh = sum(month_net_gen_m_wh, na.rm=T),
+                dplyr::summarize(generation_m_wh = sum(month_net_gen_m_wh, na.rm=T),
                           gen_gini = mean(market_gen_gini_coef, na.rm=T)) %>%
                 mutate(date = as.Date(paste(year, month, '01', sep = '-'), format='%Y-%m-%d')))
   
@@ -1128,11 +1130,11 @@ create_EIA_operating_cap_gen_summaries_market_and_ng <- function(df_EIA860M, df_
   df_ERCOT_EIA_ng_operating_gen_cap_summary <- df_EIA860M %>%
     filter(balancing_authority_code == 'ERCO', record_category == 'operating', energy_source_code == 'NG') %>%
     group_by(year, month) %>%
-    summarize(capacity_mw = sum(net_summer_capacity_mw, na.rm = TRUE),
+    dplyr::summarize(capacity_mw = sum(net_summer_capacity_mw, na.rm = TRUE),
               cap_gini = mean(market_cap_gini_coef, na.rm=T)) %>%
     left_join(df_EIA923A %>% filter(balancing_authority_code == 'ERCO', reported_fuel_type_code == 'NG') %>%
                 group_by(year, month) %>%
-                summarize(generation_m_wh = sum(month_net_gen_m_wh, na.rm=T),
+                dplyr::summarize(generation_m_wh = sum(month_net_gen_m_wh, na.rm=T),
                           gen_gini = mean(market_gen_gini_coef, na.rm=T)) %>%
                 mutate(date = as.Date(paste(year, month, '01', sep = '-'), format='%Y-%m-%d')))
   
@@ -1141,11 +1143,11 @@ create_EIA_operating_cap_gen_summaries_market_and_ng <- function(df_EIA860M, df_
   df_ERCOT_EIA_wnd_operating_gen_cap_summary <- df_EIA860M %>%
     filter(balancing_authority_code == 'ERCO', record_category == 'operating', energy_source_code == 'WND') %>%
     group_by(year, month) %>%
-    summarize(capacity_mw = sum(net_summer_capacity_mw, na.rm = TRUE),
+    dplyr::summarize(capacity_mw = sum(net_summer_capacity_mw, na.rm = TRUE),
               cap_gini = mean(wnd_cap_gini_coef, na.rm=T)) %>%
     left_join(df_EIA923A %>% filter(balancing_authority_code == 'ERCO', reported_fuel_type_code == 'WND') %>%
                 group_by(year, month) %>%
-                summarize(generation_m_wh = sum(month_net_gen_m_wh, na.rm=T),
+                dplyr::summarize(generation_m_wh = sum(month_net_gen_m_wh, na.rm=T),
                           gen_gini = mean(wnd_gen_gini_coef, na.rm=T)) %>%
                 mutate(date = as.Date(paste(year, month, '01', sep = '-'), format='%Y-%m-%d')))
   
@@ -1165,7 +1167,7 @@ display_compare_plants_EIA_860M_and_EIA923A_table <- function(df_EIA860M, df_EIA
     merge((df_EIA860M %>% filter(record_category == 'operating' & balancing_authority_code == 'ERCO') %>% distinct(plant_id, balancing_authority_code, record_year, plant_capacity_mw, energy_source_code, plant_name)),
           by.x=c('plant_id', 'balancing_authority_code', 'year'),
           by.y=c('plant_id', 'balancing_authority_code', 'record_year'), all.x=TRUE, all.y = T) %>%
-    rename(plant_name_923A = plant_name.x,
+    dplyr::rename(plant_name_923A = plant_name.x,
            plant_name_860M = plant_name.y) %>%
     group_by(year) %>%
     filter(!complete.cases(plant_name_923A)) %>%
@@ -1195,7 +1197,7 @@ create_monthly_gini_summary <- function(lag_months=12) {
     mutate(date = as.Date(paste(year, month, '01', sep='-'), format = '%Y-%m-%d')) %>%
     distinct() %>%
     group_by(date) %>%
-    summarize(mean_market_cap_gini_coef = mean(market_cap_gini_coef, na.rm=T),
+    dplyr::summarize(mean_market_cap_gini_coef = mean(market_cap_gini_coef, na.rm=T),
               mean_ng_cap_gini_coef = mean(ng_cap_gini_coef, na.rm=T),
               mean_wnd_cap_gini_coef = mean(wnd_cap_gini_coef, na.rm=T)) %>%
     mutate(date_minus_month = as.Date(date) %m+% months(1),
@@ -1231,7 +1233,7 @@ create_plant_gen_id_phase_timeline_csv <- function(df_EIA860M) {
     mutate(year_months = as.Date(paste(year_months, '01', sep = '-'), format='%Y-%m-%d'),
            status_phase = as.numeric(status_phase)) %>%
     left_join(df_EIA860M %>% distinct(status, status_phase), by='status_phase') %>%
-    rename(date = year_months) %>%
+    dplyr::rename(date = year_months) %>%
     distinct() %>%
     group_by(plant_gen_id) %>%
     mutate(first_appearance = min(date),
@@ -1258,12 +1260,12 @@ create_plant_gen_id_phase_timeline_csv <- function(df_EIA860M) {
   df_postponed_to_planning <- df_plant_gen_id_phase_timeline %>%
     filter(status_phase <=6 ) %>%
     group_by(plant_gen_id) %>%
-    summarize(min_planning_date = min(date), 
+    dplyr::summarize(min_planning_date = min(date), 
               max_planning_date = max(date)) %>%
     left_join(df_plant_gen_id_phase_timeline %>%
                 filter(status_phase == 12) %>%
                 group_by(plant_gen_id) %>%
-                summarize(min_postponed_date = min(date), 
+                dplyr::summarize(min_postponed_date = min(date), 
                           max_postponed_date = max(date)),
               by='plant_gen_id') %>%
     mutate(planning_to_postponed = if_else(min_planning_date < min_postponed_date, 1,0),
@@ -1272,7 +1274,7 @@ create_plant_gen_id_phase_timeline_csv <- function(df_EIA860M) {
            planning_to_postponed_and_back = if_else(planning_to_postponed == 1 & postponed_to_planning ==1, 1,0)) %>%
     select(plant_gen_id, postponed_to_planning_date) %>%
     filter(!is.na.POSIXlt(postponed_to_planning_date)) %>%
-    rename(date = postponed_to_planning_date) %>%
+    dplyr::rename(date = postponed_to_planning_date) %>%
     mutate(moves_back_to_planning = 1)
   
   
@@ -1405,7 +1407,7 @@ create_panel_totalquantity_specific_regressions_12mo_lag <- function(lag_months=
   df_strategic_pool_statistics <- df_panel_plant_gen %>%
     filter(status_phase %in% c(1,2,3,4,5,6)) %>%
     group_by(date) %>%
-    summarize(strat_pool_n_plant_gen_id = n(),
+    dplyr::summarize(strat_pool_n_plant_gen_id = n(),
               strat_pool_mean_status_phase = mean(status_phase, na.rm=T),
               strat_pool_mean_mw = mean(planned_capacity_mw, na.rm=T),
               strat_pool_total_mw = sum(planned_capacity_mw, na.rm=T)
@@ -1418,7 +1420,7 @@ create_panel_totalquantity_specific_regressions_12mo_lag <- function(lag_months=
   df_renew_breakout_strategic_pool_statistics <- df_panel_plant_gen %>%
     filter(status_phase %in% c(1,2,3,4,5,6)) %>%
     group_by(date, energy_source_code_group) %>%
-    summarize(strat_pool_n_plant_gen_id = n(),
+    dplyr::summarize(strat_pool_n_plant_gen_id = n(),
               strat_pool_mean_status_phase = mean(status_phase, na.rm=T),
               strat_pool_mean_mw = mean(planned_capacity_mw, na.rm=T),
               strat_pool_total_mw = sum(planned_capacity_mw, na.rm=T)
@@ -1432,7 +1434,7 @@ create_panel_totalquantity_specific_regressions_12mo_lag <- function(lag_months=
   #### monthly total nameplate capacity
   print('Joining in total nameplate capacity')
   df_panel_plant_gen <- df_panel_plant_gen %>%
-    left_join(df_panel_plant_gen %>% group_by(date) %>% summarize(month_total_nameplate_mw = sum(net_summer_capacity_mw, na.rm=TRUE)),
+    left_join(df_panel_plant_gen %>% group_by(date) %>% dplyr::summarize(month_total_nameplate_mw = sum(net_summer_capacity_mw, na.rm=TRUE)),
               by=c('date'))
   
   for (i in seq_along(market_segments)) {
@@ -1442,37 +1444,37 @@ create_panel_totalquantity_specific_regressions_12mo_lag <- function(lag_months=
     if (market_segments[i] == 'ng') {
       df_ng_new_in_phase <- df_panel_plant_gen %>%
         filter(energy_source_code_group == 'NG' & plant_gen_id %in% operating_generators) %>%
-        rename(!!new_column := operating_capacity_mw)
+        dplyr::rename(!!new_column := operating_capacity_mw)
     }
     if (market_segments[i] == 'renewable') {
       df_ng_new_in_phase <- df_panel_plant_gen %>%
         filter(energy_source_code_group == 'Renewables' & plant_gen_id %in% operating_generators) %>%
-        rename(!!new_column := operating_capacity_mw)
+        dplyr::rename(!!new_column := operating_capacity_mw)
     }
     if (market_segments[i] == 'market') {
       df_ng_new_in_phase <- df_panel_plant_gen %>%
         filter(status_phase %in% c(7,8))
-        rename(!!new_column := operating_capacity_mw)
+      dplyr::rename(!!new_column := operating_capacity_mw)
     }
     if (market_segments[i] == 'nonng') {
       df_ng_new_in_phase <- df_panel_plant_gen %>%
         filter(energy_source_code_group != 'NG') %>%
-        rename(!!new_column := operating_capacity_mw)
+        dplyr::rename(!!new_column := operating_capacity_mw)
     }
     if (market_segments[i] == 'wind') {
       df_ng_new_in_phase <- df_panel_plant_gen %>%
         filter(energy_source_code == 'WND') %>%
-        rename(!!new_column := operating_capacity_mw)
+        dplyr::rename(!!new_column := operating_capacity_mw)
     }
     if (market_segments[i] == 'solar') {
       df_ng_new_in_phase <- df_panel_plant_gen %>%
         filter(energy_source_code == 'SUN') %>%
-        rename(!!new_column := operating_capacity_mw)
+        dplyr::rename(!!new_column := operating_capacity_mw)
     }
     if (market_segments[i] == 'other') {
       df_ng_new_in_phase <- df_panel_plant_gen %>%
         filter(energy_source_code_group == 'Other') %>%
-        rename(!!new_column := operating_capacity_mw)
+        dplyr::rename(!!new_column := operating_capacity_mw)
     }
     
     print('Joining datasets')
@@ -1537,7 +1539,7 @@ print_n_generators_in_sample <- function(){
            is_planned_or_operating = ifelse( record_category %in% c('operating', 'planned'),1,0)
     ) %>%
     # filter(plant_state == 'TX') %>%
-    summarize(n = n(),
+    dplyr::summarize(n = n(),
               n_unfilled_ba = sum(is_unfilled_ba_null),
               n_precoords_unfilled_ba = sum(is_pre_geocoords_unfilled_ba_null),
               n_generators = length(unique(plant_gen_id)),
