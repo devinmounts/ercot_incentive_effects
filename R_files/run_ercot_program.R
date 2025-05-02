@@ -1,9 +1,4 @@
 #### ERCOT Energy Incentive
-### necessary libraries
-if (!require("pacman")) install.packages("pacman")
-pacman::p_load('tidyverse', 'ggplot2', 'readxl', 'janitor', 'lubridate', 'geojsonio', 'broom', 'sp', 'zoo', 'fastDummies', 'stargazer', 'RStata', 'suncalc',
-               'cowplot', 'olsrr', 'sf', 'MESS')
-
 ### necessary scripts
 source('ercot_preprocess_functions.R')
 source('eia_pre_process_functions.R')
@@ -41,7 +36,7 @@ create_necessary_file_folders <- function(){
 
 }
 
-run_ercot_program <- function(RStataPath, RStataVersion, run_appendix=FALSE){
+run_ercot_program <- function(run_appendix=FALSE){
   print('creating target file folders')
   create_necessary_file_folders()
   
@@ -123,10 +118,10 @@ gc()
 
   ###### Table 2 ##### (also process data to create autoregressive covariates and create summary stats table for appendix)
   ###############################################################
-print('Generating Table two')
-options("RStata.StataPath" = RStataPath)
-options("RStata.StataVersion" = RStataVersion)
-stata('../Stata/underbidding_data_summary.do')
+# print('Generating Table two')
+# options("RStata.StataPath" = RStataPath)
+# options("RStata.StataVersion" = RStataVersion)
+# stata('../Stata/underbidding_data_summary.do')
 
 
 ################################### Results Section ############################
@@ -157,14 +152,16 @@ for(covar_version_input in covar_versions) {
 ######### Underbidding Models ###################
 ########## Table 5 #############################
 ###############################################
-run_polynomial_weather=TRUE
-run_rls_timeseries_underbidding_model(run_polynomial_weather)
 
-########## Table 6 ##########################
-############################################
-options("RStata.StataPath" = RStataPath)
-options("RStata.StataVersion" = RStataVersion)
-stata('../Stata/underbidding_matching.do')
+### requires underbidding_data_summary.do to be run first
+# run_polynomial_weather=TRUE
+# run_rls_timeseries_underbidding_model(run_polynomial_weather)
+
+# ########## Table 6 ##########################
+# ############################################
+# options("RStata.StataPath" = RStataPath)
+# options("RStata.StataVersion" = RStataVersion)
+# stata('../Stata/underbidding_matching.do')
 
 print('End of Main Body Tables')
 
@@ -183,18 +180,23 @@ gc()
 ##################### Main Body Select Stats ##########################
 #######################################################################
 #######################################################################
+print('generating main body stats')
 print_n_generators_in_sample()
 
 #### How many generators that enter the market show up in the applicant pool, and in how many phases of the applicant pool? ####
+print('stats on presence in applicant pool')
 calculate_stats_on_presencence_in_applicant_pool()
 
 #### How long does it take for a generator to move through the applicant pool and in to operation? ####
+print('time to operation')
 time_to_operation()
 
 #### How much capacity that entered into the applicant pool was cancelled and never made it to operation? ####
+print('calculate cancelled capacity')
 calculate_cancelled_capacity()
 
 #### If a plant goes into standby (ie. Not in operation by expected to return...), how often does it actually return? ####
+print('create stats on standby movement')
 create_stats_on_standby_movement()
 
 
@@ -216,28 +218,34 @@ if (run_appendix == TRUE){
     ################### Underbidding Autoregressive Robustness ############################
     ######################################################################################
     run_polynomial_weather=TRUE
+    print('running rls ar1 underbidding model')
     run_rls_ar1_timeseries_underbidding_model(run_polynomial_weather)
+    print('running rls ar10 underbidding model')
     run_rls_ar10_timeseries_underbidding_model(run_polynomial_weather)
 
 
     #######################################################################################
     ################### Capacity Model Robustness ############################
     ######################################################################################
+    print('running variable lags test')
     run_variable_lags_test()
+    print('create variable lags appendix and summary figure')
     create_variable_lags_appendix_summary_and_figure()
     gc()
 
+    print('run variable layers regression test')
     run_variable_layers_regression_test()
+    print('format and save latex output of variable layers regression')
     format_and_save_latex_output_of_variable_layers_regression()
     gc()
 
     #######################################################################################
     ######################## Underbidding Matching Robustness ############################
     ######################################################################################
-    options("RStata.StataPath" = RStataPath)
-    options("RStata.StataVersion" = RStataVersion)
-    stata('../Stata/underbidding_matching_robustness.do')
-    format_underbidding_robustness_latex_table()
+    # options("RStata.StataPath" = RStataPath)
+    # options("RStata.StataVersion" = RStataVersion)
+    # stata('../Stata/underbidding_matching_robustness.do')
+    # format_underbidding_robustness_latex_table()
 }
   
   print('Program Complete')
