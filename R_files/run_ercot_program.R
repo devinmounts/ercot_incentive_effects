@@ -1,4 +1,18 @@
 #### ERCOT Energy Incentive
+
+### necessary installs
+install.packages("pryr")
+install.packages("plyr")
+library(pryr)
+library(plyr)
+
+if (!require("pacman")) install.packages("pacman")
+pacman::p_load('tidyverse', 'ggplot2', 'readxl', 'janitor', 'lubridate', 'geojsonio', 'broom', 'sp', 'zoo', 'fastDummies', 'stargazer', 'RStata', 'suncalc',
+               'cowplot', 'olsrr', 'sf', 'MESS', 'pryr', 'plyr')
+
+### stargazer patch
+source('stargazer_patch.R')
+
 ### necessary scripts
 source('ercot_preprocess_functions.R')
 source('eia_pre_process_functions.R')
@@ -36,48 +50,48 @@ create_necessary_file_folders <- function(){
 
 }
 
-run_ercot_program <- function(run_appendix=FALSE){
-  print('creating target file folders')
-  create_necessary_file_folders()
+
+print('creating target file folders')
+create_necessary_file_folders()
   
-  #######################################################################
-  #######################################################################
-  ################ Load and Process Source Data #########################
-  #######################################################################
-  #######################################################################
+#######################################################################
+#######################################################################
+################ Load and Process Source Data #########################
+#######################################################################
+#######################################################################
 
-  ############################################
-  print('loading ERCOT data')
-  create_generation_capacity_and_adder_data()
-  gc()
+############################################
+print('loading ERCOT data')
+create_generation_capacity_and_adder_data()
+gc()
 
-  #### loads and processes EIA datasets ####
-  #########################################
-  print('loading EIA data')
-  EIA_data <- load_EIA860M_and_EIA932A()
+#### loads and processes EIA datasets ####
+#########################################
+print('loading EIA data')
+EIA_data <- load_EIA860M_and_EIA932A()
 
-  df_EIA860M <- EIA_data$EIA860M
-  df_EIA923A <- EIA_data$EIA923A
-  rm(EIA_data)
-  gc()
+df_EIA860M <- EIA_data$EIA860M
+df_EIA923A <- EIA_data$EIA923A
+rm(EIA_data)
+gc()
 
-  write_csv(df_EIA860M, '../Data/EIA Compiled Data/EIA860M_compiled_data.csv')
-  write_csv(df_EIA923A, '../Data/EIA Compiled Data/EIA923A_compiled_data.csv')
+write_csv(df_EIA860M, '../Data/EIA Compiled Data/EIA860M_compiled_data.csv')
+write_csv(df_EIA923A, '../Data/EIA Compiled Data/EIA923A_compiled_data.csv')
 
-  #### Shape EIA data to represent chronological life of a generator. ####
-  ########################################################################
-  print('creating EIA plant timeline')
-  create_plant_gen_id_phase_timeline_csv()
-  gc()
+#### Shape EIA data to represent chronological life of a generator. ####
+########################################################################
+print('creating EIA plant timeline')
+create_plant_gen_id_phase_timeline_csv()
+gc()
 
-  ################## Create Supporting Data Sets ###################
-  ##################################################################
-  print('creating controls data')
-  load_peaker_net_margin()
-  gc()
+################## Create Supporting Data Sets ###################
+##################################################################
+print('creating controls data')
+load_peaker_net_margin()
+gc()
 
-  ################### Monthly Data ###############################
-  ################################################################
+################### Monthly Data ###############################
+################################################################
 lag_months = 12 # default 12 months for main body, robustness data created in appendix section.
 create_monthly_ercot_summary(lag_months)
 gc()
@@ -102,22 +116,22 @@ gc()
 create_matching_dataset()
 gc()
 
-  #######################################################################
-  #######################################################################
-  ##################### Main Body Tables  ###############################
-  #######################################################################
-  #######################################################################
+#######################################################################
+#######################################################################
+##################### Main Body Tables  ###############################
+#######################################################################
+#######################################################################
 
-  ################################# Data Summaries ##########################
-  ########################################################################
+################################# Data Summaries ##########################
+########################################################################
 
-  ################### Table 1 #### - Entry and Exit of Operating Capacity
-  #################################
-  create_operating_pool_stats_latex()
+################### Table 1 #### - Entry and Exit of Operating Capacity
+#################################
+create_operating_pool_stats_latex()
 
 
-  ###### Table 2 ##### (also process data to create autoregressive covariates and create summary stats table for appendix)
-  ###############################################################
+###### Table 2 ##### (also process data to create autoregressive covariates and create summary stats table for appendix)
+###############################################################
 # print('Generating Table two')
 # options("RStata.StataPath" = RStataPath)
 # options("RStata.StataVersion" = RStataVersion)
@@ -200,54 +214,8 @@ print('create stats on standby movement')
 create_stats_on_standby_movement()
 
 
-  #######################################################################
-  #######################################################################
-  ################ Appendix Figures and Tables ##########################
-  #######################################################################
-  #######################################################################
-if (run_appendix == TRUE){
-    ### Summary Statistics for capacity model result from functions in main body section
-
-    ### Profits of Major Firms and significance of scarcity adders
-    print('Plotting Profit Margin of Major Firms')
-    plot_profit_margin_select_firms()
-
-    ### Full capacity model and applicant pool results tables produced in main body section
-
-    #######################################################################################
-    ################### Underbidding Autoregressive Robustness ############################
-    ######################################################################################
-    run_polynomial_weather=TRUE
-    print('running rls ar1 underbidding model')
-    run_rls_ar1_timeseries_underbidding_model(run_polynomial_weather)
-    print('running rls ar10 underbidding model')
-    run_rls_ar10_timeseries_underbidding_model(run_polynomial_weather)
-
-
-    #######################################################################################
-    ################### Capacity Model Robustness ############################
-    ######################################################################################
-    print('running variable lags test')
-    run_variable_lags_test()
-    print('create variable lags appendix and summary figure')
-    create_variable_lags_appendix_summary_and_figure()
-    gc()
-
-    print('run variable layers regression test')
-    run_variable_layers_regression_test()
-    print('format and save latex output of variable layers regression')
-    format_and_save_latex_output_of_variable_layers_regression()
-    gc()
-
-    #######################################################################################
-    ######################## Underbidding Matching Robustness ############################
-    ######################################################################################
-    # options("RStata.StataPath" = RStataPath)
-    # options("RStata.StataVersion" = RStataVersion)
-    # stata('../Stata/underbidding_matching_robustness.do')
-    # format_underbidding_robustness_latex_table()
-}
   
-  print('Program Complete')
-}
+  
+print('Program Complete')
+
 
