@@ -17,7 +17,7 @@
   3. Adjust absolute file path in ./Stata/cd_estats to {absolute_reference}/Tables/Summary Stats" 
   4. Run ./Stata/underbidding_data_summary.do
   5. Run ./Stata/underbidding_matching.do
+  6. Run ./R_files/run_rls_timeseries_underbidding_model.R
 * Appendix:
-  1. Run ./R_files/appendix_robustness.R
-  2. Run ./Stata/underbidding_matching_robustness.do
-  3. Run ./R_files/regression_script.R format_underbidding_robustness_latex_table()
+  1. Run ./Stata/underbidding_matching_robustness.do
+  2. Run ./R_files/ercot_appendix_robustness.R
