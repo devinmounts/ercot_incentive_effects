@@ -1,10 +1,10 @@
 #### ERCOT Energy Incentive
 
 ### necessary installs
-install.packages("pryr")
-install.packages("plyr")
-library(pryr)
-library(plyr)
+# install.packages("pryr")
+# install.packages("plyr")
+# library(pryr)
+# library(plyr)
 
 if (!require("pacman")) install.packages("pacman")
 pacman::p_load('tidyverse', 'ggplot2', 'readxl', 'janitor', 'lubridate', 'geojsonio', 'broom', 'sp', 'zoo', 'fastDummies', 'stargazer', 'RStata', 'suncalc',
