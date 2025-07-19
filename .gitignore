@@ -1,9 +1,17 @@
-#ignore all files in Tables and data
-
-#ignore file extensions
-*.DS_Store
-*.Rapp.history
-*.Rhistory
+# ignore all files
+# also .dta files 
+*.ster
 *.dta
-*.stswp
-*.stswp
+*.csv
+*.Rd
+*stargazer*
+
+Tables/*
+Economic/*
+EIA Compiled Data/*
+ERCOT Compiled Data/*
+Figures/*
+Regresssions/*
+Weather/*
+R_files/*stargazer*
+R_files/.Rhistory
