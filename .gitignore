@@ -5,6 +5,8 @@
 *.csv
 *.Rd
 *stargazer*
+*.pdf
+
 
 Tables/*
 Economic/*
