@@ -764,24 +764,51 @@ load_EIA923A <- function (df_EIA860M){
 # }
 
 calculate_market_cap_gini <- function(df_EIA860M) {
+  print('creating data to join')
+  print(df_EIA860M %>% head())
+  print(summary(df_EIA860M %>% select(year, month)))
+  print(df_EIA860M %>%
+          filter(record_category == 'operating', balancing_authority_code == 'ERCO') %>%
+          select(year, month, entity_id) %>%
+          summary())
+  
+  df_data_to_join_1 <- df_EIA860M %>%
+    filter(record_category == 'operating', balancing_authority_code == 'ERCO') %>%
+    group_by(year, month, entity_id) %>%
+    summarize(entity_cap_mw = sum(net_summer_capacity_mw, na.rm=T)) %>%
+    ungroup()
+  
+  print('1 join')
+  print(df_data_to_join_1 %>% head())
+  df_data_to_join_2 <- df_data_to_join_1 %>% left_join(df_EIA860M %>% 
+                  filter(record_category == 'operating', balancing_authority_code == 'ERCO') %>%
+                  group_by(year, month) %>%
+                  summarize(total_cap_mw = sum(net_summer_capacity_mw, na.rm = T)) %>%
+                  ungroup(),
+              by=c('year', 'month'))
+  
+  print('2 join')
+  print(df_data_to_join_2 %>% head())
+  df_data_to_join_3 <- df_data_to_join_2 %>% left_join(df_EIA860M %>% 
+                  filter(record_category == 'operating', balancing_authority_code == 'ERCO') %>%
+                  group_by(year, month) %>%
+                  summarize(n_entities = n_distinct(entity_id)) %>% 
+                  ungroup(),
+              by=c('year', 'month'))
+  
+  
+  print('3 join')
+  print(df_data_to_join_3 %>% head())
+
   print('first join')
-  df_market_cap_gini <- df_EIA860M %>% left_join(df_EIA860M %>%
-                                               filter(record_category == 'operating', balancing_authority_code == 'ERCO') %>%
-                                               group_by(year, month, entity_id) %>%
-                                               dplyr::summarize(entity_cap_mw = sum(net_summer_capacity_mw, na.rm=T)) %>%
-                                               left_join(df_EIA860M %>% 
-                                                           filter(record_category == 'operating', balancing_authority_code == 'ERCO') %>% group_by(year, month) %>% dplyr::summarize(total_cap_mw = sum(net_summer_capacity_mw, na.rm = T)),
-                                                         by=c('year', 'month')) %>%
-                                               left_join(df_EIA860M %>% 
-                                                           filter(record_category == 'operating', balancing_authority_code == 'ERCO') %>% group_by(year, month) %>% dplyr::summarize(n_entities = n_distinct(entity_id)),
-                                                         by=c('year', 'month')),
+  df_market_cap_gini <- df_EIA860M %>% left_join(df_data_to_join_3,
                                              by=c('year', 'month', 'entity_id')) %>%
     mutate(date = as.Date(paste(year, month, '01', sep = '-'), format='%Y-%m-%d')) %>%
     filter(report_category == 'operating', balancing_authority_code == 'ERCO') %>%
     distinct(year, month, entity_id, entity_cap_mw, total_cap_mw, n_entities) %>%
     group_by(year, month) %>%
     arrange(year, month, entity_cap_mw) %>%
-    mutate(cum_entities = dplyr::row_number(),
+    mutate(cum_entities = row_number(),
            cum_cap_mw = cumsum(entity_cap_mw)) %>%
     mutate(percent_total_operators = cum_entities/n_entities,
            percent_total_cap = cum_cap_mw/total_cap_mw) %>%

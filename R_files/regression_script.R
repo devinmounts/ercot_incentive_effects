@@ -54,7 +54,7 @@ run_regressions <- function(covar_version_input, rolling_3_month_input, exclude_
                                             'Capacity Utilization - %',
                                             'Net System Lamda',
                                             'Energy Only Price - $/MW', 'Incentive Payment - $/MW', 'Change Peaker Net Margin - $/GW', 'NG GINI Index', 'Wind GINI Index',
-                                            'Renewable Appl. Pool - MW', 'NG Appl. Pool - MW ', 'Mean Status Phase - Renewables', 'Mean Status Phase - NG ', 'Constant', 'test'
+                                            'Renewable Appl. Pool - MW', 'NG Appl. Pool - MW ', 'Mean Status Phase - Renewables', 'Mean Status Phase - NG ', 'Constant'
     )
   }
   if (covar_version == 'year_fixed_effects') {
@@ -67,14 +67,49 @@ run_regressions <- function(covar_version_input, rolling_3_month_input, exclude_
                                'Energy Only Price - $/MW', 'Incentive Payment - $/MW',  'Change Peaker Net Margin - $/GW', 'NG GINI Index', 'Wind GINI Index',
                                'Renewable Appl. Pool - MW', 'NG Appl. Pool - MW ', 'Mean Status Phase - Renewables', 'Mean Status Phase - NG ', 'Constant')
     
-    final_covariate_names_poly_weather <- c('2022-year', '2021-year', '2020-year', '2019-year', '2018-year', '2017-year',
-                                            'Mean Temp. Midpoint - Yr. Roll', 'Mean Temp. Midpoint Sq. - Yr. Roll', 'Mean Windspeed - Yr. Roll',
-                                            'Labor Force Pop. - Millions', 'Unemp. Rate', 'CPI', 'Interest Rate', 'Cost Wind Installation - $/MWh',
-                                            'Cost PV Installation - $/MWh', 'Natural Gas Price - $/MMBtu', 'Online Capacity - GW', 'Offline Capacity - GW',
-                                            'Capacity Utilization - %',
-                                            'Net System Lamda',
-                                            'Energy Only Price - $/MW', 'Incentive Payment - $/MW',  'Change Peaker Net Margin - $/GW', 'NG GINI Index', 'Wind GINI Index',
-                                            'Renewable Appl. Pool - MW', 'NG Appl. Pool - MW ', 'Mean Status Phase - Renewables', 'Mean Status Phase - NG ', 'Constant')
+    final_covariate_names_poly_weather <- c(
+      "(Intercept)" = "Constant",
+      "year_2022" = "2022-year",
+      "year_2021" = "2021-year",
+      "year_2020" = "2020-year",
+      "year_2019" = "2019-year",
+      "year_2018" = "2018-year",
+      "year_2017" = "2017-year",
+      "month_12" = "Month 12",
+      "month_11" = "Month 11",
+      "month_10" = "Month 10",
+      "month_9" = "Month 9",
+      "month_8" = "Month 8",
+      "month_7" = "Month 7",
+      "month_6" = "Month 6",
+      "month_5" = "Month 5",
+      "month_4" = "Month 4",
+      "month_3" = "Month 3",
+      "month_2" = "Month 2",
+      "roll_temp_midpoint" = "Mean Temp. Midpoint - Yr. Roll",
+      "roll_temp_midpoint_sq" = "Mean Temp. Midpoint Sq. - Yr. Roll",
+      "roll.weather_wnds" = "Mean Windspeed - Yr. Roll",
+      "p_labf" = "Labor Force Pop. - Millions",
+      "p_uner" = "Unemp. Rate",
+      "cpi" = "CPI",
+      "mean_shortr" = "Interest Rate",
+      "lcoe_wind_dollars_mw" = "Cost Wind Installation - $/MWh",
+      "lcoe_sun_dollars_mw" = "Cost PV Installation - $/MWh",
+      "mean_hh_price_MMBtu" = "Natural Gas Price - $/MMBtu",
+      "mean_int_tot_spin_cap_mw" = "Online Capacity - GW",
+      "mean_rtoffcap" = "Offline Capacity - GW",
+      "nameplate_cap_scarcity_measure" = "Capacity Utilization - %",
+      "mean_net_sys_lamda" = "Net System Lamda",
+      "mean_hb_busavg_energy_only" = "Energy Only Price - $/MW",
+      "mean_total_pa" = "Incentive Payment - $/MW",
+      "mean_delta_pnm" = "Change Peaker Net Margin - $/GW",
+      "mean_ng_cap_gini_coef" = "NG GINI Index",
+      "mean_wnd_cap_gini_coef" = "Wind GINI Index",
+      "strat_pool_total_mw_Renewables" = "Renewable Appl. Pool - MW",
+      "strat_pool_total_mw_NG" = "NG Appl. Pool - MW ",
+      "strat_pool_mean_status_phase_Renewables" = "Mean Status Phase - Renewables",
+      "strat_pool_mean_status_phase_NG" = "Mean Status Phase - NG "
+    )
   }
   
   if (covar_version == 'base_covars') {
@@ -158,7 +193,7 @@ run_regressions <- function(covar_version_input, rolling_3_month_input, exclude_
     }
     
     
-    output_file_path <- paste('../Tables/Regressions/Capacity Model/',folder, file_type, ".htm", sep = "")
+    output_file_path <- paste('../Tables/Regressions/Capacity Model/',folder, file_type, ".html", sep = "")
     output_file_path_latex <- paste('../Tables/Regressions/Capacity Model/', folder, file_type, ".tex", sep = "")
     output_summary_stats_path <- paste("../Tables/Summary Stats/", file_type, "_summary.tex", sep = "")
     output_data_path <- paste('../Data/Regressions/Capacity Model/',folder, file_type, '_regression_set.csv', sep="")
@@ -631,49 +666,123 @@ run_regressions <- function(covar_version_input, rolling_3_month_input, exclude_
         print('printing fe and breakout covariates table')
         
         if (run_polynomial_weather) { ## polynomial full covariate model starts here.
-          
-          stargazer(models[[1]],
-                    models[[2]],
-                    models[[3]],
-                    models[[4]],
-                    models[[5]],
-                    models[[6]],
-                    models[[7]],
-                    models[[8]],
-                    models[[9]],
-                    models[[10]],
-                    models[[11]],
-                    models[[12]],
-                    models[[13]],
-                    models[[14]],
-                    models[[15]],
-                    models[[16]],
-                    models[[17]],
-                    models[[18]],
-                    models[[19]],
-                    models[[20]],
-                    models[[21]],
-                    models[[22]],
-                    models[[23]],
-                    models[[24]],
-                    models[[25]],
-                    models[[26]],
-                    models[[27]],
-                    models[[28]],
-                    models[[29]],
-                    models[[30]],
-                    models[[31]],
-                    models[[32]],
-                    models[[33]],
-                    models[[34]],
-                    models[[35]],
-                    models[[36]],
-                    title=paste("Decorrelated", toupper(file_type), ' Regression', sep = ' '), align=TRUE,
-                    omit.stat=c("LL","ser","f"), no.space=TRUE, header = F, report = 'vc*', float.env = 'sidewaystable', font.size = 'footnotesize' , type = 'html', out = output_file_path,
-                    star.cutoffs = c(0.05, 0.01, 0.001), column.sep.width = "1pt", covariate.labels = final_covariate_names_poly_weather
+          print('running poly_weather')
+          final_covariate_names_poly_weather <- c(
+            "(Intercept)" = "Constant",
+            "year_2022" = "2022-year",
+            "year_2021" = "2021-year",
+            "year_2020" = "2020-year",
+            "year_2019" = "2019-year",
+            "year_2018" = "2018-year",
+            "year_2017" = "2017-year",
+            "month_12" = "Month 12",
+            "month_11" = "Month 11",
+            "month_10" = "Month 10",
+            "month_9" = "Month 9",
+            "month_8" = "Month 8",
+            "month_7" = "Month 7",
+            "month_6" = "Month 6",
+            "month_5" = "Month 5",
+            "month_4" = "Month 4",
+            "month_3" = "Month 3",
+            "month_2" = "Month 2",
+            "roll_temp_midpoint" = "Mean Temp. Midpoint - Yr. Roll",
+            "roll_temp_midpoint_sq" = "Mean Temp. Midpoint Sq. - Yr. Roll",
+            "roll.weather_wnds" = "Mean Windspeed - Yr. Roll",
+            "p_labf" = "Labor Force Pop. - Millions",
+            "p_uner" = "Unemp. Rate",
+            "cpi" = "CPI",
+            "mean_shortr" = "Interest Rate",
+            "lcoe_wind_dollars_mw" = "Cost Wind Installation - $/MWh",
+            "lcoe_sun_dollars_mw" = "Cost PV Installation - $/MWh",
+            "mean_hh_price_MMBtu" = "Natural Gas Price - $/MMBtu",
+            "mean_int_tot_spin_cap_mw" = "Online Capacity - GW",
+            "mean_rtoffcap" = "Offline Capacity - GW",
+            "nameplate_cap_scarcity_measure" = "Capacity Utilization - %",
+            "mean_net_sys_lamda" = "Net System Lamda",
+            "mean_hb_busavg_energy_only" = "Energy Only Price - $/MW",
+            "mean_total_pa" = "Incentive Payment - $/MW",
+            "mean_delta_pnm" = "Change Peaker Net Margin - $/GW",
+            "mean_ng_cap_gini_coef" = "NG GINI Index",
+            "mean_wnd_cap_gini_coef" = "Wind GINI Index",
+            "strat_pool_total_mw_Renewables" = "Renewable Appl. Pool - MW",
+            "strat_pool_total_mw_NG" = "NG Appl. Pool - MW ",
+            "strat_pool_mean_status_phase_Renewables" = "Mean Status Phase - Renewables",
+            "strat_pool_mean_status_phase_NG" = "Mean Status Phase - NG "
           )
+          
+          print(final_covariate_names_poly_weather)
+          print(length(final_covariate_names_poly_weather))
+          
+          
+          # 
+          # stargazer(models[[1]],
+          #           models[[2]],
+          #           models[[3]],
+          #           models[[4]],
+          #           models[[5]],
+          #           models[[6]],
+          #           models[[7]],
+          #           models[[8]],
+          #           models[[9]],
+          #           models[[10]],
+          #           models[[11]],
+          #           models[[12]],
+          #           models[[13]],
+          #           models[[14]],
+          #           models[[15]],
+          #           models[[16]],
+          #           models[[17]],
+          #           models[[18]],
+          #           models[[19]],
+          #           models[[20]],
+          #           models[[21]],
+          #           models[[22]],
+          #           models[[23]],
+          #           models[[24]],
+          #           models[[25]],
+          #           models[[26]],
+          #           models[[27]],
+          #           models[[28]],
+          #           models[[29]],
+          #           models[[30]],
+          #           models[[31]],
+          #           models[[32]],
+          #           models[[33]],
+          #           models[[34]],
+          #           models[[35]],
+          #           models[[36]],
+          #           title=paste("Decorrelated", toupper(file_type), ' Regression', sep = ' '), align=TRUE,
+          #           omit.stat=c("LL","ser","f"), no.space=TRUE, header = F, report = 'vc*', float.env = 'sidewaystable', font.size = 'footnotesize' , type = 'html', out = output_file_path,
+          #           star.cutoffs = c(0.05, 0.01, 0.001), column.sep.width = "1pt", covariate.labels = final_covariate_names_poly_weather
+          # )
+          # 
+          
+         
+          
+          print(output_file_path)
+          
+          # Create the table
+          modelsummary(
+            models,
+            coef_map = final_covariate_names_poly_weather,
+            statistic = "std.error",               # show std errors like stargazer report = 'vc*'
+            gof_omit = "Log.Lik|AIC|BIC|F|Ser",   # omit LL, ser, f stats (approximate)
+            output = output_file_path,             # write HTML to this path
+            stars = c(`*` = 0.05, `**` = 0.01, `***` = 0.001),
+            fmt = 3,
+            title = paste("Decorrelated", toupper(file_type), "Regression"),
+            escape = FALSE                         # allow HTML in labels if needed
+          )
+          
           print('polynomial full gsls table saved.')
         } else { ## non-polynomial full covariate model starts here.
+          
+          print('running non-poly_weather')
+          print(final_covariate_names)
+          print(length(final_covariate_names))
+          
+          
           stargazer(models[[1]],
                     models[[2]],
                     models[[3]],
@@ -839,33 +948,76 @@ run_regressions <- function(covar_version_input, rolling_3_month_input, exclude_
         
         print(paste(length(select_total_model_comparisons), 'selected models now saved', sep = ' '))
         if (length(select_total_model_comparisons) == 4) {
-          stargazer(select_total_model_comparisons[[2]], #OLS NG
-                    select_total_model_comparisons[[1]], #RLS NG
-                    select_total_model_comparisons[[4]], #OLS Renew
-                    select_total_model_comparisons[[3]], #RLS Renew
-                    title="Decorrelated Total Quantity Regressions", align=TRUE,
-                    omit.stat=c("LL","ser","f"), no.space=TRUE, header = F, report = 'vc*', float.env = 'sidewaystable', font.size = 'footnotesize' , type = 'latex',
-                    out =paste('../Tables/Regressions/Capacity Model/Summary/',covar_version,'/ng_renew_total_quantity_comparison.tex', sep = '') ,
-                    star.cutoffs = c(0.05, 0.01, 0.001),
-                    dep.var.labels=c("Total MW Operating"),
-                    column.sep.width = "1pt",
-                    covariate.labels = final_covariate_names,
-                    digits = 2
+          # stargazer(select_total_model_comparisons[[2]], #OLS NG
+          #           select_total_model_comparisons[[1]], #RLS NG
+          #           select_total_model_comparisons[[4]], #OLS Renew
+          #           select_total_model_comparisons[[3]], #RLS Renew
+          #           title="Decorrelated Total Quantity Regressions", align=TRUE,
+          #           omit.stat=c("LL","ser","f"), no.space=TRUE, header = F, report = 'vc*', float.env = 'sidewaystable', font.size = 'footnotesize' , type = 'latex',
+          #           out =paste('../Tables/Regressions/Capacity Model/Summary/',covar_version,'/ng_renew_total_quantity_comparison.tex', sep = '') ,
+          #           star.cutoffs = c(0.05, 0.01, 0.001),
+          #           dep.var.labels=c("Total MW Operating"),
+          #           column.sep.width = "1pt",
+          #           covariate.labels = final_covariate_names,
+          #           digits = 2
+          # )
+          
+          modelsummary(
+            models = list(
+              select_total_model_comparisons[[2]], # OLS NG
+              select_total_model_comparisons[[1]], # RLS NG
+              select_total_model_comparisons[[4]], # OLS Renew
+              select_total_model_comparisons[[3]]  # RLS Renew
+            ),
+            coef_map = final_covariate_names,      # Named vector mapping raw covariates to pretty names
+            statistic = "std.error",                # Show standard errors below coefficients
+            stars = c(`*` = 0.05, `**` = 0.01, `***` = 0.001),
+            omit = "Log.Lik|Ser|F",                 # Omit these statistics like stargazer's omit.stat
+            output = paste0('../Tables/Regressions/Capacity Model/Summary/', covar_version, '/ng_renew_total_quantity_comparison.tex'),
+            fmt = 2,                               # 2 digits after decimal
+            title = "Decorrelated Total Quantity Regressions",
+            escape = FALSE,                        # Allow LaTeX in labels
+            gof_omit = "Log.Lik|Ser|F",           # Remove goodness-of-fit stats matching omit.stat
+            model_names = c("OLS NG", "RLS NG", "OLS Renew", "RLS Renew"),  # Optional nicer column names
+            stars_note = TRUE                      # Show significance stars note
           )
           
-          stargazer(select_total_model_comparisons[[2]], #OLS NG
-                    select_total_model_comparisons[[1]], #RLS NG
-                    select_total_model_comparisons[[4]], #OLS Renew
-                    select_total_model_comparisons[[3]], #RLS Renew
-                    title="Decorrelated Total Quantity Regressions", align=TRUE,
-                    omit.stat=c("LL","ser","f"), no.space=TRUE, header = F, report = 'vc*', float.env = 'sidewaystable', font.size = 'footnotesize' , type = 'html',
-                    out =paste('../Tables/Regressions/Capacity Model/Summary/',covar_version,'/ng_renew_total_quantity_comparison.html', sep = '') ,
-                    star.cutoffs = c(0.05, 0.01, 0.001),
-                    dep.var.labels=c("Total MW Operatin"),
-                    column.sep.width = "1pt",
-                    covariate.labels = final_covariate_names,
-                    digits = 2
+          
+          # stargazer(select_total_model_comparisons[[2]], #OLS NG
+          #           select_total_model_comparisons[[1]], #RLS NG
+          #           select_total_model_comparisons[[4]], #OLS Renew
+          #           select_total_model_comparisons[[3]], #RLS Renew
+          #           title="Decorrelated Total Quantity Regressions", align=TRUE,
+          #           omit.stat=c("LL","ser","f"), no.space=TRUE, header = F, report = 'vc*', float.env = 'sidewaystable', font.size = 'footnotesize' , type = 'html',
+          #           out =paste('../Tables/Regressions/Capacity Model/Summary/',covar_version,'/ng_renew_total_quantity_comparison.html', sep = '') ,
+          #           star.cutoffs = c(0.05, 0.01, 0.001),
+          #           dep.var.labels=c("Total MW Operatin"),
+          #           column.sep.width = "1pt",
+          #           covariate.labels = final_covariate_names,
+          #           digits = 2
+          # )
+          
+          modelsummary(
+            models = list(
+              select_total_model_comparisons[[2]], # OLS NG
+              select_total_model_comparisons[[1]], # RLS NG
+              select_total_model_comparisons[[4]], # OLS Renew
+              select_total_model_comparisons[[3]]  # RLS Renew
+            ),
+            coef_map = final_covariate_names,
+            statistic = "std.error",
+            stars = c(`*` = 0.05, `**` = 0.01, `***` = 0.001),
+            omit = "Log.Lik|Ser|F",
+            output = paste0('../Tables/Regressions/Capacity Model/Summary/', covar_version, '/ng_renew_total_quantity_comparison.html'),
+            fmt = 2,
+            title = "Decorrelated Total Quantity Regressions",
+            escape = FALSE,
+            gof_omit = "Log.Lik|Ser|F",
+            model_names = c("OLS NG", "RLS NG", "OLS Renew", "RLS Renew"),
+            stars_note = TRUE
+            # output_format = "html"  # explicitly specify HTML output
           )
+          
           
           select_total_model_comparisons <- list()
         }
@@ -942,64 +1094,149 @@ run_regressions <- function(covar_version_input, rolling_3_month_input, exclude_
         
         print(paste(length(select_poly_total_model_comparisons), 'selected models now saved', sep = ' '))
         if (length(select_poly_total_model_comparisons) == 4) {
-          stargazer(select_poly_total_model_comparisons[[2]],
-                    select_poly_total_model_comparisons[[1]],
-                    select_poly_total_model_comparisons[[4]],
-                    select_poly_total_model_comparisons[[3]],
-                    title="Decorrelated Total Quantity Regressions", align=TRUE,
-                    omit.stat=c("LL","ser","f"), no.space=TRUE, header = F, report = 'vc*', float.env = 'sidewaystable', font.size = 'footnotesize' , type = 'latex',
-                    out =paste('../Tables/Regressions/Capacity Model/Summary/', covar_version,'/poly_ng_renew_total_quantity_comparison.tex', sep='') ,
-                    star.cutoffs = c(0.05, 0.01, 0.001),
-                    dep.var.labels=c("Total MW Operating"),
-                    column.sep.width = "1pt",
-                    covariate.labels = final_covariate_names_poly_weather,
-                    digits = 2
+          # stargazer(select_poly_total_model_comparisons[[2]],
+          #           select_poly_total_model_comparisons[[1]],
+          #           select_poly_total_model_comparisons[[4]],
+          #           select_poly_total_model_comparisons[[3]],
+          #           title="Decorrelated Total Quantity Regressions", align=TRUE,
+          #           omit.stat=c("LL","ser","f"), no.space=TRUE, header = F, report = 'vc*', float.env = 'sidewaystable', font.size = 'footnotesize' , type = 'latex',
+          #           out =paste('../Tables/Regressions/Capacity Model/Summary/', covar_version,'/poly_ng_renew_total_quantity_comparison.tex', sep='') ,
+          #           star.cutoffs = c(0.05, 0.01, 0.001),
+          #           dep.var.labels=c("Total MW Operating"),
+          #           column.sep.width = "1pt",
+          #           covariate.labels = final_covariate_names_poly_weather,
+          #           digits = 2
+          # )
+          print('inside select_poly_total_model_comparisons == 4')
+          
+          modelsummary(
+            models = list(
+              select_poly_total_model_comparisons[[2]],
+              select_poly_total_model_comparisons[[1]],
+              select_poly_total_model_comparisons[[4]],
+              select_poly_total_model_comparisons[[3]]
+            ),
+            coef_map = final_covariate_names_poly_weather,
+            statistic = "std.error",
+            stars = c(`*` = 0.05, `**` = 0.01, `***` = 0.001),
+            omit = "Log.Lik|Ser|F",
+            gof_omit = "Log.Lik|Ser|F",
+            fmt = 2,
+            title = "Decorrelated Total Quantity Regressions",
+            escape = FALSE,
+            output = paste0('../Tables/Regressions/Capacity Model/Summary/', covar_version, '/poly_ng_renew_total_quantity_comparison.tex'),
+            model_names = c("OLS NG", "RLS NG", "OLS Renew", "RLS Renew")
           )
           
-          stargazer(select_poly_total_model_comparisons[[2]],
-                    select_poly_total_model_comparisons[[1]],
-                    select_poly_total_model_comparisons[[4]],
-                    select_poly_total_model_comparisons[[3]],
-                    title="Decorrelated Total Quantity Regressions - Poly Weather", align=TRUE,
-                    omit.stat=c("LL","ser","f"), no.space=TRUE, header = F, report = 'vc*', float.env = 'sidewaystable', font.size = 'footnotesize' , type = 'html',
-                    out =paste('../Tables/Regressions/Capacity Model/Summary/',covar_version,'/poly_ng_renew_total_quantity_comparison.html',sep='') ,
-                    star.cutoffs = c(0.05, 0.01, 0.001),
-                    dep.var.labels=c("Total MW Operating"),
-                    column.sep.width = "1pt",
-                    covariate.labels = final_covariate_names_poly_weather,
-                    digits = 2
+          
+          # stargazer(select_poly_total_model_comparisons[[2]],
+          #           select_poly_total_model_comparisons[[1]],
+          #           select_poly_total_model_comparisons[[4]],
+          #           select_poly_total_model_comparisons[[3]],
+          #           title="Decorrelated Total Quantity Regressions - Poly Weather", align=TRUE,
+          #           omit.stat=c("LL","ser","f"), no.space=TRUE, header = F, report = 'vc*', float.env = 'sidewaystable', font.size = 'footnotesize' , type = 'html',
+          #           out =paste('../Tables/Regressions/Capacity Model/Summary/',covar_version,'/poly_ng_renew_total_quantity_comparison.html',sep='') ,
+          #           star.cutoffs = c(0.05, 0.01, 0.001),
+          #           dep.var.labels=c("Total MW Operating"),
+          #           column.sep.width = "1pt",
+          #           covariate.labels = final_covariate_names_poly_weather,
+          #           digits = 2
+          # )
+          
+          modelsummary(
+            models = list(
+              select_poly_total_model_comparisons[[2]],
+              select_poly_total_model_comparisons[[1]],
+              select_poly_total_model_comparisons[[4]],
+              select_poly_total_model_comparisons[[3]]
+            ),
+            coef_map = final_covariate_names_poly_weather,
+            statistic = "std.error",
+            stars = c(`*` = 0.05, `**` = 0.01, `***` = 0.001),
+            omit = "Log.Lik|Ser|F",
+            gof_omit = "Log.Lik|Ser|F",
+            fmt = 2,
+            title = "Decorrelated Total Quantity Regressions - Poly Weather",
+            escape = FALSE,
+            output = paste0('../Tables/Regressions/Capacity Model/Summary/', covar_version, '/poly_ng_renew_total_quantity_comparison.html'),
+            model_names = c("OLS NG", "RLS NG", "OLS Renew", "RLS Renew")
+            # output_format = "html"
           )
           
+
           select_poly_total_model_comparisons <- list()
         }
         
         print(paste(length(select_poly_struct_model_comparisons), 'selected models now saved', sep = ' '))
         if (length(select_poly_struct_model_comparisons) == 4) {
-          stargazer(select_poly_struct_model_comparisons[[1]],
-                    select_poly_struct_model_comparisons[[2]],
-                    select_poly_struct_model_comparisons[[3]],
-                    select_poly_struct_model_comparisons[[4]],
-                    title="Structural Total Quantity Regressions - Poly Weather", align=TRUE,
-                    omit.stat=c("LL","ser","f"), no.space=TRUE, header = F, report = 'vc*', float.env = 'sidewaystable', font.size = 'footnotesize' , type = 'latex',
-                    out =paste('../Tables/Regressions/Capacity Model/Summary/',covar_version,'/poly_ng_renew_struct_totalquantity_comparison.tex',sep='') ,
-                    star.cutoffs = c(0.05, 0.01, 0.001),
-                    column.sep.width = "1pt",
-                    covariate.labels = final_covariate_names_poly_weather,
-                    digits = 2
+          # stargazer(select_poly_struct_model_comparisons[[1]],
+          #           select_poly_struct_model_comparisons[[2]],
+          #           select_poly_struct_model_comparisons[[3]],
+          #           select_poly_struct_model_comparisons[[4]],
+          #           title="Structural Total Quantity Regressions - Poly Weather", align=TRUE,
+          #           omit.stat=c("LL","ser","f"), no.space=TRUE, header = F, report = 'vc*', float.env = 'sidewaystable', font.size = 'footnotesize' , type = 'latex',
+          #           out =paste('../Tables/Regressions/Capacity Model/Summary/',covar_version,'/poly_ng_renew_struct_totalquantity_comparison.tex',sep='') ,
+          #           star.cutoffs = c(0.05, 0.01, 0.001),
+          #           column.sep.width = "1pt",
+          #           covariate.labels = final_covariate_names_poly_weather,
+          #           digits = 2
+          # )
+          
+          print('inside select_poly_struct_model_comparisons == 4')
+          
+          modelsummary(
+            models = list(
+              select_poly_struct_model_comparisons[[1]],
+              select_poly_struct_model_comparisons[[2]],
+              select_poly_struct_model_comparisons[[3]],
+              select_poly_struct_model_comparisons[[4]]
+            ),
+            coef_map = final_covariate_names_poly_weather,
+            statistic = "std.error",
+            stars = c(`*` = 0.05, `**` = 0.01, `***` = 0.001),
+            omit = "Log.Lik|Ser|F",
+            gof_omit = "Log.Lik|Ser|F",
+            fmt = 2,
+            title = "Structural Total Quantity Regressions - Poly Weather",
+            escape = FALSE,
+            output = paste0('../Tables/Regressions/Capacity Model/Summary/', covar_version, '/poly_ng_renew_struct_totalquantity_comparison.tex'),
+            model_names = c("Model 1", "Model 2", "Model 3", "Model 4")
           )
           
-          stargazer(select_poly_struct_model_comparisons[[1]],
-                    select_poly_struct_model_comparisons[[2]],
-                    select_poly_struct_model_comparisons[[3]],
-                    select_poly_struct_model_comparisons[[4]],
-                    title="Sturctural Total Quantity Regressions - Poly Weather", align=TRUE,
-                    omit.stat=c("LL","ser","f"), no.space=TRUE, header = F, report = 'vc*', float.env = 'sidewaystable', font.size = 'footnotesize' , type = 'html',
-                    out =paste('../Tables/Regressions/Capacity Model/Summary/',covar_version,'/poly_ng_renew_struct_totalquantity_comparison.html',sep='') ,
-                    star.cutoffs = c(0.05, 0.01, 0.001),
-                    column.sep.width = "1pt",
-                    covariate.labels = final_covariate_names_poly_weather,
-                    digits = 2
+          
+          # stargazer(select_poly_struct_model_comparisons[[1]],
+          #           select_poly_struct_model_comparisons[[2]],
+          #           select_poly_struct_model_comparisons[[3]],
+          #           select_poly_struct_model_comparisons[[4]],
+          #           title="Sturctural Total Quantity Regressions - Poly Weather", align=TRUE,
+          #           omit.stat=c("LL","ser","f"), no.space=TRUE, header = F, report = 'vc*', float.env = 'sidewaystable', font.size = 'footnotesize' , type = 'html',
+          #           out =paste('../Tables/Regressions/Capacity Model/Summary/',covar_version,'/poly_ng_renew_struct_totalquantity_comparison.html',sep='') ,
+          #           star.cutoffs = c(0.05, 0.01, 0.001),
+          #           column.sep.width = "1pt",
+          #           covariate.labels = final_covariate_names_poly_weather,
+          #           digits = 2
+          # )
+          
+          modelsummary(
+            models = list(
+              select_poly_struct_model_comparisons[[1]],
+              select_poly_struct_model_comparisons[[2]],
+              select_poly_struct_model_comparisons[[3]],
+              select_poly_struct_model_comparisons[[4]]
+            ),
+            coef_map = final_covariate_names_poly_weather,
+            statistic = "std.error",
+            stars = c(`*` = 0.05, `**` = 0.01, `***` = 0.001),
+            omit = "Log.Lik|Ser|F",
+            gof_omit = "Log.Lik|Ser|F",
+            fmt = 2,
+            title = "Structural Total Quantity Regressions - Poly Weather",
+            escape = FALSE,
+            output = paste0('../Tables/Regressions/Capacity Model/Summary/', covar_version, '/poly_ng_renew_struct_totalquantity_comparison.html'),
+            model_names = c("Model 1", "Model 2", "Model 3", "Model 4")
+            # output_format = "html"
           )
+          
           
           select_poly_struct_model_comparisons <- list()
           

@@ -6,12 +6,11 @@
 # library(pryr)
 # library(plyr)
 
+
 if (!require("pacman")) install.packages("pacman")
 pacman::p_load('tidyverse', 'ggplot2', 'readxl', 'janitor', 'lubridate', 'geojsonio', 'broom', 'sp', 'zoo', 'fastDummies', 'stargazer', 'RStata', 'suncalc',
-               'cowplot', 'olsrr', 'sf', 'MESS', 'pryr', 'plyr')
+               'cowplot', 'olsrr', 'sf', 'MESS', 'dplyr', 'modelsummary')
 
-### stargazer patch
-source('stargazer_patch.R')
 
 ### necessary scripts
 source('ercot_preprocess_functions.R')
@@ -33,7 +32,7 @@ create_necessary_file_folders <- function(){
   dir.create(file.path('../Data/Regressions/Capacity Model/robustness'))
   dir.create(file.path('../Data/Regressions/Capacity Model/robustness/variable_layers_regression'))
   dir.create(file.path('../Data/Weather'))
-  
+
   dir.create(file.path('../Tables'))
   dir.create(file.path('../Tables/Regressions'))
   dir.create(file.path('../Tables/Regressions/Capacity Model'))
@@ -44,16 +43,16 @@ create_necessary_file_folders <- function(){
   dir.create(file.path('../Tables/Regressions/underbidding'))
   dir.create(file.path('../Tables/Regressions/underbidding/robustness'))
   dir.create(file.path('../Tables/Summary Stats'))
-  
+
   dir.create(file.path('../Figures'))
-  
+
 
 }
 
 
 print('creating target file folders')
 create_necessary_file_folders()
-  
+
 #######################################################################
 #######################################################################
 ################ Load and Process Source Data #########################
@@ -217,5 +216,4 @@ create_stats_on_standby_movement()
   
   
 print('Program Complete')
-
 
