@@ -3,6 +3,8 @@ if (!require("pacman")) install.packages("pacman")
 pacman::p_load('tidyverse', 'ggplot2', 'readxl', 'janitor', 'lubridate', 'geojsonio', 'broom', 'sp', 'zoo', 'fastDummies', 'stargazer', 'RStata', 'suncalc',
                'cowplot', 'olsrr', 'sf', 'MESS', 'pryr', 'plyr')
 
+run_polynomial_weather <- TRUE
+
 #######################################################################
 #######################################################################
 ################ RLS Underbidding Timeseries Model ####################
@@ -235,8 +237,11 @@ if (run_polynomial_weather == TRUE) {
   ### save direct effects to csv
   write.csv(tidy(models[[length(models)]]), "../Tables/Regressions/underbidding/robustness/gsls_ols_ts_matching_poly_weather.csv")
   
+  
+  
 } ### end poly weather print statements
 
+print("Program Complete")
 
 
 
