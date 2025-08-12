@@ -5,9 +5,11 @@
 # install.packages("plyr")
 # library(pryr)
 # library(plyr)
+install.packages("pacman")
+library(pacman)
 
 
-if (!require("pacman")) install.packages("pacman")
+#if (!require("pacman")) install.packages("pacman")
 pacman::p_load('tidyverse', 'ggplot2', 'readxl', 'janitor', 'lubridate', 'geojsonio', 'broom', 'sp', 'zoo', 'fastDummies', 'stargazer', 'RStata', 'suncalc',
                'cowplot', 'olsrr', 'sf', 'MESS', 'dplyr', 'modelsummary')
 

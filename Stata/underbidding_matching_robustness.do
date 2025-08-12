@@ -5,7 +5,6 @@
 ** Update DM 6.21.21
 ** Update RC 6.28.21
 ** Convert RC 3.27.24
-** Call:  energy_time test autocorrelation
 *********************************************************************************
 
 *********************************************************************************
@@ -34,6 +33,8 @@
 			
 	
 	drop temp_midpoint_sq
+	
+	** Test
 	if `test_matching'==1 {
 		generate random = runiform()
 		sort random
@@ -142,7 +143,9 @@
 		
 	eststo clear
 	
+	** Testing
 	if `test_matching'==1 {
+		
 		generate random = runiform()
 		sort random
 		generate insample = _n <= 5000
@@ -285,7 +288,9 @@
 
 	esttab reg1 reg2 reg3 reg4 reg5 using "underbidding_w_autoregressive_variations_price_cap_gap.csv", replace r2 aic bic scalar(F)	
 	
+	** Testing
 	if `test_matching'==1 {
+		
 		generate random = runiform()
 		sort random
 		generate insample = _n <= 5000

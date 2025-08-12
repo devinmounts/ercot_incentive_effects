@@ -34,23 +34,23 @@
 	pwd
 
 	** Some basic settings
-	local settings = 0
+	local settings = 1
 	if `settings'==1 {
 
 		set cformat %9.3f
-// 		** Settings
-// 		set matsize 11000, permanently
-// 		set maxvar 32767, permanently
-// 		*set niceness 6
-// 		set max_memory 80g, permanently
-// 		set segmentsize 96m, permanently //for large memory computers
-// 		set min_memory 0
-// 		set more off, permanently
-// 		set scrollbufsize 300000
-// 		*set timeout1 600	//for updates with slow web connection
-//		
-// 		** Debug
-// 		set rmsg on, permanently
+ 		** Settings
+ 		set matsize 11000, permanently
+ 		set maxvar 32767, permanently
+ 		*set niceness 6
+ 		set max_memory 80g, permanently
+ 		set segmentsize 96m, permanently //for large memory computers
+ 		set min_memory 0
+ 		set more off, permanently
+ 		set scrollbufsize 300000
+ 		*set timeout1 600	//for updates with slow web connection
+		
+ 		** Debug
+ 		set rmsg on, permanently
 		
 		********************************
 		** SSC INSTALL:  
