@@ -22,11 +22,11 @@
 
    * Creates main body table 2
 
-6. Run ./Stata/underbidding\_matching.do
+6. Run ./Stata/underbidding\_matching.do  -- Requires 1-4 hours
 
    * Create main body table 6
 
-7. Run ./R\_files/run\_rls\_timeseries\_underbidding\_model.R
+7. Run ./R\_files/run\_rls\_underbidding\_timeseries\_model.R
 
    * Creates main body table 5
 

@@ -5,7 +5,7 @@
 # install.packages("plyr")
 # library(pryr)
 # library(plyr)
-install.packages("pacman")
+# install.packages("pacman")
 library(pacman)
 
 

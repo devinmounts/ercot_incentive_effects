@@ -1,5 +1,7 @@
 ##### packages 
 if (!require("pacman")) install.packages("pacman")
+library(pacman)
+
 pacman::p_load('tidyverse', 'ggplot2', 'readxl', 'janitor', 'lubridate', 'geojsonio', 'broom', 'sp', 'zoo', 'fastDummies', 'stargazer', 'RStata', 'suncalc',
                'cowplot', 'olsrr', 'sf', 'MESS', 'pryr', 'plyr')
 
@@ -10,7 +12,6 @@ run_polynomial_weather <- TRUE
 ################ RLS Underbidding Timeseries Model ####################
 ######################     ( Table 5 )   ##############################
 #######################################################################
-
 
 covar_version = 'base_covars'
 df_timeseries_data <- read_csv( '../Data/ERCOT Compiled Data/underbidding_data_w_lags.csv')
