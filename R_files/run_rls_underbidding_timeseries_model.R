@@ -19,8 +19,6 @@ df_timeseries_data <- read_csv( '../Data/ERCOT Compiled Data/underbidding_data_w
 df_timeseries_data <- df_timeseries_data %>%
   dummy_cols(select_columns = c('year', 'month', 'day_of_week', 'hour', 'minute'))
 
-
-
 covariates <- list(c('year_2022','year_2021','year_2020','year_2019','year_2018','year_2017', 'year_2016'),
                    c('month_12','month_11','month_10','month_9','month_8','month_7','month_6','month_5','month_4', 'month_3','month_2'),
                    c('day_of_week_1', 'day_of_week_2','day_of_week_3','day_of_week_4','day_of_week_5','day_of_week_6'),

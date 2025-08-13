@@ -1,0 +1,10 @@
+
+# Ignore in the Weather folder
+# also .dta files 
+*.ster
+*.dta
+*.csv
+*.Rd
+*.xls*
+
+

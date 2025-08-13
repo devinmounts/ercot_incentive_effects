@@ -1,0 +1,10 @@
+
+# Ignore In the ERCOT Compiled Data folder
+# also .dta files 
+*.ster
+*.dta
+*.csv
+*.Rd
+*.csv
+
+

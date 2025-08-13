@@ -1,0 +1,8 @@
+# Ignore Stargazer directories in the R_Files folder
+# also .dta files 
+*.ster
+*.dta
+*.csv
+*.Rd
+*stargazer*
+

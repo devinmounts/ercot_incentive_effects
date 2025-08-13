@@ -1,0 +1,11 @@
+
+# Ignore in the Regressions folder
+# also .dta files 
+*.ster
+*.dta
+*.csv
+*.Rd
+*.xls*
+
+
+

@@ -18,11 +18,13 @@
 2. Adjust absolute file path in ./Stata/cd\_edata.ado to {absolute\_reference}/Data/ERCOT Compiled Data"
 3. Adjust absolute file path in ./Stata/cd\_estats.ado to {absolute\_reference}/Tables/Summary Stats"
 4. Adjust absolute file path in ./Stata/cd\_underbid.ado to {absolute\_reference}/Tables/Regressions/underbidding"
+5. Copy the Stata files to your C:/ado folder, or your machine's default Stata ado directory.
+6. Open each ado file and run - CNTRL+D
 5. Run ./Stata/underbidding\_data\_summary.do
 
    * Creates main body table 2
 
-6. Run ./Stata/underbidding\_matching.do  -- Requires 1-4 hours
+6. Run ./Stata/underbidding\_matching.do  -- Requires 0.5-4.0 hours
 
    * Create main body table 6
 

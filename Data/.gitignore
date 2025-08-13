@@ -1,0 +1,10 @@
+
+# Ignore in the Economic folder
+# also .dta files 
+*.ster
+*.dta
+*.csv
+*.Rd
+
+
+
