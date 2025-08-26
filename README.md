@@ -1,4 +1,6 @@
+######################################################
 # ERCOT Scarcity Pricing Analysis
+######################################################
 
 ## Dependencies
 
@@ -20,13 +22,14 @@ Use the Command Prompt (PC) or Terminal (Mac) to run the R script (instructions 
    * Processes source data
    * Creates main body tables 1,3,4; figures 1 and 2; select stats in main body
 
-2. Adjust absolute file path in ./Stata/cd\_edata.ado to {absolute\_reference}/Data/ERCOT Compiled Data"
-3. Adjust absolute file path in ./Stata/cd\_estats.ado to {absolute\_reference}/Tables/Summary Stats"
-4. Adjust absolute file path in ./Stata/cd\_underbid.ado to {absolute\_reference}/Tables/Regressions/underbidding"
-5. Copy the Stata files to your C:/ado folder, or your machine's default Stata ado directory.
-6. Open each ado file and run - CNTRL+D
-5. Run ./Stata/underbidding\_data\_summary.do
-
+2. Run ./Stata/underbidding\_data\_summary.do
+  a. Adjust absolute file path in ./Stata/cd\_edata.ado to {absolute\_reference}/Data/ERCOT Compiled Data"
+  b. Adjust absolute file path in ./Stata/cd\_estats.ado to {absolute\_reference}/Tables/Summary Stats"
+  c. Adjust absolute file path in ./Stata/cd\_underbid.ado to {absolute\_reference}/Tables/Regressions/underbidding"
+  d. Copy the Stata files to your C:/ado folder, or your machine's default Stata ado directory.
+  e. Open each ado file and run - CNTRL+D
+  f. Open and run underbidding\_data\_summary.do
+  
    * Creates main body table 2
 
 6. Run ./Stata/underbidding\_matching.do  -- Requires 0.5-4.0 hours
@@ -44,9 +47,9 @@ Use the Command Prompt (PC) or Terminal (Mac) to run the R script (instructions 
 3. Run ./R\_files/ercot\_appendix\_robustness.R
 
 
-############################################
+######################################################
 ### Command Prompt - setup and execution instructions
-############################################
+######################################################
 
 To run `.R` files from the Windows Terminal using the `Rscript` command, follow these steps:
 
