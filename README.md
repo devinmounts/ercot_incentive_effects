@@ -6,6 +6,7 @@
 
 * R 4.1.1 (required)
 * R scripts must be executed using the Command Prompt (PC) or Terminal(Mac) for the scripts to locate directories correctly -- See how to use Command Prompt below
+* R scripts require LongPathsEnabled in your regedit if using Windows 10 or later - See how to Edit Long Paths below
 * Stata SE or greater (for execution from console with RStata)
 * You may need to add an exception in your virus protection software for your default ado folder and your ercot_incentive_effects repository folder. 
 * RScript added to system path
@@ -126,4 +127,12 @@ To run `.R` files from the Windows Terminal using the `Rscript` command, follow 
     Rscript your_script.R
     
 
+######################################################
+### Enable Long Path Support in Windows (Windows 10, version 1607 and later):
+######################################################
+    - Registry Editor:
+      -  Open the Run dialog (Windows key + R), type regedit, and press Enter.
+      -  Navigate to HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Control\FileSystem.
+      -  Locate LongPathsEnabled, double-click it, and change its Value data to 1.
+      -  Restart your computer.
     
