@@ -2,8 +2,9 @@
 
 ## Dependencies
 
-* R 4.1.1
+* R 4.1.1 (required)
 * Stata SE or greater (for execution from console with RStata)
+* You may need to add an exception in your virus protection software for your default ado folder and your ercot_incentive_effects repository folder. 
 
 ## To Run
 
