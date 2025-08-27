@@ -22,6 +22,35 @@
 	******************************************************************
 	clear all
 	
+	** Some basic settings
+	local settings = 1
+	if `settings'==1 {
+
+		set cformat %9.3f
+ 		** Settings
+ 		set matsize 11000, permanently
+ 		set maxvar 32767, permanently
+ 		*set niceness 6
+ 		set max_memory 80g, permanently
+ 		set segmentsize 96m, permanently //for large memory computers
+ 		set min_memory 0
+ 		set more off, permanently
+ 		set scrollbufsize 300000
+ 		*set timeout1 600	//for updates with slow web connection
+		
+ 		** Debug
+ 		set rmsg on, permanently
+		
+		********************************
+		** SSC INSTALL:  
+		********************************
+		*ssc install dm0018.pkg
+		** Distinct (levelsof)
+		*ssc install dm0042_2.pkg
+				
+	} // End if
+	di "Done with default settings."
+
 	*local dir =  "/`c(pwd)'"
 	*di "`dir'"
 	*cd "../Data/ERCOT Compiled Data"

@@ -42,8 +42,6 @@
 		drop if insample == 0
 	}
 
-
-
 // 	*********************** Match w AR1 covariates *********
 // 	*********************************************************************
 // 	** Match - income - active_low (treatment) vs non_active (control)

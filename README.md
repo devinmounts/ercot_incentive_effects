@@ -26,10 +26,11 @@ Use the Command Prompt (PC) or Terminal (Mac) to run the R script (instructions 
 2. Run ./Stata/underbidding\_data\_summary.do
   a. Adjust absolute file path in ./Stata/cd\_edata.ado to {absolute\_reference}/Data/ERCOT Compiled Data"
   b. Adjust absolute file path in ./Stata/cd\_estats.ado to {absolute\_reference}/Tables/Summary Stats"
-  c. Adjust absolute file path in ./Stata/cd\_underbid.ado to {absolute\_reference}/Tables/Regressions/underbidding"
-  d. Copy the Stata files to your C:/ado folder, or your machine's default Stata ado directory.
-  e. Open each ado file and run - CNTRL+D
-  f. Open and run underbidding\_data\_summary.do
+  c. Adjust absolute file path in ./Stata/cd\_underbid_robustness.ado to {absolute\_reference}/Tables/Regressions/underbidding/robustness"
+  d. Adjust absolute file path in ./Stata/cd\_underbid.ado to {absolute\_reference}/Tables/Regressions/underbidding"
+  e. Copy the Stata files to your C:/ado folder, or your machine's default Stata ado directory.
+  f. Open each ado file and run - CNTRL+D
+  g. Open and run underbidding\_data\_summary.do
   
    * Creates main body table 2
 
