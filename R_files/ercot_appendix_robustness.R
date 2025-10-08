@@ -20,9 +20,9 @@ source('variable_layers_regression_script.R')
 # 
 # ### Summary Statistics for capacity model result from functions in main body section
 # 
-# ### Profits of Major Firms and significance of scarcity adders
-# print('Plotting Profit Margin of Major Firms')
-# plot_profit_margin_select_firms()
+### Profits of Major Firms and significance of scarcity adders
+print('Plotting Profit Margin of Major Firms')
+plot_profit_margin_select_firms()
 # 
 # ### Full capacity model and applicant pool results tables produced in main body section
 # 
@@ -58,3 +58,4 @@ gc()
 # options("RStata.StataVersion" = RStataVersion)
 # stata('../Stata/underbidding_matching_robustness.do')
 format_underbidding_robustness_latex_table()
+print("Appendix Robustness Complete!!")
