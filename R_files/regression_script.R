@@ -416,7 +416,7 @@ run_regressions <- function(covar_version_input, rolling_3_month_input, exclude_
     if (lag_months == 12 & run_polynomial_weather==TRUE){
       stargazer(as.data.frame(df_to_regress[,unlist(covariates)]),
                 out=output_summary_stats_path,
-                covariate.labels = unlist(c(final_covariate_names_poly_weather[1:(length(final_covariate_names_poly_weather))], 'Capacity - MW')),
+                covariate.labels = unlist(c(final_covariate_names_poly_weather[1:(length(final_covariate_names_poly_weather)-1)], 'Capacity - MW')),
                 digits = 2
       )
     }
