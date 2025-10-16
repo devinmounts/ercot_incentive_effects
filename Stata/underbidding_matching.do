@@ -100,22 +100,24 @@
 		order price year* month* day_of_week* hour* minute* int_tot_gen_gas_gw-weather_wnds active 
 		keep price year* month* day_of_week* hour* minute* int_tot_gen_gas_gw-weather_wnds active 
 		
+		** Regression Coefficient and SE - Table 6
 		eststo reg0: reg price year* month* day_of_week* hour* minute* ///
 		int_tot_gen_gas_gw-weather_wnds active 
 				
 		** Hetreg OLS - late treatment - higher income
-		** Initial look at decomposition
+		** P(d=1), w1 - Table 6
 		hettreatreg year2-weather_wnds, o(price) t(active) 
-		** Generate confidence intervals
+		
+		** Generate confidence intervals ATE-ATU - Table 6
 		bootstrap att = e(att) atu = e(atu) ate = e(ate), reps(100) seed(1101): hettreatreg year2-weather_wnds, o(price) t(active) 
 	
 		** Matching check
 		** Match - income - active_low (treatment) vs non_active (control)
-		** ATET
+		** ATET and SE - Table 6
 		teffects nnmatch (price year2-weather_wnds) (active), biasadj(year2-weather_wnds) generate(matches) atet 
 		tebalance summarize
 		drop matches*
-		** ATE
+		** ATE and SE - Table 6
 		teffects nnmatch (price year2-weather_wnds) (active), biasadj(year2-weather_wnds) generate(matches) ate 
 		tebalance summarize
 		drop matches*

@@ -47,8 +47,8 @@ Use the Command Prompt (PC) or Terminal (Mac) to run the R script (instructions 
 1. Adjsut absolute file path in ./Stata/cd\_underbid\_robustness.ado to {absolute\_reference}/Tables/Regressions/underbidding/robustness"
 2. Run ./Stata/underbidding\_matching\_robustness.do
 3. Run ./R\_files/ercot\_appendix\_robustness.R
-
-
+ 
+ 
 ######################################################
 ### Command Prompt - setup and execution instructions
 ######################################################
