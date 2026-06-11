@@ -8,6 +8,7 @@
 * R scripts must be executed using the Command Prompt (PC) or Terminal(Mac) for the scripts to locate directories correctly -- See how to use Command Prompt below
 * R scripts require LongPathsEnabled in your regedit if using Windows 10 or later - See how to Edit Long Paths below
 * Stata SE or greater (for execution from console with RStata)
+* Stata packages from SSC: run `ssc install estout` and `ssc install hettreatreg` once before the Stata steps
 * You may need to add an exception in your virus protection software for your default ado folder and your ercot_incentive_effects repository folder. 
 * RScript added to system path
 
@@ -26,8 +27,8 @@ Use the Command Prompt (PC) or Terminal (Mac) to run the R script (instructions 
 2. Run ./Stata/underbidding\_data\_summary.do
   a. Adjust absolute file path in ./Stata/cd\_edata.ado to {absolute\_reference}/Data/ERCOT Compiled Data"
   b. Adjust absolute file path in ./Stata/cd\_estats.ado to {absolute\_reference}/Tables/Summary Stats"
-  c. Adjust absolute file path in ./Stata/cd\_underbid_robustness.ado to {absolute\_reference}/Tables/Regressions/underbidding/robustness"
-  d. Adjust absolute file path in ./Stata/cd\_underbid.ado to {absolute\_reference}/Tables/Regressions/underbidding"
+  c. Adjust absolute file path in ./Stata/cd\_eunderbid\_robustness.ado to {absolute\_reference}/Tables/Regressions/underbidding/robustness"
+  d. Adjust absolute file path in ./Stata/cd\_eunderbid.ado to {absolute\_reference}/Tables/Regressions/underbidding"
   e. Copy the Stata files to your C:/ado folder, or your machine's default Stata ado directory.
   f. Open each ado file and run - CNTRL+D
   g. Open and run underbidding\_data\_summary.do
@@ -44,8 +45,8 @@ Use the Command Prompt (PC) or Terminal (Mac) to run the R script (instructions 
 
 ### Appendix:
 
-1. Adjsut absolute file path in ./Stata/cd\_underbid\_robustness.ado to {absolute\_reference}/Tables/Regressions/underbidding/robustness"
-2. Run ./Stata/underbidding\_matching\_robustness.do
+1. Adjust absolute file path in ./Stata/cd\_eunderbid\_robustness.ado to {absolute\_reference}/Tables/Regressions/underbidding/robustness"
+2. Run ./Stata/underbidding\_matching\_robustness.do -- full-sample matching (test\_matching = 0) requires ~40 minutes on Stata MP; set test\_matching = 1 for a quick 5,000-observation test run (results will not match the paper)
 3. Run ./R\_files/ercot\_appendix\_robustness.R
  
  
