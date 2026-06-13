@@ -21,7 +21,19 @@
 	************************* Matching *******************************
 	******************************************************************
 	clear all
-	
+
+	* === Path setup =============================================
+	* Launch this do-file from the repository root, e.g.:
+	*     cd C:/Users/rcros/ercot_incentive_effects
+	*     do Stata/underbidding_matching.do
+	* No ado-folder setup is required.
+	* ============================================================
+	local PROJ "`c(pwd)'"
+	local edata                "`PROJ'/Data/ERCOT Compiled Data"
+	local estats               "`PROJ'/Tables/Summary Stats"
+	local eunderbid            "`PROJ'/Tables/Regressions/underbidding"
+	local eunderbid_robustness "`PROJ'/Tables/Regressions/underbidding/robustness"
+
 	** Some basic settings
 	local settings = 1
 	if `settings'==1 {
@@ -54,7 +66,7 @@
 	*local dir =  "/`c(pwd)'"
 	*di "`dir'"
 	*cd "../Data/ERCOT Compiled Data"
-	*cd_edata
+	*cd "`edata'"
 	*use underbidding_data_w_lags, clear
 	*cd "`dir'"
 	*eststo clear
@@ -83,7 +95,7 @@
 		eststo clear
 		
 		** Reload
-		cd_edata
+		cd "`edata'"
 		use underbidding_data_w_lags, clear
 		
 		** FE indicators loop
@@ -133,7 +145,7 @@
 	eststo clear
 	
 	** Reload
-	cd_edata
+	cd "`edata'"
 	use underbidding_data_w_lags, clear
 
 	
@@ -146,7 +158,7 @@
 	matrix teresults_xpose = teresults'
 	matrix list teresults_xpose
 
-	cd_eunderbid
+	cd "`eunderbid'"
 	esttab matrix(teresults_xpose) using "active_match_results.tex", replace ///
 	cells("b(fmt(%5.3f)) se(fmt(%5.3f)) z(fmt(%5.3f)) pvalue(fmt(%5.3f))")
 	

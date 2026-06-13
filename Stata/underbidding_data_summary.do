@@ -20,12 +20,18 @@
 	clear all
 	pwd
 	display "Now running energy_time."
-	
 
-	*local dir = "C:\data\ercot_incentive_effects\"
-	*di "`dir'"
-	*add .adopath to locate energy_price command
-	*adopath++ "\\onid-fs.onid.oregonstate.edu\mountsd\Profile\Desktop\Stata"
+	* === Path setup =============================================
+	* Launch this do-file from the repository root, e.g.:
+	*     cd C:/Users/rcros/ercot_incentive_effects
+	*     do Stata/underbidding_data_summary.do
+	* No ado-folder setup is required.
+	* ============================================================
+	local PROJ "`c(pwd)'"
+	local edata                "`PROJ'/Data/ERCOT Compiled Data"
+	local estats               "`PROJ'/Tables/Summary Stats"
+	local eunderbid            "`PROJ'/Tables/Regressions/underbidding"
+	local eunderbid_robustness "`PROJ'/Tables/Regressions/underbidding/robustness"
 
 	clear all
 	** Setting variable to limit matching sample size for test purposes.
@@ -67,7 +73,7 @@
 	if `inputs' == 1 {
 	
 		clear all
-		cd_edata
+		cd "`edata'"
 		*cd "../Data/ERCOT Compiled Data"
 		ls
 
@@ -88,7 +94,7 @@
 	clear
 	*cd "`dir'"
 	*cd "../Data/ERCOT Compiled Data"
-	cd_edata
+	cd "`edata'"
 	use underbidding_data_for_regression	
 
 	** Keep
@@ -175,7 +181,7 @@
 			eststo active_on:  estpost sum price active total_pa  int_tot_gen_gas_gw int_tot_gen_renewable_gw int_tot_gen_other_gw scarcity_measure rttotcap_gw  ng_gw renewables_gw other_gw temp_midpoint_cent temp_midpoint_sq ng_price weather_wnds year month day_of_week hour minute  if active == 1
 
 			*cd "`dir'"
-			cd_estats
+			cd "`estats'"
 			esttab all active_off active_on using "covariate_means_by_incentive_state.tex", replace unstack mtitle("All Intervals" "Inactive Incentive" "Active Incentive") cells("mean(fmt(2))") label title(Covariate Means by Scarcity Incentive State)
 			
 				
@@ -265,7 +271,7 @@
 				int_tot_gen_gas_gw-weather_wnds active incentive e_1 e_2 e_3 e_4
 			eststo reg5: reg price year##year month##month day_of_week##day_of_week hour##hour minute##minute ///
 				int_tot_gen_gas_gw-weather_wnds active incentive e_1 e_2 e_3 e_4 e_5 d_1 d_2 d_3 d_4 d_5
-			cd_eunderbid
+			cd "`eunderbid'"
 			esttab reg1 reg2 reg3 reg4 reg5 using "underbidding_w_autoregressive_variations.tex", replace r2 aic bic scalar(F)	
 			
 			esttab reg1 reg2 reg3 reg4 reg5 using "underbidding_w_autoregressive_variations.csv", replace r2 aic bic scalar(F)	
@@ -285,7 +291,7 @@
 	********************************************************
 	*cd "`dir'"
 	*cd "../Data/ERCOT Compiled Data/"
-	cd_edata
+	cd "`edata'"
 	export delimited "underbidding_data_w_lags.csv", replace
 	save underbidding_data_w_lags, replace
 	

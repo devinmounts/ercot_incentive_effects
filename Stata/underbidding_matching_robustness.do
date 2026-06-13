@@ -20,7 +20,19 @@
 	local test_matching = 0
 	clear all
 
-	cd_edata
+	* === Path setup =============================================
+	* Launch this do-file from the repository root, e.g.:
+	*     cd C:/Users/rcros/ercot_incentive_effects
+	*     do Stata/underbidding_matching_robustness.do
+	* No ado-folder setup is required.
+	* ============================================================
+	local PROJ "`c(pwd)'"
+	local edata                "`PROJ'/Data/ERCOT Compiled Data"
+	local estats               "`PROJ'/Tables/Summary Stats"
+	local eunderbid            "`PROJ'/Tables/Regressions/underbidding"
+	local eunderbid_robustness "`PROJ'/Tables/Regressions/underbidding/robustness"
+
+	cd "`edata'"
 	use underbidding_data_w_lags, clear
 	
 	eststo all:  estpost sum price active total_pa int_tot_gen_gas_gw int_tot_gen_renewable_gw int_tot_gen_other_gw scarcity_measure rttotcap_gw  ng_gw renewables_gw other_gw temp_midpoint_cent temp_midpoint_sq ng_price weather_wnds year month day_of_week hour minute  
@@ -28,7 +40,7 @@
 	eststo active_on:  estpost sum price active total_pa  int_tot_gen_gas_gw int_tot_gen_renewable_gw int_tot_gen_other_gw scarcity_measure rttotcap_gw  ng_gw renewables_gw other_gw temp_midpoint_cent temp_midpoint_sq ng_price weather_wnds year month day_of_week hour minute  if active == 1
 
 
-	cd_eunderbid_robustness
+	cd "`eunderbid_robustness'"
 	esttab all active_off active_on using "covariate_means_by_incentive_state.csv", replace unstack mtitle("All Intervals" "Inactive Incentive" "Active Incentive") cells("mean(fmt(2))") label title(Covariate Means by Scarcity Incentive State)
 			
 	
@@ -111,7 +123,7 @@
 // 	*****************************************************************
 // 	*********************** No Uri **********************************
 // 	*****************************************************************
-	cd_edata
+	cd "`edata'"
 	use underbidding_data_w_lags, clear
 	
 	
@@ -123,7 +135,7 @@
 	eststo active_off:  estpost sum price active total_pa int_tot_gen_gas_gw int_tot_gen_renewable_gw int_tot_gen_other_gw scarcity_measure rttotcap_gw  ng_gw renewables_gw other_gw temp_midpoint_cent temp_midpoint_sq ng_price weather_wnds year month day_of_week hour minute  if active == 0 
 	eststo active_on:  estpost sum price active total_pa  int_tot_gen_gas_gw int_tot_gen_renewable_gw int_tot_gen_other_gw scarcity_measure rttotcap_gw  ng_gw renewables_gw other_gw temp_midpoint_cent temp_midpoint_sq ng_price weather_wnds year month day_of_week hour minute  if active == 1
 
-	cd_eunderbid_robustness
+	cd "`eunderbid_robustness'"
 	esttab all active_off active_on using "covariate_means_by_incentive_state_no_uri.csv", replace unstack mtitle("All Intervals" "Inactive Incentive" "Active Incentive") cells("mean(fmt(2))") label title(Covariate Means by Scarcity Incentive State)
 	
 	******************* Basic Regressions *****************
@@ -154,7 +166,7 @@
 
 	*********************** Match w/o autoregressive covariates *********
 	*********************************************************************
-	cd_eunderbid_robustness
+	cd "`eunderbid_robustness'"
 	
 	*** drop columns
 	drop temp_midpoint_sq day
@@ -258,7 +270,7 @@
 	****************************************************************
 	************************** Away From Price Cap *****************
 	****************************************************************
-	cd_edata
+	cd "`edata'"
 	use underbidding_data_w_lags, clear
 	
 	drop if price+incentive > 7000
@@ -269,7 +281,7 @@
 	eststo active_off:  estpost sum price active total_pa int_tot_gen_gas_gw int_tot_gen_renewable_gw int_tot_gen_other_gw scarcity_measure rttotcap_gw  ng_gw renewables_gw other_gw temp_midpoint_cent temp_midpoint_sq ng_price weather_wnds year month day_of_week hour minute  if active == 0 
 	eststo active_on:  estpost sum price active total_pa  int_tot_gen_gas_gw int_tot_gen_renewable_gw int_tot_gen_other_gw scarcity_measure rttotcap_gw  ng_gw renewables_gw other_gw temp_midpoint_cent temp_midpoint_sq ng_price weather_wnds year month day_of_week hour minute  if active == 1
 
-	cd_eunderbid_robustness
+	cd "`eunderbid_robustness'"
 	esttab all active_off active_on using "covariate_means_by_incentive_price_cap_gap.csv", replace unstack mtitle("All Intervals" "Inactive Incentive" "Active Incentive") cells("mean(fmt(2))") label title(Covariate Means by Scarcity Incentive State)
 	
 	******************* Basic Regressions *****************

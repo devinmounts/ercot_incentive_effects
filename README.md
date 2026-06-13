@@ -25,14 +25,9 @@ Use the Command Prompt (PC) or Terminal (Mac) to run the R script (instructions 
    * Creates main body tables 1,3,4; figures 1 and 2; select stats in main body
 
 2. Run ./Stata/underbidding\_data\_summary.do
-  a. Adjust absolute file path in ./Stata/cd\_edata.ado to {absolute\_reference}/Data/ERCOT Compiled Data"
-  b. Adjust absolute file path in ./Stata/cd\_estats.ado to {absolute\_reference}/Tables/Summary Stats"
-  c. Adjust absolute file path in ./Stata/cd\_eunderbid\_robustness.ado to {absolute\_reference}/Tables/Regressions/underbidding/robustness"
-  d. Adjust absolute file path in ./Stata/cd\_eunderbid.ado to {absolute\_reference}/Tables/Regressions/underbidding"
-  e. Copy the Stata files to your C:/ado folder, or your machine's default Stata ado directory.
-  f. Open each ado file and run - CNTRL+D
-  g. Open and run underbidding\_data\_summary.do
-  
+  a. From the repository root, launch Stata and run: `do Stata/underbidding_data_summary.do`
+     (path locals are derived from the working directory at launch; no ado-folder setup required)
+
    * Creates main body table 2
 
 6. Run ./Stata/underbidding\_matching.do  -- Requires 0.5-4.0 hours
@@ -45,9 +40,8 @@ Use the Command Prompt (PC) or Terminal (Mac) to run the R script (instructions 
 
 ### Appendix:
 
-1. Adjust absolute file path in ./Stata/cd\_eunderbid\_robustness.ado to {absolute\_reference}/Tables/Regressions/underbidding/robustness"
-2. Run ./Stata/underbidding\_matching\_robustness.do -- full-sample matching (test\_matching = 0) requires ~40 minutes on Stata MP; set test\_matching = 1 for a quick 5,000-observation test run (results will not match the paper)
-3. Run ./R\_files/ercot\_appendix\_robustness.R
+1. Run ./Stata/underbidding\_matching\_robustness.do from the repository root -- full-sample matching (test\_matching = 0) requires ~40 minutes on Stata MP; set test\_matching = 1 for a quick 5,000-observation test run (results will not match the paper)
+2. Run ./R\_files/ercot\_appendix\_robustness.R
  
  
 ######################################################
