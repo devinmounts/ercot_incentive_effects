@@ -29,11 +29,11 @@ plot_profit_margin_select_firms()
 # #######################################################################################
 # ################### Underbidding Autoregressive Robustness ############################
 # ######################################################################################
-# run_polynomial_weather=TRUE
-# print('running rls ar1 underbidding model')
-# run_rls_ar1_timeseries_underbidding_model(run_polynomial_weather)
-# print('running rls ar10 underbidding model')
-# run_rls_ar10_timeseries_underbidding_model(run_polynomial_weather)
+run_polynomial_weather=TRUE
+print('running rls ar1 underbidding model (Appendix Table E4)')
+run_rls_ar1_timeseries_underbidding_model(run_polynomial_weather)
+print('running rls ar10 underbidding model (Appendix Table E5)')
+run_rls_ar10_timeseries_underbidding_model(run_polynomial_weather)
 # 
 # 
 # #######################################################################################
