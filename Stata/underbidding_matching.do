@@ -34,24 +34,29 @@
 	local eunderbid            "`PROJ'/Tables/Regressions/underbidding"
 	local eunderbid_robustness "`PROJ'/Tables/Regressions/underbidding/robustness"
 
+	* === Reproducibility (each do-file is its own Stata session) ===
+	version 17
+	set seed 1101
+	set sortseed 1101
+
 	** Some basic settings
 	local settings = 1
 	if `settings'==1 {
 
 		set cformat %9.3f
  		** Settings
- 		set matsize 11000, permanently
- 		set maxvar 32767, permanently
+ 		set matsize 11000
+ 		set maxvar 32767
  		*set niceness 6
- 		set max_memory 80g, permanently
- 		set segmentsize 96m, permanently //for large memory computers
+ 		set max_memory 80g
+ 		set segmentsize 96m //for large memory computers
  		set min_memory 0
- 		set more off, permanently
+ 		set more off
  		set scrollbufsize 300000
  		*set timeout1 600	//for updates with slow web connection
 		
  		** Debug
- 		set rmsg on, permanently
+ 		set rmsg on
 		
 		********************************
 		** SSC INSTALL:  

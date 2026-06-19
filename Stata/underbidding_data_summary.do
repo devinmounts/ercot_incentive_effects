@@ -34,6 +34,10 @@
 	local eunderbid_robustness "`PROJ'/Tables/Regressions/underbidding/robustness"
 
 	clear all
+	* === Reproducibility (each do-file is its own Stata session) ===
+	version 17
+	set seed 1101
+	set sortseed 1101
 	** Setting variable to limit matching sample size for test purposes.
 	local test_matching = 1
 	** Define base folder
@@ -45,18 +49,18 @@
 
 		set cformat %9.3f
  		** Settings
- 		set matsize 11000, permanently
- 		set maxvar 32767, permanently
+ 		set matsize 11000
+ 		set maxvar 32767
  		*set niceness 6
- 		set max_memory 80g, permanently
- 		set segmentsize 96m, permanently //for large memory computers
+ 		set max_memory 80g
+ 		set segmentsize 96m //for large memory computers
  		set min_memory 0
- 		set more off, permanently
+ 		set more off
  		set scrollbufsize 300000
  		*set timeout1 600	//for updates with slow web connection
 		
  		** Debug
- 		set rmsg on, permanently
+ 		set rmsg on
 		
 		********************************
 		** SSC INSTALL:  
@@ -100,8 +104,7 @@
 	** Keep
 	*drop year*
 
-	** Set seed (optional)
-	set seed 1101
+	** Seed set at top of do-file (reproducibility header)
 		
 	** Initial output table
 	eststo clear
@@ -203,6 +206,7 @@
 				drop yhat
 				
 				** Save ordered set
+				isid year month day hour repeated_hour_flag minute
 				sort year month day hour repeated_hour_flag minute  
 				gen period							= _n
 				order period e

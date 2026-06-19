@@ -32,6 +32,11 @@
 	local eunderbid            "`PROJ'/Tables/Regressions/underbidding"
 	local eunderbid_robustness "`PROJ'/Tables/Regressions/underbidding/robustness"
 
+	* === Reproducibility (each do-file is its own Stata session) ===
+	version 17
+	set seed 1101
+	set sortseed 1101
+
 	cd "`edata'"
 	use underbidding_data_w_lags, clear
 	
