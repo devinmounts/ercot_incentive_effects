@@ -24,7 +24,7 @@
 	* === Path setup =============================================
 	* Launch this do-file from the repository root, e.g.:
 	*     cd C:/Users/rcros/ercot_incentive_effects
-	*     do Stata/underbidding_data_summary.do
+	*     do Stata/02_underbidding_data_summary.do
 	* No ado-folder setup is required.
 	* ============================================================
 	local PROJ "`c(pwd)'"

@@ -14,7 +14,21 @@
 
 ## To Run
 
-### Main Results:
+### One command (recommended)
+
+From the **repository root**:
+
+```sh
+Rscript master.R            # full pipeline in dependency order (steps 01-06)
+Rscript master.R 02 04      # run only selected steps by label
+```
+
+`master.R` runs each R driver (working directory `./R_files`) and each Stata do-file (from the
+repository root) as its own clean process. Set `STATA_EXE` if Stata is not at the default
+`C:/Program Files/Stata17/StataMP-64.exe`. The full step map is in the header of `master.R`. Stata
+sub-do-files are numbered (`02_`, `04_`, `05_`) by their position in the pipeline.
+
+### Main Results (manual, equivalent):
 
 Use the Command Prompt (PC) or Terminal (Mac) to run the R script (instructions at the bottom of this document if needed): 
 
@@ -24,13 +38,13 @@ Use the Command Prompt (PC) or Terminal (Mac) to run the R script (instructions 
    * Processes source data
    * Creates main body tables 1,3,4; figures 1 and 2; select stats in main body
 
-2. Run ./Stata/underbidding\_data\_summary.do
-  a. From the repository root, launch Stata and run: `do Stata/underbidding_data_summary.do`
+2. Run ./Stata/02\_underbidding\_data\_summary.do
+  a. From the repository root, launch Stata and run: `do Stata/02_underbidding_data_summary.do`
      (path locals are derived from the working directory at launch; no ado-folder setup required)
 
    * Creates main body table 2
 
-6. Run ./Stata/underbidding\_matching.do  -- Requires 0.5-4.0 hours
+4. Run ./Stata/04\_underbidding\_matching.do  -- Requires ~1.8 hours on Stata/MP
 
    * Create main body table 6
 
@@ -40,7 +54,7 @@ Use the Command Prompt (PC) or Terminal (Mac) to run the R script (instructions 
 
 ### Appendix:
 
-1. Run ./Stata/underbidding\_matching\_robustness.do from the repository root -- full-sample matching (test\_matching = 0) requires ~40 minutes on Stata MP; set test\_matching = 1 for a quick 5,000-observation test run (results will not match the paper)
+5. Run ./Stata/05\_underbidding\_matching\_robustness.do from the repository root -- full-sample matching (test\_matching = 0) requires ~40 minutes on Stata MP; set test\_matching = 1 for a quick 5,000-observation test run (results will not match the paper)
 2. Run ./R\_files/ercot\_appendix\_robustness.R
  
  

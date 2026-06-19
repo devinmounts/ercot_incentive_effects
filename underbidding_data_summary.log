@@ -1,0 +1,1655 @@
+
+  ___  ____  ____  ____  ____ ®
+ /__    /   ____/   /   ____/      17.0
+___/   /   /___/   /   /___/       MP—Parallel Edition
+
+ Statistics and Data Science       Copyright 1985-2021 StataCorp LLC
+                                   StataCorp
+                                   4905 Lakeway Drive
+                                   College Station, Texas 77845 USA
+                                   800-STATA-PC        https://www.stata.com
+                                   979-696-4600        stata@stata.com
+
+Stata license: 2-user 24-core network perpetual
+Serial number: 501706318163
+  Licensed to: Robin Cross
+               DemandLink
+
+Notes:
+      1. Stata is running in batch mode.
+      2. Unicode is supported; see help unicode_advice.
+      3. More than 2 billion observations are allowed; see help obs_advice.
+      4. Maximum number of variables is set to 32,767 but can be increased;
+          see help set_maxvar.
+
+. do Stata\underbidding_data_summary.do 
+
+. *****************************************************************************
+> ****
+. ****************************** Derivative Price Simulation ******************
+> ****
+. ** Written DM 6.8.21
+. ** Update RC 6.9.21
+. ** Update DM 6.21.21
+. ** Update RC 6.28.21
+. ** Convert RC 3.27.24
+. ** Call:  energy_time test autocorrelation
+. *****************************************************************************
+> ****
+. 
+. *****************************************************************************
+> ****
+. ** READ ME
+. ** This proc cycles through greek parameters of interest 
+. ** Save .ado file to working directory
+. ** Call:
+. *****************************************************************************
+> ****
+. //capture program drop  underbidding_data_summary
+. //program define                        underbidding_data_summary
+. 
+.         clear all
+r; t=0.04 18:42:57
+
+.         pwd
+C:\Users\rcros\ercot_incentive_effects
+r; t=0.00 18:42:57
+
+.         display "Now running energy_time."
+Now running energy_time.
+r; t=0.00 18:42:57
+
+. 
+.         * === Path setup =============================================
+.         * Launch this do-file from the repository root, e.g.:
+.         *     cd C:/Users/rcros/ercot_incentive_effects
+.         *     do Stata/underbidding_data_summary.do
+.         * No ado-folder setup is required.
+.         * ============================================================
+.         local PROJ "`c(pwd)'"
+r; t=0.00 18:42:57
+
+.         local edata                "`PROJ'/Data/ERCOT Compiled Data"
+r; t=0.00 18:42:57
+
+.         local estats               "`PROJ'/Tables/Summary Stats"
+r; t=0.00 18:42:57
+
+.         local eunderbid            "`PROJ'/Tables/Regressions/underbidding"
+r; t=0.00 18:42:57
+
+.         local eunderbid_robustness "`PROJ'/Tables/Regressions/underbidding/ro
+> bustness"
+r; t=0.00 18:42:57
+
+. 
+.         clear all
+r; t=0.01 18:42:57
+
+.         * === Reproducibility (each do-file is its own Stata session) ===
+.         version 17
+r; t=0.00 18:42:57
+
+.         set seed 1101
+r; t=0.00 18:42:57
+
+.         set sortseed 1101
+r; t=0.00 18:42:57
+
+.         ** Setting variable to limit matching sample size for test purposes.
+.         local test_matching = 1
+r; t=0.00 18:42:57
+
+.         ** Define base folder
+.         pwd
+C:\Users\rcros\ercot_incentive_effects
+r; t=0.00 18:42:57
+
+. 
+.         ** Some basic settings
+.         local settings = 1
+r; t=0.00 18:42:57
+
+.         if `settings'==1 {
+. 
+.                 set cformat %9.3f
+r; t=0.00 18:42:57
+.                 ** Settings
+.                 set matsize 11000
+set matsize ignored.
+    Matrix sizes are no longer limited by c(matsize) in modern Statas.
+    Matrix sizes are now limited by edition of Stata.  See limits for more
+    details.
+r; t=0.00 18:42:57
+.                 set maxvar 32767
+
+r; t=0.00 18:42:57
+.                 *set niceness 6
+.                 set max_memory 80g
+r; t=0.00 18:42:57
+.                 set segmentsize 96m //for large memory computers
+r; t=0.00 18:42:57
+.                 set min_memory 0
+r; t=0.00 18:42:57
+.                 set more off
+r; t=0.00 18:42:57
+.                 set scrollbufsize 300000
+(set scrollbufsize will take effect the next time you launch Stata)
+r; t=0.00 18:42:57
+.                 *set timeout1 600       //for updates with slow web connectio
+> n
+.                 
+.                 ** Debug
+.                 set rmsg on
+r; t=0.00 18:42:57
+.                 
+.                 ********************************
+.                 ** SSC INSTALL:  
+.                 ********************************
+.                 *ssc install dm0018.pkg
+.                 ** Distinct (levelsof)
+.                 *ssc install dm0042_2.pkg
+.                                 
+.         } // End if
+r; t=0.03 18:42:57
+
+.         di "Done with default settings."
+Done with default settings.
+r; t=0.00 18:42:57
+
+. 
+.         ** Load
+.         local inputs = 1
+r; t=0.00 18:42:57
+
+.         if `inputs' == 1 {
+.         
+.                 clear all
+r; t=0.02 18:42:57
+.                 cd "`edata'"
+C:\Users\rcros\ercot_incentive_effects\Data\ERCOT Compiled Data
+r; t=0.00 18:42:57
+.                 *cd "../Data/ERCOT Compiled Data"
+.                 ls
+  <dir>   6/13/26 12:19  .                 
+  <dir>   6/10/26 16:22  ..                
+   0.1k   6/10/26 16:22  .gitignore        
+ 116.0k   6/10/26 16:56  compiled_zip_csv_pnm_files_2011_2022.csv
+  55.0k   6/10/26 19:13  ercot_gen_pa_price_monthly_stats.csv
+   0.8k   6/10/26 19:13  ercot_pa_annaul_sum.csv
+ 177.9M   6/10/26 17:03  ercot_scarcity_pricing_matching_set.csv
+2200.7M   6/10/26 16:36  gen_cap_and_adder_interval.csv
+  32.1k   6/10/26 19:13  ng_hh_price_monthly_summary.csv
+  19.1k   6/10/26 19:13  pnm_monthly_summary.csv
+   0.0k   6/10/26 16:22  readme.txt        
+ 147.8M   6/13/26 12:18  underbidding_data_for_regression.dta
+  67.3M   6/13/26 12:19  underbidding_data_w_lags.csv
+  30.7M   6/13/26 12:19  underbidding_data_w_lags.dta
+r; t=0.00 18:42:57
+. 
+.                 import delimited ercot_scarcity_pricing_matching_set.csv
+(encoding automatically selected: ISO-8859-2)
+(60 vars, 292,348 obs)
+r; t=9.02 18:43:06
+.                 
+.                         ** Rename
+.                 rename *, lower
+  (all newnames==oldnames)
+r; t=0.04 18:43:06
+. 
+.                 ** Save
+.                 save underbidding_data_for_regression, replace
+file underbidding_data_for_regression.dta saved
+r; t=0.09 18:43:06
+.                 use underbidding_data_for_regression, clear
+r; t=0.08 18:43:06
+.                 
+.         } //End if
+r; t=9.26 18:43:06
+
+.         di "Done with input read."
+Done with input read.
+r; t=0.00 18:43:06
+
+.                         
+.         ***clean data
+.                 ** Load
+.         clear
+r; t=0.00 18:43:06
+
+.         *cd "`dir'"
+.         *cd "../Data/ERCOT Compiled Data"
+.         cd "`edata'"
+C:\Users\rcros\ercot_incentive_effects\Data\ERCOT Compiled Data
+r; t=0.00 18:43:06
+
+.         use underbidding_data_for_regression    
+r; t=0.08 18:43:06
+
+. 
+.         ** Keep
+.         *drop year*
+. 
+.         ** Seed set at top of do-file (reproducibility header)
+.                 
+.         ** Initial output table
+.         eststo clear
+r; t=0.00 18:43:06
+
+. 
+.         ** Nulls
+.         drop if rtordpa=="NA"
+(34,464 observations deleted)
+r; t=0.06 18:43:06
+
+.         drop if hb_hubavg_energy_only=="NA"
+(56 observations deleted)
+r; t=0.05 18:43:06
+
+.         drop if hb_busavg_energy_only=="NA"
+(0 observations deleted)
+r; t=0.03 18:43:06
+
+.         drop if ng=="NA"
+(576 observations deleted)
+r; t=0.04 18:43:07
+
+.         drop if other=="NA"
+(0 observations deleted)
+r; t=0.03 18:43:07
+
+.         drop if renewables=="NA"
+(0 observations deleted)
+r; t=0.02 18:43:07
+
+.         // drop if delta_pnm=="NA"
+.         // drop if temp_midpoint=="NA"
+.         // drop if mean_ng_cap_gini_coef_hund=="NA"
+.         // drop if mean_wnd_cap_gini_coef_hund=="NA"
+. 
+.         destring total_pa rtorpa rtordpa hb_hubavg_energy_only hb_busavg_ener
+> gy_only ng other renewables temp_midpoint, replace
+total_pa: all characters numeric; replaced as double
+rtorpa already numeric; no replace
+rtordpa: all characters numeric; replaced as double
+hb_hubavg_energy_only: all characters numeric; replaced as double
+hb_busavg_energy_only: all characters numeric; replaced as double
+ng: all characters numeric; replaced as double
+other: all characters numeric; replaced as double
+renewables: all characters numeric; replaced as double
+temp_midpoint already numeric; no replace
+r; t=4.09 18:43:11
+
+.         rename hb_busavg_energy_only price
+r; t=0.00 18:43:11
+
+.         
+.         ** generate new variables
+.         gen int_tot_gen_gas_gw = int_tot_gen_gas/1000
+r; t=0.01 18:43:11
+
+.         gen int_tot_gen_renewable_gw = int_tot_gen_renewable/1000
+r; t=0.01 18:43:11
+
+.         gen int_tot_gen_other_gw = int_tot_gen_other/1000
+r; t=0.01 18:43:11
+
+. 
+.         gen rttotcap_gw = rttotcap/1000
+r; t=0.01 18:43:11
+
+.         gen ng_gw = ng/1000
+r; t=0.01 18:43:11
+
+.         gen other_gw = other/1000
+r; t=0.01 18:43:11
+
+.         gen renewables_gw = renewables/1000
+r; t=0.01 18:43:11
+
+.         ** Add quadratic and cubic terms
+.         summarize temp_midpoint, meanonly
+r; t=0.00 18:43:11
+
+.         gen temp_midpoint_cent = temp_midpoint - r(mean)
+r; t=0.01 18:43:11
+
+.         gen temp_midpoint_sq = temp_midpoint_cent^2
+r; t=0.01 18:43:11
+
+.         gen temp_midpoint_cube = temp_midpoint_cent^3
+r; t=0.01 18:43:11
+
+.         gen active = (total_pa > 0)
+r; t=0.01 18:43:11
+
+.         gen active_rtorpa = (rtorpa > 0)
+r; t=0.01 18:43:11
+
+.         
+.         
+.         ** Select columns
+.         keep price active active_rtorpa rtorpa rtordpa total_pa int_tot_gen_g
+> as_gw int_tot_gen_renewable_gw int_tot_gen_other_gw scarcity_measure ///
+>         rttotcap_gw  ng_gw renewables_gw other_gw temp_midpoint_cent temp_mid
+> point_sq ng_price weather_wnds ///
+>         year month day_of_week day hour minute repeated_hour_flag
+r; t=0.02 18:43:11
+
+. 
+.         order price active active_rtorpa rtorpa rtordpa  int_tot_gen_gas_gw i
+> nt_tot_gen_renewable_gw int_tot_gen_other_gw scarcity_measure ///
+>         rttotcap_gw  ng_gw renewables_gw other_gw temp_midpoint_cent temp_mid
+> point_sq ng_price weather_wnds ///
+>         year month day_of_week day hour minute repeated_hour_flag
+r; t=0.22 18:43:11
+
+. 
+.         
+.         ** Run
+.         scalar greek = 1
+r; t=0.00 18:43:11
+
+.         if greek == 1 {
+.                 
+.                 ** Gen error
+.                 scalar rhod = 1
+r; t=0.00 18:43:11
+.                 if rhod == 1 {
+.                     
+.                         
+.                         
+.                         ** Run order
+. //                      order *, alpha 
+.                         order price year month hour minute repeated_hour_flag
+r; t=0.07 18:43:11
+.                         sort year month hour minute repeated_hour_flag
+r; t=0.08 18:43:11
+.                         
+. 
+.                         order price year month day hour minute repeated_hour_
+> flag
+r; t=0.01 18:43:11
+.                         
+.                         
+.                         ** Gen incentive
+.                         gen incentive = total_pa
+r; t=0.01 18:43:11
+.                         drop rtordpa rtorpa active_rtorpa
+r; t=0.01 18:43:11
+.                                 sum year if active > 0 & incentive == 0
+
+    Variable |        Obs        Mean    Std. dev.       Min        Max
+-------------+---------------------------------------------------------
+        year |          0
+r; t=0.03 18:43:11
+.                                 sum year if active == 0 & incentive > 0
+
+    Variable |        Obs        Mean    Std. dev.       Min        Max
+-------------+---------------------------------------------------------
+        year |          0
+r; t=0.03 18:43:11
+.                         replace active = (incentive > 0)
+(0 real changes made)
+r; t=0.01 18:43:11
+.                         order active, last
+r; t=0.15 18:43:12
+.                         
+.                         eststo all:  estpost sum price active total_pa int_to
+> t_gen_gas_gw int_tot_gen_renewable_gw int_tot_gen_other_gw scarcity_measure r
+> ttotcap_gw  ng_gw renewables_gw other_gw temp_midpoint_cent temp_midpoint_sq 
+> ng_price weather_wnds year month day_of_week hour minute  
+
+             |  e(count)   e(sum_w)    e(mean)     e(Var)      e(sd) 
+-------------+-------------------------------------------------------
+       price |    257252     257252    30.6986    29455.6   171.6263 
+      active |    257252     257252   .1988556   .1593127   .3991399 
+    total_pa |    257252     257252   10.99936   61866.58   248.7299 
+int_tot~s_gw |    257252     257252   4.758129   4.658845   2.158436 
+int_tot~e_gw |    257252     257252    2.38351   1.868255   1.366841 
+int_tot~r_gw |    257252     257252   3.700621   .8136628   .9020326 
+scarcity_m~e |    257252     257252   43.29856   110.9726   10.53435 
+ rttotcap_gw |    257252     257252   14.61106   18.72312   4.327022 
+       ng_gw |    257252     257252   56.47084   1.000237   1.000119 
+renewables~w |    257252     257252   26.78193   74.82751    8.65029 
+    other_gw |    257252     257252   22.12404   5.273042   2.296311 
+temp_midpo~t |    257252     257252  -8.32e-08    43.5401   6.598493 
+temp_midpo~q |    257252     257252   43.53993   8247.432   90.81537 
+    ng_price |    257252     257252   3.315837   3.167203   1.779664 
+weather_wnds |    257252     257252   .8803442   6.299957   2.509972 
+        year |    257252     257252   2018.656    4.59279    2.14308 
+       month |    257252     257252   6.613453   11.57665   3.402448 
+ day_of_week |    257252     257252     3.0007    4.00059   2.000148 
+        hour |    257252     257252   11.50103   47.91224   6.921867 
+      minute |    257252     257252       22.5   281.2511   16.77054 
+
+             |    e(min)     e(max)     e(sum) 
+-------------+---------------------------------
+       price | -5043.641   7941.562    7897276 
+      active |         0          1      51156 
+    total_pa |         0   7927.193    2829606 
+int_tot~s_gw |         0   12.23199    1224038 
+int_tot~e_gw |         0   7.644421   613162.8 
+int_tot~r_gw |         0   6.193967   951992.2 
+scarcity_m~e |         0   96.67129   1.11e+07 
+ rttotcap_gw |    .54558   39.21102    3758725 
+       ng_gw |   54.4387    58.1903   1.45e+07 
+renewables~w |   14.4135    44.4755    6889705 
+    other_gw |   19.9915    25.3898    5691454 
+temp_midpo~t | -43.18063   27.50541  -.0213963 
+temp_midpo~q |  .0000124   1864.566   1.12e+07 
+    ng_price |      1.33      23.86   853005.7 
+weather_wnds | -5.474085   12.20123   226470.3 
+        year |      2015       2022   5.19e+08 
+       month |         1         12    1701324 
+ day_of_week |         0          6     771936 
+        hour |         0         23    2958664 
+      minute |         0         45    5788170 
+r; t=0.92 18:43:12
+.                         eststo active_off:  estpost sum price active total_pa
+>  int_tot_gen_gas_gw int_tot_gen_renewable_gw int_tot_gen_other_gw scarcity_me
+> asure rttotcap_gw  ng_gw renewables_gw other_gw temp_midpoint_cent temp_midpo
+> int_sq ng_price weather_wnds year month day_of_week hour minute  if active ==
+>  0 
+
+             |  e(count)   e(sum_w)    e(mean)     e(Var)      e(sd) 
+-------------+-------------------------------------------------------
+       price |    206096     206096   21.84285   18508.17   136.0448 
+      active |    206096     206096          0          0          0 
+    total_pa |    206096     206096          0          0          0 
+int_tot~s_gw |    206096     206096   4.285402   3.284225   1.812243 
+int_tot~e_gw |    206096     206096   2.516773   1.850942   1.360493 
+int_tot~r_gw |    206096     206096   3.588667   .7635675   .8738235 
+scarcity_m~e |    206096     206096   40.12579   61.32612     7.8311 
+ rttotcap_gw |    206096     206096   15.74806   13.92122   3.731115 
+       ng_gw |    206096     206096   56.44701   .9743527    .987093 
+renewables~w |    206096     206096   26.47885   71.10037   8.432104 
+    other_gw |    206096     206096   22.16096   5.363295   2.315879 
+temp_midpo~t |    206096     206096   .1793627   41.95278   6.477097 
+temp_midpo~q |    206096     206096   41.98475   5943.747    77.0957 
+    ng_price |    206096     206096   3.210021   2.579494    1.60608 
+weather_wnds |    206096     206096    .987458   6.369401   2.523767 
+        year |    206096     206096   2018.592   4.479362    2.11645 
+       month |    206096     206096   6.600075   12.11929   3.481278 
+ day_of_week |    206096     206096    2.98869   4.075046   2.018674 
+        hour |    206096     206096   10.75118   50.47787   7.104778 
+      minute |    206096     206096   22.41499   282.1066   16.79603 
+
+             |    e(min)     e(max)     e(sum) 
+-------------+---------------------------------
+       price | -87.37881   7941.562    4501724 
+      active |         0          0          0 
+    total_pa |         0          0          0 
+int_tot~s_gw |         0   12.23199   883204.3 
+int_tot~e_gw |         0   7.644421   518696.9 
+int_tot~r_gw |         0   6.165462   739609.9 
+scarcity_m~e |         0   96.67129    8269766 
+ rttotcap_gw |    .54558   39.21102    3245611 
+       ng_gw |   54.4387    58.1903   1.16e+07 
+renewables~w |   14.4135    44.4755    5457185 
+    other_gw |   19.9915    25.3898    4567284 
+temp_midpo~t | -43.18063   27.50541   36965.93 
+temp_midpo~q |  .0000124   1864.566    8652889 
+    ng_price |      1.33      23.86   661572.5 
+weather_wnds | -5.474085   12.20123   203511.1 
+        year |      2015       2022   4.16e+08 
+       month |         1         12    1360249 
+ day_of_week |         0          6     615957 
+        hour |         0         23    2215775 
+      minute |         0         45    4619640 
+r; t=0.92 18:43:13
+.                         eststo active_on:  estpost sum price active total_pa 
+>  int_tot_gen_gas_gw int_tot_gen_renewable_gw int_tot_gen_other_gw scarcity_me
+> asure rttotcap_gw  ng_gw renewables_gw other_gw temp_midpoint_cent temp_midpo
+> int_sq ng_price weather_wnds year month day_of_week hour minute  if active ==
+>  1
+
+             |  e(count)   e(sum_w)    e(mean)     e(Var)      e(sd) 
+-------------+-------------------------------------------------------
+       price |     51156      51156   66.37642   71972.65   268.2772 
+      active |     51156      51156          1          0          0 
+    total_pa |     51156      51156   55.31328   308666.8   555.5779 
+int_tot~s_gw |     51156      51156    6.66264   5.669485   2.381068 
+int_tot~e_gw |     51156      51156   1.846625   1.578245   1.256282 
+int_tot~r_gw |     51156      51156   4.151659   .7615688   .8726791 
+scarcity_m~e |     51156      51156   56.08091   107.0444   10.34623 
+ rttotcap_gw |     51156      51156   10.03037   11.87808   3.446459 
+       ng_gw |     51156      51156   56.56682    1.09304   1.045486 
+renewables~w |     51156      51156   28.00297   87.98395   9.379976 
+    other_gw |     51156      51156   21.97532   4.881926   2.209508 
+temp_midpo~t |     51156      51156  -.7226122   49.28422   7.020272 
+temp_midpo~q |     51156      51156   49.80543   17479.76    132.211 
+    ng_price |     51156      51156   3.742146   5.308194   2.303952 
+weather_wnds |     51156      51156   .4488066   5.787848   2.405795 
+        year |     51156      51156   2018.916   4.965908   2.228432 
+       month |     51156      51156   6.667351   9.387045   3.063829 
+ day_of_week |     51156      51156   3.049085   3.697776    1.92296 
+        hour |     51156      51156   14.52203   26.18474   5.117102 
+      minute |     51156      51156   22.84248   277.6635   16.66324 
+
+             |    e(min)     e(max)     e(sum) 
+-------------+---------------------------------
+       price | -5043.641   7937.979    3395552 
+      active |         1          1      51156 
+    total_pa |  .0000794   7927.193    2829606 
+int_tot~s_gw |  .9887614   12.22851     340834 
+int_tot~e_gw |  .0381576   7.638685   94465.94 
+int_tot~r_gw |   2.10665   6.193967   212382.3 
+scarcity_m~e |  21.87792   92.12162    2868875 
+ rttotcap_gw |   1.30623   35.27928   513113.6 
+       ng_gw |   54.4387    58.1903    2893732 
+renewables~w |   14.4135    44.4755    1432520 
+    other_gw |   19.9915    25.3898    1124170 
+temp_midpo~t | -43.18063   20.52407  -36965.95 
+temp_midpo~q |  .0000124   1864.566    2547846 
+    ng_price |      1.41      23.86   191433.2 
+weather_wnds | -5.474085   12.20123   22959.15 
+        year |      2015       2022   1.03e+08 
+       month |         1         12     341075 
+ day_of_week |         0          6     155979 
+        hour |         0         23     742889 
+      minute |         0         45    1168530 
+r; t=0.98 18:43:14
+. 
+.                         *cd "`dir'"
+.                         cd "`estats'"
+C:\Users\rcros\ercot_incentive_effects\Tables\Summary Stats
+r; t=0.00 18:43:14
+.                         esttab all active_off active_on using "covariate_mean
+> s_by_incentive_state.tex", replace unstack mtitle("All Intervals" "Inactive I
+> ncentive" "Active Incentive") cells("mean(fmt(2))") label title(Covariate Mea
+> ns by Scarcity Incentive State)
+(output written to covariate_means_by_incentive_state.tex)
+r; t=0.09 18:43:15
+.                         
+.                                 
+.                         ** Print output
+.                         esttab, nonumber se ar2 r2(a5) compress not nostar
+
+----------------------------------------
+                                        
+----------------------------------------
+----------------------------------------
+N             257252    206096     51156
+R-sq                                    
+adj. R-sq                               
+----------------------------------------
+Standard errors in parentheses
+r; t=0.03 18:43:15
+.                         
+.                         eststo clear
+r; t=0.05 18:43:15
+.                         ** Run simple
+.                         reg price year##year month##month day_of_week##day_of
+> _week hour##hour minute##minute ///
+>                                 int_tot_gen_gas_gw-weather_wnds active incent
+> ive 
+
+      Source |       SS           df       MS      Number of obs   =   257,252
+-------------+----------------------------------   F(64, 257187)   =   1806.11
+       Model |  2.3496e+09        64  36712861.5   Prob > F        =    0.0000
+    Residual |  5.2279e+09   257,187  20327.0765   R-squared       =    0.3101
+-------------+----------------------------------   Adj R-squared   =    0.3099
+       Total |  7.5775e+09   257,251  29455.6015   Root MSE        =    142.57
+
+------------------------------------------------------------------------------
+       price | Coefficient  Std. err.      t    P>|t|     [95% conf. interval]
+-------------+----------------------------------------------------------------
+        year |
+       2016  |     48.217      2.131    22.63   0.000       44.040      52.394
+       2017  |     91.438      3.349    27.30   0.000       84.874      98.002
+       2018  |     25.549     10.309     2.48   0.013        5.344      45.754
+       2019  |     55.065     12.891     4.27   0.000       29.798      80.331
+       2020  |    150.819     14.990    10.06   0.000      121.439     180.198
+       2021  |    251.090     17.375    14.45   0.000      217.036     285.144
+       2022  |    288.773     19.630    14.71   0.000      250.299     327.247
+             |
+       month |
+          2  |     10.195      1.486     6.86   0.000        7.282      13.107
+          3  |    -26.271      1.574   -16.69   0.000      -29.356     -23.187
+          4  |    -29.925      1.608   -18.61   0.000      -33.077     -26.774
+          5  |     -2.548      1.548    -1.65   0.100       -5.581       0.486
+          6  |     42.302      1.741    24.29   0.000       38.889      45.715
+          7  |     55.461      1.864    29.76   0.000       51.808      59.114
+          8  |     44.515      1.968    22.62   0.000       40.658      48.372
+          9  |     46.274      1.918    24.13   0.000       42.515      50.032
+         10  |      8.903      1.946     4.58   0.000        5.089      12.717
+         11  |     15.458      2.155     7.17   0.000       11.235      19.681
+         12  |     48.553      2.468    19.67   0.000       43.715      53.391
+             |
+ day_of_week |
+          1  |     -5.614      1.058    -5.30   0.000       -7.689      -3.540
+          2  |    -12.203      1.062   -11.49   0.000      -14.284     -10.122
+          3  |    -18.214      1.061   -17.16   0.000      -20.294     -16.134
+          4  |    -14.545      1.061   -13.71   0.000      -16.624     -12.466
+          5  |    -11.860      1.059   -11.20   0.000      -13.935      -9.785
+          6  |     -6.348      1.053    -6.03   0.000       -8.412      -4.285
+             |
+        hour |
+          1  |      2.074      1.951     1.06   0.288       -1.749       5.897
+          2  |      2.152      1.960     1.10   0.272       -1.688       5.993
+          3  |      3.928      1.964     2.00   0.045        0.079       7.776
+          4  |      4.315      1.963     2.20   0.028        0.467       8.162
+          5  |      3.878      1.957     1.98   0.048        0.041       7.715
+          6  |      5.093      1.956     2.60   0.009        1.259       8.927
+          7  |     -3.870      1.957    -1.98   0.048       -7.706      -0.033
+          8  |     -8.799      1.960    -4.49   0.000      -12.640      -4.958
+          9  |    -12.140      1.967    -6.17   0.000      -15.994      -8.285
+         10  |    -17.967      1.979    -9.08   0.000      -21.846     -14.088
+         11  |    -22.723      1.994   -11.40   0.000      -26.631     -18.814
+         12  |    -28.149      2.009   -14.01   0.000      -32.087     -24.211
+         13  |    -35.599      2.025   -17.58   0.000      -39.568     -31.629
+         14  |    -39.966      2.040   -19.59   0.000      -43.965     -35.967
+         15  |    -41.332      2.052   -20.14   0.000      -45.353     -37.310
+         16  |    -41.181      2.059   -20.00   0.000      -45.216     -37.145
+         17  |    -39.975      2.060   -19.40   0.000      -44.013     -35.937
+         18  |    -42.317      2.054   -20.60   0.000      -46.344     -38.291
+         19  |    -38.049      2.038   -18.67   0.000      -42.043     -34.056
+         20  |    -36.916      2.022   -18.26   0.000      -40.879     -32.953
+         21  |    -27.099      1.997   -13.57   0.000      -31.012     -23.185
+         22  |    -15.843      1.970    -8.04   0.000      -19.704     -11.983
+         23  |     -5.160      1.952    -2.64   0.008       -8.986      -1.334
+             |
+      minute |
+         15  |      0.402      0.795     0.51   0.613       -1.156       1.961
+         30  |      0.031      0.795     0.04   0.969       -1.527       1.590
+         45  |      0.976      0.795     1.23   0.219       -0.582       2.535
+             |
+int_tot~s_gw |    -63.395      0.539  -117.62   0.000      -64.452     -62.339
+int_tot~e_gw |    -56.988      0.545  -104.57   0.000      -58.056     -55.920
+int_tot~r_gw |   -106.436      0.782  -136.13   0.000     -107.968    -104.903
+scarcity_m~e |     31.991      0.199   160.39   0.000       31.600      32.382
+ rttotcap_gw |     37.017      0.304   121.69   0.000       36.421      37.614
+       ng_gw |    -10.949      0.829   -13.21   0.000      -12.574      -9.324
+renewables~w |    -16.585      0.486   -34.14   0.000      -17.537     -15.633
+    other_gw |    -18.960      1.898    -9.99   0.000      -22.679     -15.241
+temp_midpo~t |     -2.330      0.049   -47.32   0.000       -2.427      -2.234
+temp_midpo~q |      0.633      0.004   169.07   0.000        0.626       0.641
+    ng_price |     32.501      0.383    84.83   0.000       31.750      33.252
+weather_wnds |     -0.979      0.143    -6.85   0.000       -1.260      -0.699
+      active |    -80.596      0.995   -80.97   0.000      -82.546     -78.645
+   incentive |     -0.052      0.001   -39.00   0.000       -0.055      -0.050
+       _cons |    191.388     51.581     3.71   0.000       90.290     292.486
+------------------------------------------------------------------------------
+r; t=1.20 18:43:16
+. 
+.                         
+.                         ** Gen e
+.                         local e = 1
+r; t=0.00 18:43:16
+.                         if `e' == 1 {
+.                                 
+.                                 predict yhat, xb
+r; t=0.06 18:43:16
+.                                 gen e                                        
+>                    = price - yhat
+r; t=0.01 18:43:16
+.                                 drop yhat
+r; t=0.01 18:43:16
+.                                 
+.                                 ** Save ordered set
+.                                 isid year month day hour repeated_hour_flag m
+> inute
+r; t=0.49 18:43:16
+.                                 sort year month day hour repeated_hour_flag m
+> inute  
+r; t=0.07 18:43:16
+.                                 gen period                                   
+>                    = _n
+r; t=0.01 18:43:16
+.                                 order period e
+r; t=0.03 18:43:17
+.                                 ** Save temp
+.                                 save temp_timeset, replace
+file temp_timeset.dta saved
+r; t=0.02 18:43:17
+.                                 ** Save errors
+.                                 keep period e 
+r; t=0.01 18:43:17
+.                                 save period_e, replace
+file period_e.dta saved
+r; t=0.02 18:43:17
+.                                 ** Reload data
+.                                 use temp_timeset, clear
+r; t=0.01 18:43:17
+.                                 
+.                                 ** 15 minute lags
+.                                 ** Join loop e
+.                                 drop e
+r; t=0.01 18:43:17
+.                                 local lags                                   
+>    = 5
+r; t=0.00 18:43:17
+.                                 foreach num of numlist 1/`lags' {
+  2.                                         
+.                                         ** Lag
+.                                         replace period                  = per
+> iod - 1
+  3.                                         ** Join
+.                                         joinby period using period_e, unmatch
+> ed(master)
+  4.                                                 tabulate _merge
+  5.                                                 drop _merge
+  6.                                         ** Rename 
+.                                         rename e e_`num'
+  7.                                         
+.                                 } //End loop
+(257,252 real changes made)
+
+                       _merge |      Freq.     Percent        Cum.
+------------------------------+-----------------------------------
+          only in master data |          1        0.00        0.00
+both in master and using data |    257,251      100.00      100.00
+------------------------------+-----------------------------------
+                        Total |    257,252      100.00
+(257,252 real changes made)
+
+                       _merge |      Freq.     Percent        Cum.
+------------------------------+-----------------------------------
+          only in master data |          2        0.00        0.00
+both in master and using data |    257,250      100.00      100.00
+------------------------------+-----------------------------------
+                        Total |    257,252      100.00
+(257,252 real changes made)
+
+                       _merge |      Freq.     Percent        Cum.
+------------------------------+-----------------------------------
+          only in master data |          3        0.00        0.00
+both in master and using data |    257,249      100.00      100.00
+------------------------------+-----------------------------------
+                        Total |    257,252      100.00
+(257,252 real changes made)
+
+                       _merge |      Freq.     Percent        Cum.
+------------------------------+-----------------------------------
+          only in master data |          4        0.00        0.00
+both in master and using data |    257,248      100.00      100.00
+------------------------------+-----------------------------------
+                        Total |    257,252      100.00
+(257,252 real changes made)
+
+                       _merge |      Freq.     Percent        Cum.
+------------------------------+-----------------------------------
+          only in master data |          5        0.00        0.00
+both in master and using data |    257,247      100.00      100.00
+------------------------------+-----------------------------------
+                        Total |    257,252      100.00
+r; t=5.17 18:43:22
+.                                 di "Done with loop e."
+Done with loop e.
+r; t=0.00 18:43:22
+.                                 
+.                                 ** Clean up
+.                                         sum period
+
+    Variable |        Obs        Mean    Std. dev.       Min        Max
+-------------+---------------------------------------------------------
+      period |    257,252    128621.5     74262.4         -4     257247
+r; t=0.01 18:43:22
+.                                 replace period                               
+>    = period + `lags'
+(257,252 real changes made)
+r; t=0.01 18:43:22
+.                                         sum period
+
+    Variable |        Obs        Mean    Std. dev.       Min        Max
+-------------+---------------------------------------------------------
+      period |    257,252    128626.5     74262.4          1     257252
+r; t=0.01 18:43:22
+.                                         
+.                                 ** Day lags
+.                                 ** Join d (day lags)
+.                                 local dags                                   
+>    = 5
+r; t=0.00 18:43:22
+.                                 foreach num of numlist 1/`dags' {
+  2.                                         
+.                                         ** Dag
+.                                         replace period                  = per
+> iod - 96
+  3.                                         
+.                                         ** Join
+.                                         joinby period using period_e, unmatch
+> ed(master)
+  4.                                                 tabulate _merge
+  5.                                                 drop _merge
+  6.                                         ** Rename 
+.                                         rename e d_`num'
+  7.                                         
+.                                 } //End loop
+(257,252 real changes made)
+
+                       _merge |      Freq.     Percent        Cum.
+------------------------------+-----------------------------------
+          only in master data |         96        0.04        0.04
+both in master and using data |    257,156       99.96      100.00
+------------------------------+-----------------------------------
+                        Total |    257,252      100.00
+(257,252 real changes made)
+
+                       _merge |      Freq.     Percent        Cum.
+------------------------------+-----------------------------------
+          only in master data |        192        0.07        0.07
+both in master and using data |    257,060       99.93      100.00
+------------------------------+-----------------------------------
+                        Total |    257,252      100.00
+(257,252 real changes made)
+
+                       _merge |      Freq.     Percent        Cum.
+------------------------------+-----------------------------------
+          only in master data |        288        0.11        0.11
+both in master and using data |    256,964       99.89      100.00
+------------------------------+-----------------------------------
+                        Total |    257,252      100.00
+(257,252 real changes made)
+
+                       _merge |      Freq.     Percent        Cum.
+------------------------------+-----------------------------------
+          only in master data |        384        0.15        0.15
+both in master and using data |    256,868       99.85      100.00
+------------------------------+-----------------------------------
+                        Total |    257,252      100.00
+(257,252 real changes made)
+
+                       _merge |      Freq.     Percent        Cum.
+------------------------------+-----------------------------------
+          only in master data |        480        0.19        0.19
+both in master and using data |    256,772       99.81      100.00
+------------------------------+-----------------------------------
+                        Total |    257,252      100.00
+r; t=5.12 18:43:27
+.                                 di "Done with loop d."
+Done with loop d.
+r; t=0.00 18:43:27
+.                                 
+.                                 ** Clean up
+.                                 drop period
+r; t=0.01 18:43:27
+.                                                                              
+>    
+.                         } //end if
+r; t=11.11 18:43:27
+.                         di "Done with e d."
+Done with e d.
+r; t=0.00 18:43:27
+.                                                 
+.                         eststo reg1: reg price year##year month##month day_of
+> _week##day_of_week hour##hour minute##minute ///
+>                                 int_tot_gen_gas_gw-weather_wnds active incent
+> ive 
+
+      Source |       SS           df       MS      Number of obs   =   257,252
+-------------+----------------------------------   F(64, 257187)   =   1806.11
+       Model |  2.3496e+09        64  36712861.5   Prob > F        =    0.0000
+    Residual |  5.2279e+09   257,187  20327.0765   R-squared       =    0.3101
+-------------+----------------------------------   Adj R-squared   =    0.3099
+       Total |  7.5775e+09   257,251  29455.6015   Root MSE        =    142.57
+
+------------------------------------------------------------------------------
+       price | Coefficient  Std. err.      t    P>|t|     [95% conf. interval]
+-------------+----------------------------------------------------------------
+        year |
+       2016  |     48.217      2.131    22.63   0.000       44.040      52.394
+       2017  |     91.438      3.349    27.30   0.000       84.874      98.002
+       2018  |     25.549     10.309     2.48   0.013        5.344      45.754
+       2019  |     55.065     12.891     4.27   0.000       29.798      80.331
+       2020  |    150.819     14.990    10.06   0.000      121.439     180.198
+       2021  |    251.090     17.375    14.45   0.000      217.036     285.144
+       2022  |    288.773     19.630    14.71   0.000      250.299     327.247
+             |
+       month |
+          2  |     10.195      1.486     6.86   0.000        7.282      13.107
+          3  |    -26.271      1.574   -16.69   0.000      -29.356     -23.187
+          4  |    -29.925      1.608   -18.61   0.000      -33.077     -26.774
+          5  |     -2.548      1.548    -1.65   0.100       -5.581       0.486
+          6  |     42.302      1.741    24.29   0.000       38.889      45.715
+          7  |     55.461      1.864    29.76   0.000       51.808      59.114
+          8  |     44.515      1.968    22.62   0.000       40.658      48.372
+          9  |     46.274      1.918    24.13   0.000       42.515      50.032
+         10  |      8.903      1.946     4.58   0.000        5.089      12.717
+         11  |     15.458      2.155     7.17   0.000       11.235      19.681
+         12  |     48.553      2.468    19.67   0.000       43.715      53.391
+             |
+ day_of_week |
+          1  |     -5.614      1.058    -5.30   0.000       -7.689      -3.540
+          2  |    -12.203      1.062   -11.49   0.000      -14.284     -10.122
+          3  |    -18.214      1.061   -17.16   0.000      -20.294     -16.134
+          4  |    -14.545      1.061   -13.71   0.000      -16.624     -12.466
+          5  |    -11.860      1.059   -11.20   0.000      -13.935      -9.785
+          6  |     -6.348      1.053    -6.03   0.000       -8.412      -4.285
+             |
+        hour |
+          1  |      2.074      1.951     1.06   0.288       -1.749       5.897
+          2  |      2.152      1.960     1.10   0.272       -1.688       5.993
+          3  |      3.928      1.964     2.00   0.045        0.079       7.776
+          4  |      4.315      1.963     2.20   0.028        0.467       8.162
+          5  |      3.878      1.957     1.98   0.048        0.041       7.715
+          6  |      5.093      1.956     2.60   0.009        1.259       8.927
+          7  |     -3.870      1.957    -1.98   0.048       -7.706      -0.033
+          8  |     -8.799      1.960    -4.49   0.000      -12.640      -4.958
+          9  |    -12.140      1.967    -6.17   0.000      -15.994      -8.285
+         10  |    -17.967      1.979    -9.08   0.000      -21.846     -14.088
+         11  |    -22.723      1.994   -11.40   0.000      -26.631     -18.814
+         12  |    -28.149      2.009   -14.01   0.000      -32.087     -24.211
+         13  |    -35.599      2.025   -17.58   0.000      -39.568     -31.629
+         14  |    -39.966      2.040   -19.59   0.000      -43.965     -35.967
+         15  |    -41.332      2.052   -20.14   0.000      -45.353     -37.310
+         16  |    -41.181      2.059   -20.00   0.000      -45.216     -37.145
+         17  |    -39.975      2.060   -19.40   0.000      -44.013     -35.937
+         18  |    -42.317      2.054   -20.60   0.000      -46.344     -38.291
+         19  |    -38.049      2.038   -18.67   0.000      -42.043     -34.056
+         20  |    -36.916      2.022   -18.26   0.000      -40.879     -32.953
+         21  |    -27.099      1.997   -13.57   0.000      -31.012     -23.185
+         22  |    -15.843      1.970    -8.04   0.000      -19.704     -11.983
+         23  |     -5.160      1.952    -2.64   0.008       -8.986      -1.334
+             |
+      minute |
+         15  |      0.402      0.795     0.51   0.613       -1.156       1.961
+         30  |      0.031      0.795     0.04   0.969       -1.527       1.590
+         45  |      0.976      0.795     1.23   0.219       -0.582       2.535
+             |
+int_tot~s_gw |    -63.395      0.539  -117.62   0.000      -64.452     -62.339
+int_tot~e_gw |    -56.988      0.545  -104.57   0.000      -58.056     -55.920
+int_tot~r_gw |   -106.436      0.782  -136.13   0.000     -107.968    -104.903
+scarcity_m~e |     31.991      0.199   160.39   0.000       31.600      32.382
+ rttotcap_gw |     37.017      0.304   121.69   0.000       36.421      37.614
+       ng_gw |    -10.949      0.829   -13.21   0.000      -12.574      -9.324
+renewables~w |    -16.585      0.486   -34.14   0.000      -17.537     -15.633
+    other_gw |    -18.960      1.898    -9.99   0.000      -22.679     -15.241
+temp_midpo~t |     -2.330      0.049   -47.32   0.000       -2.427      -2.234
+temp_midpo~q |      0.633      0.004   169.07   0.000        0.626       0.641
+    ng_price |     32.501      0.383    84.83   0.000       31.750      33.252
+weather_wnds |     -0.979      0.143    -6.85   0.000       -1.260      -0.699
+      active |    -80.596      0.995   -80.97   0.000      -82.546     -78.645
+   incentive |     -0.052      0.001   -39.00   0.000       -0.055      -0.050
+       _cons |    191.388     51.581     3.71   0.000       90.290     292.486
+------------------------------------------------------------------------------
+r; t=0.31 18:43:27
+.                         eststo reg2: reg price year##year month##month day_of
+> _week##day_of_week hour##hour minute##minute ///
+>                                 int_tot_gen_gas_gw-weather_wnds active incent
+> ive e_1
+
+      Source |       SS           df       MS      Number of obs   =   257,251
+-------------+----------------------------------   F(65, 257185)   =  17649.12
+       Model |  6.1898e+09        65  95227863.3   Prob > F        =    0.0000
+    Residual |  1.3877e+09   257,185   5395.6164   R-squared       =    0.8169
+-------------+----------------------------------   Adj R-squared   =    0.8168
+       Total |  7.5775e+09   257,250  29455.7151   Root MSE        =    73.455
+
+------------------------------------------------------------------------------
+       price | Coefficient  Std. err.      t    P>|t|     [95% conf. interval]
+-------------+----------------------------------------------------------------
+        year |
+       2016  |     52.557      1.098    47.87   0.000       50.405      54.709
+       2017  |    101.495      1.726    58.82   0.000       98.113     104.877
+       2018  |     26.222      5.311     4.94   0.000       15.813      36.632
+       2019  |     60.730      6.642     9.14   0.000       47.712      73.747
+       2020  |    167.605      7.723    21.70   0.000      152.468     182.741
+       2021  |    278.005      8.952    31.06   0.000      260.460     295.550
+       2022  |    316.228     10.113    31.27   0.000      296.406     336.050
+             |
+       month |
+          2  |     12.223      0.766    15.97   0.000       10.723      13.724
+          3  |    -24.748      0.811   -30.52   0.000      -26.337     -23.159
+          4  |    -28.765      0.828   -34.73   0.000      -30.389     -27.142
+          5  |     -1.265      0.797    -1.59   0.113       -2.828       0.298
+          6  |     45.459      0.897    50.67   0.000       43.701      47.218
+          7  |     58.856      0.960    61.30   0.000       56.974      60.738
+          8  |     47.009      1.014    46.36   0.000       45.022      48.996
+          9  |     48.827      0.988    49.41   0.000       46.890      50.763
+         10  |     11.380      1.003    11.35   0.000        9.415      13.345
+         11  |     18.500      1.110    16.67   0.000       16.325      20.676
+         12  |     54.652      1.272    42.97   0.000       52.159      57.144
+             |
+ day_of_week |
+          1  |     -5.483      0.545   -10.06   0.000       -6.552      -4.415
+          2  |    -11.667      0.547   -21.33   0.000      -12.739     -10.595
+          3  |    -17.972      0.547   -32.87   0.000      -19.044     -16.901
+          4  |    -13.835      0.547   -25.31   0.000      -14.906     -12.763
+          5  |    -11.689      0.545   -21.43   0.000      -12.758     -10.620
+          6  |     -6.492      0.542   -11.97   0.000       -7.555      -5.429
+             |
+        hour |
+          1  |      1.618      1.005     1.61   0.107       -0.352       3.588
+          2  |      1.481      1.010     1.47   0.142       -0.498       3.460
+          3  |      3.370      1.012     3.33   0.001        1.387       5.353
+          4  |      3.650      1.012     3.61   0.000        1.667       5.632
+          5  |      3.269      1.009     3.24   0.001        1.292       5.246
+          6  |      5.682      1.008     5.64   0.000        3.706       7.657
+          7  |     -2.933      1.008    -2.91   0.004       -4.910      -0.957
+          8  |     -8.242      1.010    -8.16   0.000      -10.221      -6.263
+          9  |    -11.312      1.013   -11.16   0.000      -13.298      -9.326
+         10  |    -16.723      1.020   -16.40   0.000      -18.722     -14.725
+         11  |    -21.416      1.027   -20.85   0.000      -23.430     -19.402
+         12  |    -26.308      1.035   -25.41   0.000      -28.337     -24.279
+         13  |    -34.467      1.043   -33.03   0.000      -36.512     -32.422
+         14  |    -37.329      1.051   -35.51   0.000      -39.389     -35.269
+         15  |    -41.110      1.057   -38.89   0.000      -43.182     -39.038
+         16  |    -39.336      1.061   -37.08   0.000      -41.416     -37.257
+         17  |    -38.335      1.062   -36.11   0.000      -40.415     -36.254
+         18  |    -41.464      1.059   -39.17   0.000      -43.539     -39.389
+         19  |    -36.460      1.050   -34.73   0.000      -38.518     -34.403
+         20  |    -35.776      1.042   -34.34   0.000      -37.818     -33.734
+         21  |    -24.462      1.029   -23.78   0.000      -26.479     -22.446
+         22  |    -15.131      1.015   -14.91   0.000      -17.120     -13.142
+         23  |     -5.257      1.006    -5.23   0.000       -7.228      -3.286
+             |
+      minute |
+         15  |      0.344      0.410     0.84   0.401       -0.459       1.147
+         30  |     -0.027      0.410    -0.06   0.948       -0.830       0.776
+         45  |      0.886      0.410     2.16   0.031        0.083       1.689
+             |
+int_tot~s_gw |    -60.142      0.278  -216.55   0.000      -60.686     -59.597
+int_tot~e_gw |    -53.679      0.281  -191.17   0.000      -54.229     -53.128
+int_tot~r_gw |   -104.199      0.403  -258.67   0.000     -104.989    -103.410
+scarcity_m~e |     30.531      0.103   297.06   0.000       30.329      30.732
+ rttotcap_gw |     35.485      0.157   226.40   0.000       35.178      35.793
+       ng_gw |    -10.694      0.427   -25.04   0.000      -11.531      -9.857
+renewables~w |    -18.979      0.250   -75.82   0.000      -19.470     -18.489
+    other_gw |    -22.397      0.978   -22.91   0.000      -24.313     -20.481
+temp_midpo~t |     -2.431      0.025   -95.84   0.000       -2.481      -2.382
+temp_midpo~q |      0.668      0.002   345.85   0.000        0.664       0.671
+    ng_price |     36.311      0.197   183.91   0.000       35.924      36.698
+weather_wnds |     -1.120      0.074   -15.19   0.000       -1.264      -0.975
+      active |    -65.971      0.513  -128.58   0.000      -66.977     -64.966
+   incentive |     -0.092      0.001  -133.05   0.000       -0.094      -0.091
+         e_1 |      0.860      0.001   843.64   0.000        0.858       0.862
+       _cons |    339.377     26.576    12.77   0.000      287.289     391.464
+------------------------------------------------------------------------------
+r; t=0.34 18:43:28
+.                         eststo reg3: reg price year##year month##month day_of
+> _week##day_of_week hour##hour minute##minute ///
+>                                 int_tot_gen_gas_gw-weather_wnds active incent
+> ive e_1 d_1
+
+      Source |       SS           df       MS      Number of obs   =   257,156
+-------------+----------------------------------   F(66, 257089)   =  17798.93
+       Model |  6.2169e+09        66    94195418   Prob > F        =    0.0000
+    Residual |  1.3606e+09   257,089  5292.19627   R-squared       =    0.8204
+-------------+----------------------------------   Adj R-squared   =    0.8204
+       Total |  7.5775e+09   257,155  29466.5203   Root MSE        =    72.747
+
+------------------------------------------------------------------------------
+       price | Coefficient  Std. err.      t    P>|t|     [95% conf. interval]
+-------------+----------------------------------------------------------------
+        year |
+       2016  |     53.493      1.088    49.15   0.000       51.360      55.626
+       2017  |    103.842      1.710    60.73   0.000      100.491     107.193
+       2018  |     32.940      5.261     6.26   0.000       22.629      43.251
+       2019  |     69.568      6.579    10.57   0.000       56.673      82.462
+       2020  |    178.745      7.650    23.37   0.000      163.751     193.739
+       2021  |    292.212      8.868    32.95   0.000      274.832     309.593
+       2022  |    331.892     10.018    33.13   0.000      312.256     351.528
+             |
+       month |
+          2  |     13.710      0.758    18.08   0.000       12.223      15.196
+          3  |    -23.831      0.803   -29.67   0.000      -25.405     -22.257
+          4  |    -28.131      0.820   -34.29   0.000      -29.739     -26.523
+          5  |     -1.230      0.790    -1.56   0.119       -2.778       0.318
+          6  |     44.768      0.889    50.38   0.000       43.027      46.510
+          7  |     57.936      0.952    60.88   0.000       56.071      59.801
+          8  |     46.333      1.004    46.14   0.000       44.365      48.301
+          9  |     48.700      0.979    49.77   0.000       46.782      50.618
+         10  |     12.448      0.993    12.54   0.000       10.502      14.394
+         11  |     20.284      1.100    18.44   0.000       18.128      22.439
+         12  |     56.563      1.260    44.90   0.000       54.094      59.033
+             |
+ day_of_week |
+          1  |     -5.462      0.540   -10.12   0.000       -6.521      -4.404
+          2  |    -11.547      0.542   -21.31   0.000      -12.609     -10.485
+          3  |    -17.828      0.542   -32.89   0.000      -18.891     -16.766
+          4  |    -13.747      0.541   -25.40   0.000      -14.808     -12.686
+          5  |    -11.709      0.540   -21.68   0.000      -12.768     -10.650
+          6  |     -6.474      0.537   -12.05   0.000       -7.527      -5.421
+             |
+        hour |
+          1  |      1.637      0.996     1.64   0.100       -0.314       3.588
+          2  |      1.488      1.000     1.49   0.137       -0.472       3.448
+          3  |      3.384      1.002     3.38   0.001        1.420       5.348
+          4  |      3.666      1.002     3.66   0.000        1.702       5.629
+          5  |      3.248      0.999     3.25   0.001        1.290       5.206
+          6  |      5.549      0.998     5.56   0.000        3.593       7.506
+          7  |     -3.095      0.999    -3.10   0.002       -5.053      -1.137
+          8  |     -8.386      1.000    -8.38   0.000      -10.346      -6.426
+          9  |    -11.550      1.004   -11.51   0.000      -13.518      -9.583
+         10  |    -17.011      1.010   -16.84   0.000      -18.991     -15.032
+         11  |    -21.779      1.018   -21.40   0.000      -23.773     -19.784
+         12  |    -26.716      1.025   -26.05   0.000      -28.726     -24.706
+         13  |    -34.877      1.034   -33.74   0.000      -36.902     -32.851
+         14  |    -37.718      1.041   -36.22   0.000      -39.759     -35.678
+         15  |    -41.362      1.047   -39.50   0.000      -43.414     -39.309
+         16  |    -39.636      1.051   -37.72   0.000      -41.695     -37.576
+         17  |    -38.747      1.052   -36.85   0.000      -40.808     -36.686
+         18  |    -41.841      1.049   -39.90   0.000      -43.896     -39.785
+         19  |    -36.844      1.040   -35.43   0.000      -38.882     -34.806
+         20  |    -36.086      1.032   -34.97   0.000      -38.109     -34.064
+         21  |    -24.810      1.019   -24.35   0.000      -26.808     -22.813
+         22  |    -15.312      1.005   -15.23   0.000      -17.282     -13.342
+         23  |     -5.355      0.996    -5.38   0.000       -7.307      -3.402
+             |
+      minute |
+         15  |      0.354      0.406     0.87   0.382       -0.441       1.150
+         30  |     -0.015      0.406    -0.04   0.971       -0.810       0.781
+         45  |      0.891      0.406     2.20   0.028        0.096       1.687
+             |
+int_tot~s_gw |    -59.130      0.275  -214.67   0.000      -59.670     -58.590
+int_tot~e_gw |    -52.964      0.278  -190.33   0.000      -53.509     -52.418
+int_tot~r_gw |   -103.091      0.399  -258.20   0.000     -103.874    -102.309
+scarcity_m~e |     30.226      0.102   296.69   0.000       30.026      30.426
+ rttotcap_gw |     35.183      0.155   226.57   0.000       34.879      35.488
+       ng_gw |    -11.062      0.423   -26.15   0.000      -11.892     -10.233
+renewables~w |    -19.389      0.248   -78.19   0.000      -19.875     -18.903
+    other_gw |    -21.554      0.968   -22.26   0.000      -23.452     -19.657
+temp_midpo~t |     -2.461      0.025   -97.91   0.000       -2.510      -2.412
+temp_midpo~q |      0.660      0.002   344.68   0.000        0.656       0.664
+    ng_price |     36.334      0.196   185.81   0.000       35.951      36.718
+weather_wnds |     -1.159      0.073   -15.89   0.000       -1.302      -1.016
+      active |    -64.731      0.508  -127.30   0.000      -65.728     -63.735
+   incentive |     -0.100      0.001  -143.47   0.000       -0.101      -0.098
+         e_1 |      0.833      0.001   776.22   0.000        0.831       0.836
+         d_1 |      0.079      0.001    71.55   0.000        0.076       0.081
+       _cons |    351.546     26.321    13.36   0.000      299.958     403.134
+------------------------------------------------------------------------------
+r; t=0.36 18:43:28
+.                         eststo reg4: reg price year##year month##month day_of
+> _week##day_of_week hour##hour minute##minute ///
+>                                 int_tot_gen_gas_gw-weather_wnds active incent
+> ive e_1 e_2 e_3 e_4
+
+      Source |       SS           df       MS      Number of obs   =   257,248
+-------------+----------------------------------   F(68, 257179)   =  18093.21
+       Model |  6.2674e+09        68  92167647.4   Prob > F        =    0.0000
+    Residual |  1.3101e+09   257,179  5094.04711   R-squared       =    0.8271
+-------------+----------------------------------   Adj R-squared   =    0.8271
+       Total |  7.5775e+09   257,247  29456.0557   Root MSE        =    71.373
+
+------------------------------------------------------------------------------
+       price | Coefficient  Std. err.      t    P>|t|     [95% conf. interval]
+-------------+----------------------------------------------------------------
+        year |
+       2016  |     53.624      1.067    50.26   0.000       51.533      55.715
+       2017  |    103.954      1.677    62.00   0.000      100.668     107.241
+       2018  |     26.195      5.161     5.08   0.000       16.080      36.310
+       2019  |     61.949      6.453     9.60   0.000       49.300      74.597
+       2020  |    171.510      7.504    22.86   0.000      156.803     186.218
+       2021  |    284.352      8.698    32.69   0.000      267.304     301.400
+       2022  |    322.750      9.827    32.84   0.000      303.490     342.011
+             |
+       month |
+          2  |     12.888      0.744    17.33   0.000       11.430      14.346
+          3  |    -24.318      0.788   -30.87   0.000      -25.863     -22.774
+          4  |    -28.469      0.805   -35.37   0.000      -30.046     -26.891
+          5  |     -1.008      0.775    -1.30   0.193       -2.527       0.511
+          6  |     46.064      0.872    52.84   0.000       44.355      47.772
+          7  |     59.510      0.933    63.78   0.000       57.681      61.338
+          8  |     47.461      0.985    48.18   0.000       45.530      49.392
+          9  |     49.323      0.960    51.37   0.000       47.441      51.204
+         10  |     11.943      0.974    12.26   0.000       10.034      13.852
+         11  |     19.270      1.079    17.87   0.000       17.156      21.384
+         12  |     56.154      1.236    45.44   0.000       53.732      58.576
+             |
+ day_of_week |
+          1  |     -5.572      0.530   -10.52   0.000       -6.610      -4.533
+          2  |    -11.640      0.531   -21.90   0.000      -12.682     -10.599
+          3  |    -17.968      0.531   -33.82   0.000      -19.010     -16.927
+          4  |    -13.720      0.531   -25.84   0.000      -14.761     -12.680
+          5  |    -11.749      0.530   -22.17   0.000      -12.788     -10.711
+          6  |     -6.611      0.527   -12.54   0.000       -7.644      -5.578
+             |
+        hour |
+          1  |      1.536      0.977     1.57   0.116       -0.378       3.450
+          2  |      1.364      0.981     1.39   0.164       -0.559       3.287
+          3  |      3.195      0.983     3.25   0.001        1.268       5.122
+          4  |      3.548      0.983     3.61   0.000        1.621       5.474
+          5  |      3.206      0.980     3.27   0.001        1.285       5.127
+          6  |      5.761      0.979     5.88   0.000        3.841       7.680
+          7  |     -2.948      0.980    -3.01   0.003       -4.869      -1.027
+          8  |     -8.092      0.981    -8.25   0.000      -10.015      -6.170
+          9  |    -11.138      0.985   -11.31   0.000      -13.068      -9.208
+         10  |    -16.476      0.991   -16.63   0.000      -18.418     -14.534
+         11  |    -21.117      0.998   -21.15   0.000      -23.073     -19.160
+         12  |    -26.059      1.006   -25.91   0.000      -28.031     -24.088
+         13  |    -34.241      1.014   -33.77   0.000      -36.228     -32.253
+         14  |    -37.134      1.021   -36.35   0.000      -39.136     -35.132
+         15  |    -40.778      1.027   -39.69   0.000      -42.791     -38.765
+         16  |    -38.958      1.031   -37.79   0.000      -40.978     -36.937
+         17  |    -38.153      1.031   -36.99   0.000      -40.175     -36.132
+         18  |    -41.176      1.029   -40.03   0.000      -43.192     -39.160
+         19  |    -36.180      1.020   -35.47   0.000      -38.179     -34.181
+         20  |    -35.486      1.012   -35.06   0.000      -37.470     -33.502
+         21  |    -24.222      1.000   -24.23   0.000      -26.181     -22.262
+         22  |    -14.895      0.986   -15.11   0.000      -16.827     -12.962
+         23  |     -5.100      0.977    -5.22   0.000       -7.016      -3.185
+             |
+      minute |
+         15  |      0.337      0.398     0.85   0.397       -0.443       1.118
+         30  |     -0.031      0.398    -0.08   0.938       -0.811       0.750
+         45  |      0.875      0.398     2.20   0.028        0.095       1.655
+             |
+int_tot~s_gw |    -59.495      0.270  -220.43   0.000      -60.024     -58.966
+int_tot~e_gw |    -53.064      0.273  -194.46   0.000      -53.598     -52.529
+int_tot~r_gw |   -103.832      0.391  -265.27   0.000     -104.599    -103.064
+scarcity_m~e |     30.261      0.100   302.96   0.000       30.066      30.457
+ rttotcap_gw |     35.209      0.152   231.17   0.000       34.911      35.508
+       ng_gw |    -10.634      0.415   -25.62   0.000      -11.447      -9.820
+renewables~w |    -19.558      0.243   -80.39   0.000      -20.035     -19.082
+    other_gw |    -23.269      0.950   -24.50   0.000      -25.131     -21.407
+temp_midpo~t |     -2.456      0.025   -99.62   0.000       -2.504      -2.408
+temp_midpo~q |      0.673      0.002   358.98   0.000        0.670       0.677
+    ng_price |     37.282      0.192   194.15   0.000       36.905      37.658
+weather_wnds |     -1.144      0.072   -15.97   0.000       -1.284      -1.003
+      active |    -63.644      0.499  -127.56   0.000      -64.622     -62.666
+   incentive |     -0.102      0.001  -150.32   0.000       -0.104      -0.101
+         e_1 |      0.682      0.002   352.42   0.000        0.678       0.686
+         e_2 |      0.106      0.002    45.17   0.000        0.102       0.111
+         e_3 |     -0.004      0.002    -1.75   0.080       -0.009       0.000
+         e_4 |      0.128      0.002    66.01   0.000        0.124       0.132
+       _cons |    373.276     25.824    14.45   0.000      322.662     423.890
+------------------------------------------------------------------------------
+r; t=0.33 18:43:28
+.                         eststo reg5: reg price year##year month##month day_of
+> _week##day_of_week hour##hour minute##minute ///
+>                                 int_tot_gen_gas_gw-weather_wnds active incent
+> ive e_1 e_2 e_3 e_4 e_5 d_1 d_2 d_3 d_4 d_5
+
+      Source |       SS           df       MS      Number of obs   =   256,772
+-------------+----------------------------------   F(74, 256697)   =  17137.41
+       Model |  6.3018e+09        74  85159583.4   Prob > F        =    0.0000
+    Residual |  1.2756e+09   256,697  4969.21995   R-squared       =    0.8317
+-------------+----------------------------------   Adj R-squared   =    0.8316
+       Total |  7.5774e+09   256,771  29510.3147   Root MSE        =    70.493
+
+------------------------------------------------------------------------------
+       price | Coefficient  Std. err.      t    P>|t|     [95% conf. interval]
+-------------+----------------------------------------------------------------
+        year |
+       2016  |     56.307      1.059    53.17   0.000       54.231      58.383
+       2017  |    110.152      1.662    66.28   0.000      106.895     113.410
+       2018  |     39.667      5.101     7.78   0.000       29.669      49.665
+       2019  |     80.301      6.379    12.59   0.000       67.797      92.804
+       2020  |    195.839      7.419    26.40   0.000      181.299     210.380
+       2021  |    316.356      8.601    36.78   0.000      299.497     333.214
+       2022  |    358.690      9.718    36.91   0.000      339.643     377.736
+             |
+       month |
+          2  |     15.906      0.736    21.62   0.000       14.463      17.348
+          3  |    -23.499      0.778   -30.19   0.000      -25.024     -21.973
+          4  |    -28.389      0.795   -35.70   0.000      -29.948     -26.831
+          5  |     -1.008      0.765    -1.32   0.188       -2.508       0.492
+          6  |     46.398      0.862    53.85   0.000       44.709      48.087
+          7  |     59.937      0.925    64.79   0.000       58.124      61.750
+          8  |     48.448      0.974    49.75   0.000       46.539      50.356
+          9  |     50.629      0.949    53.37   0.000       48.770      52.489
+         10  |     14.009      0.963    14.55   0.000       12.122      15.896
+         11  |     22.646      1.066    21.24   0.000       20.556      24.736
+         12  |     60.548      1.222    49.55   0.000       58.153      62.944
+             |
+ day_of_week |
+          1  |     -5.506      0.524   -10.52   0.000       -6.532      -4.480
+          2  |    -11.290      0.525   -21.49   0.000      -12.319     -10.260
+          3  |    -17.632      0.526   -33.55   0.000      -18.662     -16.602
+          4  |    -13.279      0.525   -25.28   0.000      -14.308     -12.249
+          5  |    -11.610      0.524   -22.15   0.000      -12.637     -10.582
+          6  |     -6.621      0.521   -12.70   0.000       -7.643      -5.600
+             |
+        hour |
+          1  |      1.548      0.965     1.60   0.109       -0.344       3.440
+          2  |      1.321      0.970     1.36   0.173       -0.580       3.222
+          3  |      3.109      0.972     3.20   0.001        1.204       5.013
+          4  |      3.476      0.972     3.58   0.000        1.572       5.381
+          5  |      3.107      0.969     3.21   0.001        1.209       5.006
+          6  |      5.496      0.968     5.68   0.000        3.598       7.393
+          7  |     -3.201      0.969    -3.30   0.001       -5.100      -1.302
+          8  |     -8.140      0.970    -8.39   0.000      -10.041      -6.239
+          9  |    -11.326      0.973   -11.64   0.000      -13.233      -9.418
+         10  |    -16.720      0.979   -17.07   0.000      -18.640     -14.800
+         11  |    -21.414      0.987   -21.70   0.000      -23.348     -19.480
+         12  |    -26.411      0.994   -26.56   0.000      -28.360     -24.462
+         13  |    -34.640      1.002   -34.56   0.000      -36.605     -32.676
+         14  |    -37.582      1.010   -37.22   0.000      -39.561     -35.603
+         15  |    -40.964      1.016   -40.34   0.000      -42.954     -38.974
+         16  |    -39.308      1.019   -38.57   0.000      -41.305     -37.310
+         17  |    -38.627      1.020   -37.88   0.000      -40.625     -36.628
+         18  |    -41.628      1.017   -40.94   0.000      -43.621     -39.635
+         19  |    -36.655      1.008   -36.35   0.000      -38.631     -34.678
+         20  |    -35.821      1.001   -35.80   0.000      -37.782     -33.860
+         21  |    -24.577      0.988   -24.87   0.000      -26.514     -22.640
+         22  |    -14.941      0.975   -15.33   0.000      -16.851     -13.030
+         23  |     -5.149      0.966    -5.33   0.000       -7.042      -3.256
+             |
+      minute |
+         15  |      0.337      0.394     0.86   0.391       -0.434       1.109
+         30  |     -0.015      0.394    -0.04   0.970       -0.786       0.757
+         45  |      0.888      0.394     2.26   0.024        0.117       1.660
+             |
+int_tot~s_gw |    -59.571      0.269  -221.51   0.000      -60.098     -59.044
+int_tot~e_gw |    -53.232      0.271  -196.53   0.000      -53.762     -52.701
+int_tot~r_gw |   -104.236      0.389  -267.87   0.000     -104.999    -103.473
+scarcity_m~e |     30.395      0.099   305.75   0.000       30.200      30.590
+ rttotcap_gw |     35.458      0.151   234.64   0.000       35.161      35.754
+       ng_gw |    -11.473      0.410   -27.97   0.000      -12.277     -10.669
+renewables~w |    -20.661      0.241   -85.79   0.000      -21.133     -20.189
+    other_gw |    -22.044      0.939   -23.48   0.000      -23.884     -20.203
+temp_midpo~t |     -2.535      0.024  -103.92   0.000       -2.583      -2.487
+temp_midpo~q |      0.666      0.002   358.09   0.000        0.662       0.669
+    ng_price |     37.876      0.191   198.16   0.000       37.501      38.251
+weather_wnds |     -1.244      0.071   -17.57   0.000       -1.382      -1.105
+      active |    -63.249      0.494  -128.05   0.000      -64.217     -62.281
+   incentive |     -0.127      0.001  -165.29   0.000       -0.129      -0.126
+         e_1 |      0.660      0.002   340.76   0.000        0.656       0.664
+         e_2 |      0.104      0.002    44.69   0.000        0.099       0.108
+         e_3 |     -0.008      0.002    -3.26   0.001       -0.012      -0.003
+         e_4 |      0.093      0.002    39.99   0.000        0.088       0.098
+         e_5 |      0.040      0.002    20.62   0.000        0.036       0.044
+         d_1 |      0.046      0.001    40.88   0.000        0.044       0.048
+         d_2 |      0.044      0.001    38.42   0.000        0.042       0.046
+         d_3 |      0.028      0.001    24.29   0.000        0.026       0.031
+         d_4 |      0.018      0.001    16.26   0.000        0.016       0.020
+         d_5 |     -0.006      0.001    -5.51   0.000       -0.008      -0.004
+       _cons |    395.924     25.510    15.52   0.000      345.926     445.923
+------------------------------------------------------------------------------
+r; t=0.36 18:43:29
+.                         cd "`eunderbid'"
+C:\Users\rcros\ercot_incentive_effects\Tables\Regressions\underbidding
+r; t=0.00 18:43:29
+.                         esttab reg1 reg2 reg3 reg4 reg5 using "underbidding_w
+> _autoregressive_variations.tex", replace r2 aic bic scalar(F)      
+(output written to underbidding_w_autoregressive_variations.tex)
+r; t=0.51 18:43:29
+.                         
+.                         esttab reg1 reg2 reg3 reg4 reg5 using "underbidding_w
+> _autoregressive_variations.csv", replace r2 aic bic scalar(F)      
+(output written to underbidding_w_autoregressive_variations.csv)
+r; t=0.50 18:43:30
+.                         
+.                                 
+.                         ** Print output
+.                         esttab, nonumber se ar2 r2(a5) compress not nostar
+
+------------------------------------------------------------
+               price     price     price     price     price
+------------------------------------------------------------
+2015.year          0         0         0         0         0
+                 (.)       (.)       (.)       (.)       (.)
+
+2016.year      48.22     52.56     53.49     53.62     56.31
+             (2.131)   (1.098)   (1.088)   (1.067)   (1.059)
+
+2017.year      91.44     101.5     103.8     104.0     110.2
+             (3.349)   (1.726)   (1.710)   (1.677)   (1.662)
+
+2018.year      25.55     26.22     32.94     26.19     39.67
+             (10.31)   (5.311)   (5.261)   (5.161)   (5.101)
+
+2019.year      55.06     60.73     69.57     61.95     80.30
+             (12.89)   (6.642)   (6.579)   (6.453)   (6.379)
+
+2020.year      150.8     167.6     178.7     171.5     195.8
+             (14.99)   (7.723)   (7.650)   (7.504)   (7.419)
+
+2021.year      251.1     278.0     292.2     284.4     316.4
+             (17.37)   (8.952)   (8.868)   (8.698)   (8.601)
+
+2022.year      288.8     316.2     331.9     322.8     358.7
+             (19.63)   (10.11)   (10.02)   (9.827)   (9.718)
+
+1.month            0         0         0         0         0
+                 (.)       (.)       (.)       (.)       (.)
+
+2.month        10.19     12.22     13.71     12.89     15.91
+             (1.486)   (0.766)   (0.758)   (0.744)   (0.736)
+
+3.month       -26.27    -24.75    -23.83    -24.32    -23.50
+             (1.574)   (0.811)   (0.803)   (0.788)   (0.778)
+
+4.month       -29.93    -28.77    -28.13    -28.47    -28.39
+             (1.608)   (0.828)   (0.820)   (0.805)   (0.795)
+
+5.month       -2.548    -1.265    -1.230    -1.008    -1.008
+             (1.548)   (0.797)   (0.790)   (0.775)   (0.765)
+
+6.month        42.30     45.46     44.77     46.06     46.40
+             (1.741)   (0.897)   (0.889)   (0.872)   (0.862)
+
+7.month        55.46     58.86     57.94     59.51     59.94
+             (1.864)   (0.960)   (0.952)   (0.933)   (0.925)
+
+8.month        44.52     47.01     46.33     47.46     48.45
+             (1.968)   (1.014)   (1.004)   (0.985)   (0.974)
+
+9.month        46.27     48.83     48.70     49.32     50.63
+             (1.918)   (0.988)   (0.979)   (0.960)   (0.949)
+
+10.month       8.903     11.38     12.45     11.94     14.01
+             (1.946)   (1.003)   (0.993)   (0.974)   (0.963)
+
+11.month       15.46     18.50     20.28     19.27     22.65
+             (2.155)   (1.110)   (1.100)   (1.079)   (1.066)
+
+12.month       48.55     54.65     56.56     56.15     60.55
+             (2.468)   (1.272)   (1.260)   (1.236)   (1.222)
+
+0.day_of~k         0         0         0         0         0
+                 (.)       (.)       (.)       (.)       (.)
+
+1.day_of~k    -5.614    -5.483    -5.462    -5.572    -5.506
+             (1.058)   (0.545)   (0.540)   (0.530)   (0.524)
+
+2.day_of~k    -12.20    -11.67    -11.55    -11.64    -11.29
+             (1.062)   (0.547)   (0.542)   (0.531)   (0.525)
+
+3.day_of~k    -18.21    -17.97    -17.83    -17.97    -17.63
+             (1.061)   (0.547)   (0.542)   (0.531)   (0.526)
+
+4.day_of~k    -14.55    -13.83    -13.75    -13.72    -13.28
+             (1.061)   (0.547)   (0.541)   (0.531)   (0.525)
+
+5.day_of~k    -11.86    -11.69    -11.71    -11.75    -11.61
+             (1.059)   (0.545)   (0.540)   (0.530)   (0.524)
+
+6.day_of~k    -6.348    -6.492    -6.474    -6.611    -6.621
+             (1.053)   (0.542)   (0.537)   (0.527)   (0.521)
+
+0.hour             0         0         0         0         0
+                 (.)       (.)       (.)       (.)       (.)
+
+1.hour         2.074     1.618     1.637     1.536     1.548
+             (1.951)   (1.005)   (0.996)   (0.977)   (0.965)
+
+2.hour         2.152     1.481     1.488     1.364     1.321
+             (1.960)   (1.010)   (1.000)   (0.981)   (0.970)
+
+3.hour         3.928     3.370     3.384     3.195     3.109
+             (1.964)   (1.012)   (1.002)   (0.983)   (0.972)
+
+4.hour         4.315     3.650     3.666     3.548     3.476
+             (1.963)   (1.012)   (1.002)   (0.983)   (0.972)
+
+5.hour         3.878     3.269     3.248     3.206     3.107
+             (1.957)   (1.009)   (0.999)   (0.980)   (0.969)
+
+6.hour         5.093     5.682     5.549     5.761     5.496
+             (1.956)   (1.008)   (0.998)   (0.979)   (0.968)
+
+7.hour        -3.870    -2.933    -3.095    -2.948    -3.201
+             (1.957)   (1.008)   (0.999)   (0.980)   (0.969)
+
+8.hour        -8.799    -8.242    -8.386    -8.092    -8.140
+             (1.960)   (1.010)   (1.000)   (0.981)   (0.970)
+
+9.hour        -12.14    -11.31    -11.55    -11.14    -11.33
+             (1.967)   (1.013)   (1.004)   (0.985)   (0.973)
+
+10.hour       -17.97    -16.72    -17.01    -16.48    -16.72
+             (1.979)   (1.020)   (1.010)   (0.991)   (0.979)
+
+11.hour       -22.72    -21.42    -21.78    -21.12    -21.41
+             (1.994)   (1.027)   (1.018)   (0.998)   (0.987)
+
+12.hour       -28.15    -26.31    -26.72    -26.06    -26.41
+             (2.009)   (1.035)   (1.025)   (1.006)   (0.994)
+
+13.hour       -35.60    -34.47    -34.88    -34.24    -34.64
+             (2.025)   (1.043)   (1.034)   (1.014)   (1.002)
+
+14.hour       -39.97    -37.33    -37.72    -37.13    -37.58
+             (2.040)   (1.051)   (1.041)   (1.021)   (1.010)
+
+15.hour       -41.33    -41.11    -41.36    -40.78    -40.96
+             (2.052)   (1.057)   (1.047)   (1.027)   (1.016)
+
+16.hour       -41.18    -39.34    -39.64    -38.96    -39.31
+             (2.059)   (1.061)   (1.051)   (1.031)   (1.019)
+
+17.hour       -39.98    -38.33    -38.75    -38.15    -38.63
+             (2.060)   (1.062)   (1.052)   (1.031)   (1.020)
+
+18.hour       -42.32    -41.46    -41.84    -41.18    -41.63
+             (2.054)   (1.059)   (1.049)   (1.029)   (1.017)
+
+19.hour       -38.05    -36.46    -36.84    -36.18    -36.65
+             (2.038)   (1.050)   (1.040)   (1.020)   (1.008)
+
+20.hour       -36.92    -35.78    -36.09    -35.49    -35.82
+             (2.022)   (1.042)   (1.032)   (1.012)   (1.001)
+
+21.hour       -27.10    -24.46    -24.81    -24.22    -24.58
+             (1.997)   (1.029)   (1.019)   (1.000)   (0.988)
+
+22.hour       -15.84    -15.13    -15.31    -14.89    -14.94
+             (1.970)   (1.015)   (1.005)   (0.986)   (0.975)
+
+23.hour       -5.160    -5.257    -5.355    -5.100    -5.149
+             (1.952)   (1.006)   (0.996)   (0.977)   (0.966)
+
+0.minute           0         0         0         0         0
+                 (.)       (.)       (.)       (.)       (.)
+
+15.minute      0.402     0.344     0.354     0.337     0.337
+             (0.795)   (0.410)   (0.406)   (0.398)   (0.394)
+
+30.minute     0.0314   -0.0265   -0.0147   -0.0307   -0.0146
+             (0.795)   (0.410)   (0.406)   (0.398)   (0.394)
+
+45.minute      0.976     0.886     0.891     0.875     0.888
+             (0.795)   (0.410)   (0.406)   (0.398)   (0.394)
+
+int_t~s_gw    -63.40    -60.14    -59.13    -59.49    -59.57
+             (0.539)   (0.278)   (0.275)   (0.270)   (0.269)
+
+int_t~e_gw    -56.99    -53.68    -52.96    -53.06    -53.23
+             (0.545)   (0.281)   (0.278)   (0.273)   (0.271)
+
+int_t~r_gw    -106.4    -104.2    -103.1    -103.8    -104.2
+             (0.782)   (0.403)   (0.399)   (0.391)   (0.389)
+
+scarcity~e     31.99     30.53     30.23     30.26     30.40
+             (0.199)   (0.103)   (0.102)  (0.0999)  (0.0994)
+
+rttotcap~w     37.02     35.49     35.18     35.21     35.46
+             (0.304)   (0.157)   (0.155)   (0.152)   (0.151)
+
+ng_gw         -10.95    -10.69    -11.06    -10.63    -11.47
+             (0.829)   (0.427)   (0.423)   (0.415)   (0.410)
+
+renewabl~w    -16.59    -18.98    -19.39    -19.56    -20.66
+             (0.486)   (0.250)   (0.248)   (0.243)   (0.241)
+
+other_gw      -18.96    -22.40    -21.55    -23.27    -22.04
+             (1.898)   (0.978)   (0.968)   (0.950)   (0.939)
+
+temp_mid~t    -2.330    -2.431    -2.461    -2.456    -2.535
+            (0.0492)  (0.0254)  (0.0251)  (0.0247)  (0.0244)
+
+temp_mid~q     0.633     0.668     0.660     0.673     0.666
+           (0.00375) (0.00193) (0.00191) (0.00188) (0.00186)
+
+ng_price       32.50     36.31     36.33     37.28     37.88
+             (0.383)   (0.197)   (0.196)   (0.192)   (0.191)
+
+weather_~s    -0.979    -1.120    -1.159    -1.144    -1.244
+             (0.143)  (0.0737)  (0.0730)  (0.0716)  (0.0708)
+
+active        -80.60    -65.97    -64.73    -63.64    -63.25
+             (0.995)   (0.513)   (0.508)   (0.499)   (0.494)
+
+incentive    -0.0524   -0.0924   -0.0998    -0.102    -0.127
+           (0.00134) (0.000694) (0.000695) (0.000680) (0.000768)
+
+e_1                      0.860     0.833     0.682     0.660
+                     (0.00102) (0.00107) (0.00194) (0.00194)
+
+d_1                               0.0786              0.0458
+                               (0.00110)           (0.00112)
+
+e_2                                          0.106     0.104
+                                         (0.00235) (0.00233)
+
+e_3                                       -0.00412  -0.00762
+                                         (0.00236) (0.00234)
+
+e_4                                          0.128    0.0931
+                                         (0.00194) (0.00233)
+
+e_5                                                   0.0398
+                                                   (0.00193)
+
+d_2                                                   0.0438
+                                                   (0.00114)
+
+d_3                                                   0.0284
+                                                   (0.00117)
+
+d_4                                                   0.0182
+                                                   (0.00112)
+
+d_5                                                 -0.00581
+                                                   (0.00106)
+
+_cons          191.4     339.4     351.5     373.3     395.9
+             (51.58)   (26.58)   (26.32)   (25.82)   (25.51)
+------------------------------------------------------------
+N             257252    257251    257156    257248    256772
+R-sq         0.31008   0.81687   0.82045   0.82711   0.83166
+adj. R-sq      0.310     0.817     0.820     0.827     0.832
+------------------------------------------------------------
+Standard errors in parentheses
+r; t=0.46 18:43:30
+. 
+.                 } //End if
+r; t=19.09 18:43:30
+.                 di "Done with rho section"
+Done with rho section
+r; t=0.00 18:43:30
+.         
+.         } //End if
+r; t=19.10 18:43:30
+
+.         di "Done with greeks."
+Done with greeks.
+r; t=0.00 18:43:30
+
+. 
+.         ********************************************************
+.         ** Save for downstream scripts
+.         ********************************************************
+.         *cd "`dir'"
+.         *cd "../Data/ERCOT Compiled Data/"
+.         cd "`edata'"
+C:\Users\rcros\ercot_incentive_effects\Data\ERCOT Compiled Data
+r; t=0.00 18:43:30
+
+.         export delimited "underbidding_data_w_lags.csv", replace
+file underbidding_data_w_lags.csv saved
+r; t=4.08 18:43:34
+
+.         save underbidding_data_w_lags, replace
+file underbidding_data_w_lags.dta saved
+r; t=0.07 18:43:34
+
+.         
+. //end
+. 
+end of do-file
+r; t=37.60 18:43:34

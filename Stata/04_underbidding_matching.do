@@ -25,7 +25,7 @@
 	* === Path setup =============================================
 	* Launch this do-file from the repository root, e.g.:
 	*     cd C:/Users/rcros/ercot_incentive_effects
-	*     do Stata/underbidding_matching.do
+	*     do Stata/04_underbidding_matching.do
 	* No ado-folder setup is required.
 	* ============================================================
 	local PROJ "`c(pwd)'"
