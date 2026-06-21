@@ -6,6 +6,9 @@
 *.Rd
 *stargazer*
 *.pdf
+*.xlsx
+*.xls
+*.log
 
 
 Tables/*
